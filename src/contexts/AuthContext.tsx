@@ -3,10 +3,6 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
-import { Database } from '@/types/content';
-
-// Cast the supabase client to use our custom Database type
-const typedSupabase = supabase as unknown as ReturnType<typeof supabase<Database>>;
 
 // Types
 export type User = {
@@ -42,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (session && session.user) {
           try {
             // Get user profile to check admin status
-            const { data: profile, error: profileError } = await typedSupabase
+            const { data: profile, error: profileError } = await supabase
               .from('profiles')
               .select('is_admin')
               .eq('id', session.user.id)
@@ -80,7 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (session && session.user) {
           // Get user profile to check admin status
-          const { data: profile, error: profileError } = await typedSupabase
+          const { data: profile, error: profileError } = await supabase
             .from('profiles')
             .select('is_admin')
             .eq('id', session.user.id)
