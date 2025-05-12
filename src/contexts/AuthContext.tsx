@@ -1,5 +1,8 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser } from '@supabase/supabase-js';
+import { toast } from '@/components/ui/use-toast';
 
 // Types
 export type User = {
@@ -18,9 +21,6 @@ type AuthContextType = {
   error: string | null;
 };
 
-// Mock admin email - in a real app, this would come from env or a secure source
-const ADMIN_EMAIL = "admin@phomshah.com";
-
 // Context creation
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -29,48 +29,99 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Check for existing session on mount
+  // Check for existing session on mount and setup auth state listener
   useEffect(() => {
-    // This would be a Supabase auth check in the real implementation
-    const checkSession = () => {
-      const savedUser = localStorage.getItem('phomshah_user');
-      
-      if (savedUser) {
-        try {
-          setUser(JSON.parse(savedUser));
-        } catch (e) {
-          localStorage.removeItem('phomshah_user');
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setLoading(true);
+        
+        if (session && session.user) {
+          try {
+            // Get user profile to check admin status
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('is_admin')
+              .eq('id', session.user.id)
+              .single();
+
+            if (profileError) throw profileError;
+
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata.name,
+              isAdmin: profile?.is_admin || false
+            });
+          } catch (err) {
+            console.error('Error fetching user profile:', err);
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata.name,
+              isAdmin: false
+            });
+          }
+        } else {
+          setUser(null);
         }
+        
+        setLoading(false);
       }
-      
-      setLoading(false);
+    );
+
+    // Get initial session
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session && session.user) {
+          // Get user profile to check admin status
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', session.user.id)
+            .single();
+
+          if (profileError) throw profileError;
+
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata.name,
+            isAdmin: profile?.is_admin || false
+          });
+        }
+      } catch (err) {
+        console.error('Error initializing auth:', err);
+      } finally {
+        setLoading(false);
+      }
     };
+
+    initializeAuth();
     
-    checkSession();
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
-  // Mock authentication functions - these would be replaced with Supabase auth
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
       setError(null);
       
-      // Simulating authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock login - this would be replaced with Supabase auth
-      const mockUser = {
-        id: 'user-' + Math.random().toString(36).substring(2, 9),
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        isAdmin: email === ADMIN_EMAIL
-      };
+        password
+      });
       
-      setUser(mockUser);
-      localStorage.setItem('phomshah_user', JSON.stringify(mockUser));
-      console.log('User signed in:', mockUser);
-    } catch (err) {
+      if (error) throw error;
+      
+      // User is set by the onAuthStateChange listener
+      console.log('User signed in:', data);
+    } catch (err: any) {
       console.error('Sign in error:', err);
-      setError('Failed to sign in. Please check your credentials.');
+      setError(err.message || 'Failed to sign in. Please check your credentials.');
       throw err;
     } finally {
       setLoading(false);
@@ -82,23 +133,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(true);
       setError(null);
       
-      // Simulating authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock signup - this would be replaced with Supabase auth
-      const mockUser = {
-        id: 'user-' + Math.random().toString(36).substring(2, 9),
+      const { data, error } = await supabase.auth.signUp({
         email,
-        name,
-        isAdmin: email === ADMIN_EMAIL
-      };
+        password,
+        options: {
+          data: {
+            name
+          }
+        }
+      });
       
-      setUser(mockUser);
-      localStorage.setItem('phomshah_user', JSON.stringify(mockUser));
-      console.log('User signed up:', mockUser);
-    } catch (err) {
+      if (error) throw error;
+      
+      toast({
+        title: "Account created!",
+        description: "Please check your email for a confirmation link.",
+      });
+      
+      console.log('User signed up:', data);
+    } catch (err: any) {
       console.error('Sign up error:', err);
-      setError('Failed to create account. Please try again.');
+      setError(err.message || 'Failed to create account. Please try again.');
       throw err;
     } finally {
       setLoading(false);
@@ -109,16 +164,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       
-      // Simulating signout delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { error } = await supabase.auth.signOut();
       
-      // Remove user from storage and state
-      localStorage.removeItem('phomshah_user');
-      setUser(null);
+      if (error) throw error;
+      
+      // User is cleared by the onAuthStateChange listener
       console.log('User signed out');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Sign out error:', err);
-      setError('Failed to sign out.');
+      setError(err.message || 'Failed to sign out.');
     } finally {
       setLoading(false);
     }
