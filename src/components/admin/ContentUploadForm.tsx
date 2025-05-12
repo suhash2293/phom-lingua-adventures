@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
@@ -28,6 +27,7 @@ type ContentFormValues = {
   phom_word: string;
   english_translation: string;
   example_sentence?: string;
+  audio_url?: string | null;
   sort_order: number;
 };
 
@@ -43,6 +43,7 @@ export default function ContentUploadForm() {
       phom_word: '',
       english_translation: '',
       example_sentence: '',
+      audio_url: null,
       sort_order: 0
     }
   });
@@ -82,7 +83,11 @@ export default function ContentUploadForm() {
       setIsUploading(true);
       
       // First create the content item
-      const contentItem = await ContentService.createContentItem(values);
+      const contentItem = await ContentService.createContentItem({
+        ...values,
+        example_sentence: values.example_sentence || null,
+        audio_url: null // Initially null, will update after upload
+      });
       
       // If there's an audio file, upload it and update the content item
       if (audioFile) {
@@ -105,6 +110,7 @@ export default function ContentUploadForm() {
         phom_word: '',
         english_translation: '',
         example_sentence: '',
+        audio_url: null,
         sort_order: values.sort_order + 10 // Increment sort order for convenience
       });
       setAudioFile(null);

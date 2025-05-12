@@ -1,11 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Category, ContentItem, AudioFile } from '@/types/content';
+import { Category, ContentItem, AudioFile, Database } from '@/types/content';
+
+// Cast the supabase client to use our custom Database type
+const typedSupabase = supabase as unknown as ReturnType<typeof supabase<Database>>;
 
 export const ContentService = {
   // Category operations
   async getCategories(): Promise<Category[]> {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('categories')
       .select('*')
       .order('name');
@@ -20,7 +23,7 @@ export const ContentService = {
   
   // Content item operations
   async getContentItemsByCategory(categoryId: string): Promise<ContentItem[]> {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('content_items')
       .select('*')
       .eq('category_id', categoryId)
@@ -35,7 +38,7 @@ export const ContentService = {
   },
   
   async createContentItem(item: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>): Promise<ContentItem> {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('content_items')
       .insert(item)
       .select()
@@ -50,7 +53,7 @@ export const ContentService = {
   },
   
   async updateContentItem(id: string, item: Partial<Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>>): Promise<ContentItem> {
-    const { data, error } = await supabase
+    const { data, error } = await typedSupabase
       .from('content_items')
       .update(item)
       .eq('id', id)
@@ -66,7 +69,7 @@ export const ContentService = {
   },
   
   async deleteContentItem(id: string): Promise<void> {
-    const { error } = await supabase
+    const { error } = await typedSupabase
       .from('content_items')
       .delete()
       .eq('id', id);
@@ -100,7 +103,7 @@ export const ContentService = {
     
     // Record the audio file in the database
     if (contentItemId) {
-      await supabase
+      await typedSupabase
         .from('audio_files')
         .insert({
           content_item_id: contentItemId,
@@ -125,7 +128,7 @@ export const ContentService = {
     }
     
     // Then delete from database
-    const { error: dbError } = await supabase
+    const { error: dbError } = await typedSupabase
       .from('audio_files')
       .delete()
       .eq('storage_path', filePath);

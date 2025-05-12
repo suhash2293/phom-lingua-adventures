@@ -29,3 +29,53 @@ export type AudioFile = {
   created_at: string;
   updated_at: string;
 };
+
+// Add custom types for our database schema to fix the TypeScript errors with Supabase
+export type Database = {
+  public: {
+    Tables: {
+      categories: {
+        Row: Category;
+        Insert: Omit<Category, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<Category, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      content_items: {
+        Row: ContentItem;
+        Insert: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      audio_files: {
+        Row: AudioFile;
+        Insert: Omit<AudioFile, 'id' | 'created_at' | 'updated_at'>;
+        Update: Partial<Omit<AudioFile, 'id' | 'created_at' | 'updated_at'>>;
+      };
+      profiles: {
+        Row: {
+          id: string;
+          email: string | null;
+          is_admin: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          email?: string | null;
+          is_admin?: boolean;
+        };
+        Update: Partial<{
+          email?: string | null;
+          is_admin?: boolean;
+        }>;
+      };
+    };
+    Views: {};
+    Functions: {
+      is_admin: {
+        Args: { user_id: string };
+        Returns: boolean;
+      };
+    };
+    Enums: {};
+    CompositeTypes: {};
+  };
+};
