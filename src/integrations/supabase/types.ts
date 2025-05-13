@@ -9,7 +9,115 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      audio_files: {
+        Row: {
+          content_item_id: string | null
+          created_at: string
+          duration_seconds: number | null
+          file_size: number | null
+          filename: string
+          id: string
+          storage_path: string
+          updated_at: string
+        }
+        Insert: {
+          content_item_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_size?: number | null
+          filename: string
+          id?: string
+          storage_path: string
+          updated_at?: string
+        }
+        Update: {
+          content_item_id?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          file_size?: number | null
+          filename?: string
+          id?: string
+          storage_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_files_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      content_items: {
+        Row: {
+          audio_url: string | null
+          category_id: string
+          created_at: string
+          english_translation: string
+          example_sentence: string | null
+          id: string
+          phom_word: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          audio_url?: string | null
+          category_id: string
+          created_at?: string
+          english_translation: string
+          example_sentence?: string | null
+          id?: string
+          phom_word: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string | null
+          category_id?: string
+          created_at?: string
+          english_translation?: string
+          example_sentence?: string | null
+          id?: string
+          phom_word?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "content_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

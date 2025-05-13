@@ -1,10 +1,18 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { 
+import {
   Form,
   FormControl,
   FormField,
@@ -12,15 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogClose
-} from '@/components/ui/dialog';
 import { useToast } from '@/components/ui/use-toast';
 import { ContentItem } from '@/types/content';
 import { ContentService } from '@/services/ContentService';
@@ -28,90 +27,103 @@ import { ContentService } from '@/services/ContentService';
 type ContentEditFormProps = {
   item: ContentItem | null;
   onClose: () => void;
-  onSaved: () => void;
+  onSaved?: () => void;
 };
 
-type EditFormValues = {
+type FormValues = {
   phom_word: string;
   english_translation: string;
-  example_sentence: string;
+  example_sentence?: string;
   sort_order: number;
 };
 
 export default function ContentEditForm({ item, onClose, onSaved }: ContentEditFormProps) {
-  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const { toast } = useToast();
-
-  const form = useForm<EditFormValues>({
+  
+  const form = useForm<FormValues>({
     defaultValues: {
       phom_word: item?.phom_word || '',
       english_translation: item?.english_translation || '',
       example_sentence: item?.example_sentence || '',
       sort_order: item?.sort_order || 0,
-    }
+    },
   });
-
+  
+  // Update form values when item changes
+  React.useEffect(() => {
+    if (item) {
+      form.reset({
+        phom_word: item.phom_word,
+        english_translation: item.english_translation,
+        example_sentence: item.example_sentence || '',
+        sort_order: item.sort_order,
+      });
+    }
+  }, [item, form]);
+  
   const handleAudioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAudioFile(e.target.files[0]);
     }
   };
-
-  const onSubmit = async (values: EditFormValues) => {
+  
+  const onSubmit = async (values: FormValues) => {
     if (!item) return;
     
     try {
       setIsSubmitting(true);
       
-      // Prepare update data
-      const updateData: Partial<Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>> = {
-        phom_word: values.phom_word,
-        english_translation: values.english_translation,
+      // Update the content item
+      await ContentService.updateContentItem(item.id, {
+        ...values,
         example_sentence: values.example_sentence || null,
-        sort_order: values.sort_order
-      };
+      });
       
-      // If there's a new audio file, upload it
+      // If there's a new audio file, upload it and update the content item
       if (audioFile) {
         const audioUrl = await ContentService.uploadAudioFile(audioFile, item.id);
-        updateData.audio_url = audioUrl;
+        
+        // Update the content item with the new audio URL
+        await ContentService.updateContentItem(item.id, {
+          audio_url: audioUrl,
+        });
       }
-      
-      // Update the content item
-      await ContentService.updateContentItem(item.id, updateData);
       
       toast({
         title: "Content Updated",
         description: "The content item has been successfully updated."
       });
       
-      onSaved();
+      if (onSaved) {
+        onSaved();
+      }
       onClose();
     } catch (error) {
       console.error('Error updating content:', error);
       toast({
         variant: "destructive",
         title: "Update Failed",
-        description: "There was a problem updating the content. Please try again."
+        description: "There was a problem updating the content item."
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-
+  
   return (
     <Dialog open={!!item} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Content Item</DialogTitle>
           <DialogDescription>
-            Make changes to the content item. Click save when you're done.
+            Make changes to the content item below.
           </DialogDescription>
         </DialogHeader>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <FormField
               control={form.control}
               name="phom_word"
@@ -119,7 +131,7 @@ export default function ContentEditForm({ item, onClose, onSaved }: ContentEditF
                 <FormItem>
                   <FormLabel>Phom Word</FormLabel>
                   <FormControl>
-                    <Input {...field} className="phom-font" />
+                    <Input {...field} placeholder="Enter word in Phom" className="phom-font" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,7 +145,7 @@ export default function ContentEditForm({ item, onClose, onSaved }: ContentEditF
                 <FormItem>
                   <FormLabel>English Translation</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder="Enter English translation" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -149,6 +161,7 @@ export default function ContentEditForm({ item, onClose, onSaved }: ContentEditF
                   <FormControl>
                     <Textarea 
                       {...field} 
+                      placeholder="Example sentence using this word"
                       value={field.value || ''}
                     />
                   </FormControl>
@@ -177,32 +190,45 @@ export default function ContentEditForm({ item, onClose, onSaved }: ContentEditF
             />
             
             <div className="space-y-2">
-              <FormLabel htmlFor="audio-edit">Update Audio File (Optional)</FormLabel>
+              <FormLabel htmlFor="audio-upload-edit">Audio File (MP3)</FormLabel>
               <Input
-                id="audio-edit"
+                id="audio-upload-edit"
                 type="file"
                 accept="audio/mp3,audio/*"
                 onChange={handleAudioChange}
               />
-              {audioFile ? (
+              {item?.audio_url && !audioFile && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Current audio:</span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const audio = new Audio(item.audio_url || '');
+                      audio.play();
+                    }}
+                  >
+                    <Play className="h-4 w-4 mr-2" />
+                    Play
+                  </Button>
+                </div>
+              )}
+              {audioFile && (
                 <p className="text-sm text-muted-foreground">
                   New file selected: {audioFile.name}
-                </p>
-              ) : item?.audio_url ? (
-                <p className="text-sm text-muted-foreground">
-                  Current audio file will be kept unless you select a new one.
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  No audio file currently. Upload one if needed.
                 </p>
               )}
             </div>
             
             <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline" type="button">Cancel</Button>
-              </DialogClose>
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
               <Button 
                 type="submit" 
                 disabled={isSubmitting}
@@ -214,5 +240,23 @@ export default function ContentEditForm({ item, onClose, onSaved }: ContentEditF
         </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+// Helper component for the Play icon since it's not imported
+function Play(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      {...props}
+    >
+      <polygon points="5 3 19 12 5 21 5 3" />
+    </svg>
   );
 }
