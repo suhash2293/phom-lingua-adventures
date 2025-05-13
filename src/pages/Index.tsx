@@ -54,12 +54,12 @@ const Index = () => {
       <section className="py-12">
         <h2 className="text-3xl font-bold text-center mb-12">Learning Modules</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* Vocabulary Module */}
+          {/* Alphabets Module */}
           <Card className="hover:shadow-lg transition-all">
             <CardHeader>
-              <CardTitle className="text-xl">Vocabulary</CardTitle>
+              <CardTitle className="text-xl">Alphabets</CardTitle>
               <CardDescription>
-                Learn essential words and phrases
+                Learn Phom alphabet and characters
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -71,79 +71,79 @@ const Index = () => {
               <Button 
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate('/learn/vocabulary')}
+                onClick={() => navigate('/learn/alphabets')}
               >
                 Start Learning
               </Button>
             </CardFooter>
           </Card>
 
-          {/* Pronunciation Module */}
+          {/* Numbers Module */}
           <Card className="hover:shadow-lg transition-all">
             <CardHeader>
-              <CardTitle className="text-xl">Pronunciation</CardTitle>
+              <CardTitle className="text-xl">Numbers</CardTitle>
               <CardDescription>
-                Master the sounds of Phom
+                Learn to count in Phom language
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">🔊</span>
+                <span className="text-4xl">🔢</span>
               </div>
             </CardContent>
             <CardFooter>
               <Button 
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate('/learn/pronunciation')}
+                onClick={() => navigate('/learn/numbers')}
               >
                 Start Learning
               </Button>
             </CardFooter>
           </Card>
 
-          {/* Grammar Module */}
+          {/* Days Module */}
           <Card className="hover:shadow-lg transition-all">
             <CardHeader>
-              <CardTitle className="text-xl">Grammar</CardTitle>
+              <CardTitle className="text-xl">Days</CardTitle>
               <CardDescription>
-                Learn sentence structure and rules
+                Learn days of the week in Phom
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">📝</span>
+                <span className="text-4xl">📅</span>
               </div>
             </CardContent>
             <CardFooter>
               <Button 
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate('/learn/grammar')}
+                onClick={() => navigate('/learn/days')}
               >
                 Start Learning
               </Button>
             </CardFooter>
           </Card>
 
-          {/* Conversation Module */}
+          {/* Months Module */}
           <Card className="hover:shadow-lg transition-all">
             <CardHeader>
-              <CardTitle className="text-xl">Conversation</CardTitle>
+              <CardTitle className="text-xl">Months</CardTitle>
               <CardDescription>
-                Practice real-life dialogues
+                Learn months and seasons in Phom
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">💬</span>
+                <span className="text-4xl">🗓️</span>
               </div>
             </CardContent>
             <CardFooter>
               <Button 
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate('/learn/conversation')}
+                onClick={() => navigate('/learn/months')}
               >
                 Start Learning
               </Button>

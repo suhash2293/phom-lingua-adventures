@@ -15,43 +15,76 @@ import { useToast } from '@/components/ui/use-toast';
 
 // Mock module data
 const modulesData = {
-  vocabulary: {
-    id: 'vocabulary',
-    title: 'Vocabulary',
-    description: 'Learn essential Phom words and phrases',
+  alphabets: {
+    id: 'alphabets',
+    title: 'Alphabets',
+    description: 'Learn the Phom alphabet and characters',
     lessons: [
       {
-        id: 'vocab-1',
-        title: 'Basic Greetings',
+        id: 'alpha-1',
+        title: 'Basic Characters',
         content: [
           {
             type: 'text',
-            value: 'In this lesson, you will learn basic greetings in Phom language.'
+            value: 'In this lesson, you will learn basic characters in Phom language.'
           },
           {
             type: 'vocabulary',
             items: [
-              { phom: 'Kaipang', english: 'Hello', audio: 'kaipang.mp3' },
-              { phom: 'Annoi', english: 'Goodbye', audio: 'annoi.mp3' },
-              { phom: 'Kamüyangtang', english: 'Thank you (with special character Ü)', audio: 'kamuyangtang.mp3' },
-              { phom: 'Maichami', english: 'How are you?', audio: 'maichami.mp3' },
+              { phom: 'A', english: 'First letter', audio: 'a.mp3' },
+              { phom: 'B', english: 'Second letter', audio: 'b.mp3' },
+              { phom: 'C', english: 'Third letter', audio: 'c.mp3' },
+              { phom: 'D', english: 'Fourth letter', audio: 'd.mp3' },
             ]
           },
           {
             type: 'exercise',
-            question: 'What is "Hello" in Phom?',
-            options: ['Annoi', 'Kaipang', 'Maichami', 'Kamüyangtang'],
-            answer: 'Kaipang'
+            question: 'Which is the first letter in the Phom alphabet?',
+            options: ['B', 'A', 'C', 'D'],
+            answer: 'A'
           }
         ]
       },
       {
-        id: 'vocab-2',
-        title: 'Numbers & Counting',
+        id: 'alpha-2',
+        title: 'Vowels & Consonants',
         content: [
           {
             type: 'text',
-            value: 'Learn to count in Phom language from 1 to 10.'
+            value: 'Learn vowels and consonants in Phom language.'
+          },
+          {
+            type: 'vocabulary',
+            items: [
+              { phom: 'Ä', english: 'Vowel with umlaut', audio: 'a-umlaut.mp3' },
+              { phom: 'Ö', english: 'Vowel with umlaut', audio: 'o-umlaut.mp3' },
+              { phom: 'P', english: 'Consonant', audio: 'p.mp3' },
+              { phom: 'T', english: 'Consonant', audio: 't.mp3' },
+              { phom: 'K', english: 'Consonant', audio: 'k.mp3' },
+            ]
+          },
+          {
+            type: 'exercise',
+            question: 'Which of these is a vowel in Phom?',
+            options: ['K', 'P', 'T', 'Ä'],
+            answer: 'Ä'
+          }
+        ]
+      }
+    ]
+  },
+  numbers: {
+    id: 'numbers',
+    title: 'Numbers',
+    description: 'Master counting from 1 to 100 in Phom',
+    lessons: [
+      {
+        id: 'num-1',
+        title: 'Numbers 1-10',
+        content: [
+          {
+            type: 'text',
+            value: 'Learn to count from 1 to 10 in Phom language.'
           },
           {
             type: 'vocabulary',
@@ -70,105 +103,70 @@ const modulesData = {
             answer: 'Asam'
           }
         ]
-      },
-      // Other lessons here
-    ]
-  },
-  pronunciation: {
-    id: 'pronunciation',
-    title: 'Pronunciation',
-    description: 'Master the sounds and accents of Phom',
-    lessons: [
-      {
-        id: 'pron-1',
-        title: 'Basic Sounds',
-        content: [
-          {
-            type: 'text',
-            value: 'Learn the basic sounds in Phom language.'
-          },
-          {
-            type: 'audio',
-            label: 'Listen to the basic vowel sounds:',
-            src: 'basic-vowels.mp3'
-          },
-          {
-            type: 'exercise',
-            question: 'Which sound is represented by "Ü"?',
-            options: ['Long U as in "rule"', 'Short U as in "put"', 'German Ü sound', 'French U sound'],
-            answer: 'German Ü sound'
-          }
-        ]
       }
     ]
   },
-  grammar: {
-    id: 'grammar',
-    title: 'Grammar',
-    description: 'Learn sentence structure and rules',
+  days: {
+    id: 'days',
+    title: 'Days',
+    description: 'Learn days of the week in Phom',
     lessons: [
       {
-        id: 'gram-1',
-        title: 'Basic Sentence Structure',
+        id: 'day-1',
+        title: 'Weekdays',
         content: [
           {
             type: 'text',
-            value: 'Phom sentences typically follow the Subject-Object-Verb (SOV) structure.'
+            value: 'Learn the weekdays in Phom language.'
           },
           {
-            type: 'example',
-            phom: 'Ni anu anchengok',
-            english: 'I rice eat',
-            translation: 'I eat rice.'
-          },
-          {
-            type: 'exercise',
-            question: 'What word order does Phom language follow?',
-            options: ['Subject-Verb-Object (SVO)', 'Subject-Object-Verb (SOV)', 'Verb-Subject-Object (VSO)', 'Object-Subject-Verb (OSV)'],
-            answer: 'Subject-Object-Verb (SOV)'
-          }
-        ]
-      }
-    ]
-  },
-  conversation: {
-    id: 'conversation',
-    title: 'Conversation',
-    description: 'Practice real-life dialogues and scenarios',
-    lessons: [
-      {
-        id: 'conv-1',
-        title: 'Introducing Yourself',
-        content: [
-          {
-            type: 'text',
-            value: 'Learn how to introduce yourself in Phom.'
-          },
-          {
-            type: 'dialogue',
-            exchanges: [
-              {
-                phom: 'Kaipang, ni ming John.',
-                english: 'Hello, my name is John.',
-                audio: 'intro-1.mp3'
-              },
-              {
-                phom: 'Na ming ngachümi?',
-                english: 'What is your name?',
-                audio: 'intro-2.mp3'
-              }
+            type: 'vocabulary',
+            items: [
+              { phom: 'Nimani', english: 'Monday', audio: 'monday.mp3' },
+              { phom: 'Miseni', english: 'Tuesday', audio: 'tuesday.mp3' },
+              { phom: 'Winasedi', english: 'Wednesday', audio: 'wednesday.mp3' },
+              { phom: 'Thurusi', english: 'Thursday', audio: 'thursday.mp3' },
+              { phom: 'Fridai', english: 'Friday', audio: 'friday.mp3' },
             ]
           },
           {
             type: 'exercise',
-            question: 'How do you ask "What is your name?" in Phom?',
-            options: [
-              'Kaipang, ni ming',
-              'Na ming ngachümi?',
-              'Ni ming John',
-              'Annoi'
-            ],
-            answer: 'Na ming ngachümi?'
+            question: 'Which day is "Nimani" in Phom?',
+            options: ['Tuesday', 'Wednesday', 'Monday', 'Friday'],
+            answer: 'Monday'
+          }
+        ]
+      }
+    ]
+  },
+  months: {
+    id: 'months',
+    title: 'Months',
+    description: 'Learn months and seasons in Phom',
+    lessons: [
+      {
+        id: 'month-1',
+        title: 'Months of the Year',
+        content: [
+          {
+            type: 'text',
+            value: 'Learn the months of the year in Phom.'
+          },
+          {
+            type: 'vocabulary',
+            items: [
+              { phom: 'Januari', english: 'January', audio: 'january.mp3' },
+              { phom: 'Februwari', english: 'February', audio: 'february.mp3' },
+              { phom: 'Marchi', english: 'March', audio: 'march.mp3' },
+              { phom: 'Aprili', english: 'April', audio: 'april.mp3' },
+              { phom: 'Mäyi', english: 'May', audio: 'may.mp3' },
+            ]
+          },
+          {
+            type: 'exercise',
+            question: 'What is "February" in Phom?',
+            options: ['Januari', 'Februwari', 'Marchi', 'Aprili'],
+            answer: 'Februwari'
           }
         ]
       }

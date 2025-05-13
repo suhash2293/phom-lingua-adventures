@@ -17,55 +17,55 @@ import LearnLayout from '@/components/layout/LearnLayout';
 // Mock learning data
 const modules = [
   {
-    id: 'vocabulary',
-    title: 'Vocabulary',
-    description: 'Learn essential Phom words and phrases',
+    id: 'alphabets',
+    title: 'Alphabets',
+    description: 'Learn the Phom alphabet and characters',
     emoji: '🔤',
     progress: 25,
     lessons: [
-      { id: 'vocab-1', title: 'Basic Greetings', completed: true },
-      { id: 'vocab-2', title: 'Numbers & Counting', completed: true },
-      { id: 'vocab-3', title: 'Family Terms', completed: false },
-      { id: 'vocab-4', title: 'Food & Drinks', completed: false },
+      { id: 'alpha-1', title: 'Basic Characters', completed: true },
+      { id: 'alpha-2', title: 'Vowels & Consonants', completed: true },
+      { id: 'alpha-3', title: 'Special Characters', completed: false },
+      { id: 'alpha-4', title: 'Writing Practice', completed: false },
     ]
   },
   {
-    id: 'pronunciation',
-    title: 'Pronunciation',
-    description: 'Master the sounds and accents of Phom',
-    emoji: '🔊',
+    id: 'numbers',
+    title: 'Numbers',
+    description: 'Master counting from 1 to 100 in Phom',
+    emoji: '🔢',
     progress: 10,
     lessons: [
-      { id: 'pron-1', title: 'Basic Sounds', completed: true },
-      { id: 'pron-2', title: 'Vowels & Consonants', completed: false },
-      { id: 'pron-3', title: 'Tones & Accents', completed: false },
-      { id: 'pron-4', title: 'Practice Dialogues', completed: false },
+      { id: 'num-1', title: 'Numbers 1-10', completed: true },
+      { id: 'num-2', title: 'Numbers 11-50', completed: false },
+      { id: 'num-3', title: 'Numbers 51-100', completed: false },
+      { id: 'num-4', title: 'Ordinal Numbers', completed: false },
     ]
   },
   {
-    id: 'grammar',
-    title: 'Grammar',
-    description: 'Learn sentence structure and rules',
-    emoji: '📝',
+    id: 'days',
+    title: 'Days',
+    description: 'Learn days of the week in Phom',
+    emoji: '📅',
     progress: 0,
     lessons: [
-      { id: 'gram-1', title: 'Basic Sentence Structure', completed: false },
-      { id: 'gram-2', title: 'Past, Present & Future', completed: false },
-      { id: 'gram-3', title: 'Questions & Answers', completed: false },
-      { id: 'gram-4', title: 'Complex Sentences', completed: false },
+      { id: 'day-1', title: 'Weekdays', completed: false },
+      { id: 'day-2', title: 'Weekends', completed: false },
+      { id: 'day-3', title: 'Time Expressions', completed: false },
+      { id: 'day-4', title: 'Calendar Practice', completed: false },
     ]
   },
   {
-    id: 'conversation',
-    title: 'Conversation',
-    description: 'Practice real-life dialogues and scenarios',
-    emoji: '💬',
+    id: 'months',
+    title: 'Months',
+    description: 'Learn months and seasons in Phom',
+    emoji: '🗓️',
     progress: 0,
     lessons: [
-      { id: 'conv-1', title: 'Introducing Yourself', completed: false },
-      { id: 'conv-2', title: 'Shopping & Bargaining', completed: false },
-      { id: 'conv-3', title: 'Asking for Directions', completed: false },
-      { id: 'conv-4', title: 'Daily Conversations', completed: false },
+      { id: 'month-1', title: 'Months of the Year', completed: false },
+      { id: 'month-2', title: 'Seasons', completed: false },
+      { id: 'month-3', title: 'Festivals & Holidays', completed: false },
+      { id: 'month-4', title: 'Date Expressions', completed: false },
     ]
   }
 ];

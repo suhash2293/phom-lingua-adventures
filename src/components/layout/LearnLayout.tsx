@@ -44,7 +44,7 @@ const categories = [
     description: "Learn months in Phom"
   },
   {
-    title: "Numbers (1-100)",
+    title: "Numbers",
     url: "/learn/numbers",
     icon: ListOrdered,
     description: "Learn counting in Phom"
