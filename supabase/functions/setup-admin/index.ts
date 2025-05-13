@@ -50,7 +50,9 @@ serve(async (req) => {
       )
     }
 
-    // Get the user by email
+    console.log(`Processing admin setup for email: ${email}`);
+
+    // Get the user by email using admin.listUsers()
     const { data: userData, error: userError } = await supabaseClient.auth.admin
       .listUsers()
     
@@ -78,6 +80,29 @@ serve(async (req) => {
       )
     }
 
+    console.log(`Found user with ID: ${user.id}`);
+
+    // First check if profiles table exists
+    try {
+      // Try to create the profiles table if it doesn't exist
+      const { error: createTableError } = await supabaseClient.query(`
+        CREATE TABLE IF NOT EXISTS public.profiles (
+          id UUID PRIMARY KEY,
+          email TEXT,
+          is_admin BOOLEAN NOT NULL DEFAULT FALSE,
+          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
+        );
+      `)
+      
+      if (createTableError) {
+        console.log('Note: profiles table likely already exists or there was an error:', createTableError);
+        // Continue anyway as the table might already exist
+      }
+    } catch (err) {
+      console.log('Note about table creation:', err);
+      // Continue anyway as the table might already exist
+    }
+
     // Set the user as admin
     const { error: updateError } = await supabaseClient
       .from('profiles')
@@ -97,6 +122,8 @@ serve(async (req) => {
         }
       )
     }
+
+    console.log(`Successfully set ${email} as admin`);
 
     return new Response(
       JSON.stringify({ 
