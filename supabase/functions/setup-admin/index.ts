@@ -50,51 +50,25 @@ serve(async (req) => {
       )
     }
 
-    // First, ensure the profiles table exists
-    const { error: tableCheckError } = await supabaseClient
-      .rpc('check_table_exists', { table_name: 'profiles' })
-    
-    if (tableCheckError) {
-      // Create the profiles table if it doesn't exist
-      const { error: createTableError } = await supabaseClient.query(`
-        CREATE TABLE IF NOT EXISTS public.profiles (
-          id UUID NOT NULL PRIMARY KEY REFERENCES auth.users ON DELETE CASCADE,
-          email TEXT,
-          is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-          created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-        );
-        
-        ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-        
-        CREATE POLICY "Users can view their own profile" 
-          ON public.profiles 
-          FOR SELECT USING (auth.uid() = id);
-          
-        CREATE POLICY "Users can update their own profile" 
-          ON public.profiles 
-          FOR UPDATE USING (auth.uid() = id);
-      `)
-      
-      if (createTableError) {
-        console.error('Error creating profiles table:', createTableError)
-        return new Response(
-          JSON.stringify({ error: 'Failed to setup database tables' }),
-          { 
-            status: 500, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        )
-      }
-    }
-
     // Get the user by email
-    const { data: userData, error: userError } = await supabaseClient
-      .from('auth.users')
-      .select('id')
-      .eq('email', email)
-      .single()
+    const { data: userData, error: userError } = await supabaseClient.auth.admin
+      .listUsers()
     
     if (userError) {
+      console.error('Error listing users:', userError)
+      return new Response(
+        JSON.stringify({ error: 'Error retrieving users' }),
+        { 
+          status: 500, 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      )
+    }
+    
+    // Find the user with the matching email
+    const user = userData.users.find(u => u.email === email)
+    
+    if (!user) {
       return new Response(
         JSON.stringify({ error: 'User not found' }),
         { 
@@ -108,14 +82,15 @@ serve(async (req) => {
     const { error: updateError } = await supabaseClient
       .from('profiles')
       .upsert({ 
-        id: userData.id, 
+        id: user.id, 
         email: email, 
         is_admin: true 
       })
       
     if (updateError) {
+      console.error('Error updating profile:', updateError)
       return new Response(
-        JSON.stringify({ error: 'Failed to update admin status' }),
+        JSON.stringify({ error: 'Failed to update admin status: ' + updateError.message }),
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -136,7 +111,7 @@ serve(async (req) => {
   } catch (err) {
     console.error('Unexpected error:', err)
     return new Response(
-      JSON.stringify({ error: 'Unexpected error occurred' }),
+      JSON.stringify({ error: 'Unexpected error occurred: ' + err.message }),
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
