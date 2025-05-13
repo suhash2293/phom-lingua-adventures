@@ -16,7 +16,7 @@ import {
   SidebarFooter,
   SidebarTrigger
 } from '@/components/ui/sidebar';
-import { Abc, CalendarDays, Calendar, ListOrdered } from 'lucide-react';
+import { LetterCase, CalendarDays, Calendar, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type LearnLayoutProps = {
@@ -28,7 +28,7 @@ const categories = [
   {
     title: "Alphabets",
     url: "/learn/alphabets",
-    icon: Abc,
+    icon: LetterCase,
     description: "Learn Phom alphabets"
   },
   {
@@ -75,7 +75,7 @@ const LearnSidebar = () => {
                     onClick={() => navigate(category.url)}
                     tooltip={category.description}
                   >
-                    <category.icon className="text-primary" />
+                    <category.icon className="text-yellow-500" />
                     <span>{category.title}</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -88,7 +88,7 @@ const LearnSidebar = () => {
       <SidebarFooter className="border-t p-4">
         <Button 
           variant="outline" 
-          className="w-full" 
+          className="w-full border-yellow-500 hover:bg-yellow-500/10" 
           onClick={() => navigate('/profile')}
         >
           View Profile
@@ -103,7 +103,7 @@ const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
     <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full">
         <LearnSidebar />
-        <div className="flex-1 bg-gradient-to-br from-primary/5 to-background">
+        <div className="flex-1 bg-gradient-to-br from-yellow-100/30 to-background">
           {children}
         </div>
       </div>
