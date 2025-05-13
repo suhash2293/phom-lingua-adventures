@@ -134,7 +134,9 @@ function useToaster() {
   };
 }
 
-function toast(props: Toast & UseToastOptions) {
+// Update toast function to have proper types
+// Make the open and onOpenChange optional in the function call
+function toast(props: Partial<Toast> & UseToastOptions) {
   const { timeout, ...data } = props;
 
   const id = genId();
@@ -156,7 +158,7 @@ function toast(props: Toast & UseToastOptions) {
       onOpenChange: (open) => {
         if (!open) dismiss();
       },
-    },
+    } as ToasterToast, // Cast to ToasterToast to ensure all required properties are present
   });
 
   // Auto-dismiss toast if timeout is provided
