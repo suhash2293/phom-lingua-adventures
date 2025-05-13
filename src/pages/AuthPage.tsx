@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, Info } from "lucide-react";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -14,10 +16,17 @@ const AuthPage = () => {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   
-  const { user, signIn, signUp, error } = useAuth();
+  const { user, signIn, signUp, error, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Clear any errors when switching between login/signup
+  useEffect(() => {
+    clearError();
+    setShowSignupSuccess(false);
+  }, [isLogin, clearError]);
 
   // If user is already logged in, redirect to home
   if (user) {
@@ -35,21 +44,15 @@ const AuthPage = () => {
           title: "Welcome back!",
           description: "You've successfully signed in.",
         });
+        navigate('/');
       } else {
         await signUp(email, password, name);
-        toast({
-          title: "Account created!",
-          description: "You've successfully created an account.",
-        });
+        setShowSignupSuccess(true);
+        // Don't navigate immediately after signup as we want to show the success message
       }
-      
-      navigate('/');
     } catch (err) {
-      toast({
-        variant: "destructive",
-        title: "Authentication Error",
-        description: error || "Failed to authenticate. Please try again.",
-      });
+      // Error is already set in the AuthContext
+      console.error('Authentication error:', err);
     } finally {
       setIsSubmitting(false);
     }
@@ -57,7 +60,7 @@ const AuthPage = () => {
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
-    // Clear any previous errors when switching modes
+    // Error is cleared in the useEffect
   };
 
   return (
@@ -73,6 +76,29 @@ const AuthPage = () => {
               : 'Fill in the information to create your account'}
           </CardDescription>
         </CardHeader>
+        
+        {error && (
+          <div className="px-6">
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
+        {showSignupSuccess && !isLogin && (
+          <div className="px-6">
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>Account Created!</AlertTitle>
+              <AlertDescription>
+                Please check your email for a confirmation link. If you don't receive it, you can try signing in anyway.
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             {!isLogin && (
@@ -107,7 +133,11 @@ const AuthPage = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                minLength={6}
               />
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 6 characters long
+              </p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">

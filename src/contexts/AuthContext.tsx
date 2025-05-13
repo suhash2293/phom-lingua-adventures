@@ -19,6 +19,7 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   loading: boolean;
   error: string | null;
+  clearError: () => void;
 };
 
 // Context creation
@@ -29,10 +30,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const clearError = () => setError(null);
+
   // Check for existing session on mount and setup auth state listener
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('Auth state changed:', event, session?.user?.email);
         setLoading(true);
         
         if (session && session.user) {
@@ -44,16 +48,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .eq('id', session.user.id)
               .single();
 
-            if (profileError) throw profileError;
-
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.user_metadata.name,
-              isAdmin: profile?.is_admin || false
-            });
+            if (profileError) {
+              console.error('Error fetching user profile:', profileError);
+              
+              // If the profile doesn't exist yet, create it
+              if (profileError.code === 'PGRST116') {
+                // First time login - profile not found
+                const { data: newProfile, error: insertError } = await supabase
+                  .from('profiles')
+                  .insert({ 
+                    id: session.user.id, 
+                    email: session.user.email,
+                    is_admin: false 
+                  })
+                  .select()
+                  .single();
+                  
+                if (insertError) {
+                  console.error('Error creating new profile:', insertError);
+                  throw insertError;
+                }
+                
+                console.log('Created new profile:', newProfile);
+                
+                setUser({
+                  id: session.user.id,
+                  email: session.user.email || '',
+                  name: session.user.user_metadata.name,
+                  isAdmin: false
+                });
+              } else {
+                throw profileError;
+              }
+            } else {
+              console.log('Profile data:', profile);
+              
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                name: session.user.user_metadata.name,
+                isAdmin: profile?.is_admin || false
+              });
+            }
           } catch (err) {
-            console.error('Error fetching user profile:', err);
+            console.error('Error processing user profile:', err);
             setUser({
               id: session.user.id,
               email: session.user.email || '',
@@ -72,7 +110,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Get initial session
     const initializeAuth = async () => {
       try {
+        console.log('Initializing auth...');
         const { data: { session } } = await supabase.auth.getSession();
+        
+        console.log('Initial session:', session?.user?.email || 'No session');
         
         if (session && session.user) {
           // Get user profile to check admin status
@@ -82,14 +123,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .eq('id', session.user.id)
             .single();
 
-          if (profileError) throw profileError;
-
-          setUser({
-            id: session.user.id,
-            email: session.user.email || '',
-            name: session.user.user_metadata.name,
-            isAdmin: profile?.is_admin || false
-          });
+          if (profileError) {
+            console.error('Error fetching initial profile:', profileError);
+            
+            // If the profile doesn't exist yet, create it
+            if (profileError.code === 'PGRST116') {
+              const { data: newProfile, error: insertError } = await supabase
+                .from('profiles')
+                .insert({ 
+                  id: session.user.id, 
+                  email: session.user.email,
+                  is_admin: false 
+                })
+                .select()
+                .single();
+                
+              if (insertError) {
+                console.error('Error creating new profile:', insertError);
+                throw insertError;
+              }
+              
+              console.log('Created new profile on init:', newProfile);
+              
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                name: session.user.user_metadata.name,
+                isAdmin: false
+              });
+            } else {
+              throw profileError;
+            }
+          } else {
+            console.log('Initial profile data:', profile);
+            
+            setUser({
+              id: session.user.id,
+              email: session.user.email || '',
+              name: session.user.user_metadata.name,
+              isAdmin: profile?.is_admin || false
+            });
+          }
         }
       } catch (err) {
         console.error('Error initializing auth:', err);
@@ -109,6 +183,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('Signing in with:', email);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -132,6 +208,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       setLoading(true);
       setError(null);
+      
+      console.log('Signing up with:', email);
       
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -184,7 +262,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signUp,
     signOut,
     loading,
-    error
+    error,
+    clearError
   };
 
   return (

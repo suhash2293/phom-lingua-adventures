@@ -21,6 +21,7 @@ import AboutPage from "./pages/AboutPage";
 import DonatePage from "./pages/DonatePage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
+import SetupAdminPage from "./pages/SetupAdminPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App = () => (
                 <Route path="/donate" element={<DonatePage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/setup-admin" element={<SetupAdminPage />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
