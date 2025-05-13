@@ -9,6 +9,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card';
 import {
   Select,
@@ -22,6 +23,8 @@ import { useToast } from '@/components/ui/use-toast';
 import ContentUploadForm from '@/components/admin/ContentUploadForm';
 import ContentList from '@/components/admin/ContentList';
 import ContentEditForm from '@/components/admin/ContentEditForm';
+import ContentSearch from '@/components/admin/ContentSearch';
+import BulkNumberGenerator from '@/components/admin/BulkNumberGenerator';
 import { ContentService } from '@/services/ContentService';
 import { Category, ContentItem } from '@/types/content';
 
@@ -32,6 +35,8 @@ const AdminPage = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchResults, setSearchResults] = useState<ContentItem[] | null>(null);
+  const [activeTab, setActiveTab] = useState('browse');
   
   // Load categories on mount
   useEffect(() => {
@@ -74,6 +79,16 @@ const AdminPage = () => {
       setTimeout(() => setSelectedCategoryId(prevId), 0);
       return temp;
     });
+    
+    // Clear search results if any
+    setSearchResults(null);
+  };
+  
+  const getNumbersCategory = () => {
+    const numbersCategory = categories.find(cat => 
+      cat.name.toLowerCase().includes('number')
+    );
+    return numbersCategory ? numbersCategory.id : '';
   };
   
   return (
@@ -88,8 +103,40 @@ const AdminPage = () => {
         
         {/* Content Management Tab */}
         <TabsContent value="content" className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Upload Form */}
+          <div className="flex flex-col mb-6">
+            <h2 className="text-2xl font-semibold mb-4">Content Tools</h2>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Button 
+                variant={activeTab === 'add' ? "default" : "outline"}
+                onClick={() => setActiveTab('add')}
+              >
+                Add Single Item
+              </Button>
+              <Button 
+                variant={activeTab === 'bulk' ? "default" : "outline"}
+                onClick={() => setActiveTab('bulk')}
+              >
+                Bulk Generate Numbers
+              </Button>
+              <Button 
+                variant={activeTab === 'browse' ? "default" : "outline"}
+                onClick={() => {
+                  setActiveTab('browse');
+                  setSearchResults(null);
+                }}
+              >
+                Browse Content
+              </Button>
+              <Button 
+                variant={activeTab === 'search' ? "default" : "outline"}
+                onClick={() => setActiveTab('search')}
+              >
+                Search
+              </Button>
+            </div>
+          </div>
+
+          {activeTab === 'add' && (
             <Card>
               <CardHeader>
                 <CardTitle>Add New Content</CardTitle>
@@ -99,8 +146,59 @@ const AdminPage = () => {
                 <ContentUploadForm />
               </CardContent>
             </Card>
-            
-            {/* Content Browser */}
+          )}
+          
+          {activeTab === 'bulk' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Bulk Generate Numbers</CardTitle>
+                <CardDescription>Quickly generate number entries in a sequence</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BulkNumberGenerator 
+                  categories={categories}
+                  onSuccess={handleContentItemSaved}
+                />
+              </CardContent>
+              <CardFooter className="flex justify-between text-sm text-muted-foreground">
+                <p>This tool will generate number entries in sequence.</p>
+                <p>You can add audio files to these entries later.</p>
+              </CardFooter>
+            </Card>
+          )}
+          
+          {activeTab === 'search' && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Search Content</CardTitle>
+                <CardDescription>Find content across all categories</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ContentSearch onResultsFound={setSearchResults} />
+                
+                {searchResults !== null && (
+                  <div className="mt-4">
+                    <h3 className="text-lg font-medium mb-2">
+                      Search Results: {searchResults.length} items found
+                    </h3>
+                    {searchResults.length > 0 ? (
+                      <ContentList 
+                        categoryId={searchResults[0].category_id} 
+                        categories={categories}
+                        onEditItem={setEditingItem}
+                        items={searchResults}
+                        showCategoryName={true}
+                      />
+                    ) : (
+                      <p className="text-center py-4 text-muted-foreground">No results found</p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+          
+          {activeTab === 'browse' && (
             <Card>
               <CardHeader>
                 <CardTitle>Browse Content</CardTitle>
@@ -143,7 +241,7 @@ const AdminPage = () => {
                 )}
               </CardContent>
             </Card>
-          </div>
+          )}
         </TabsContent>
         
         {/* User Management Tab */}

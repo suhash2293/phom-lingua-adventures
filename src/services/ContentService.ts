@@ -49,6 +49,20 @@ export const ContentService = {
     return data;
   },
   
+  async bulkCreateContentItems(items: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>[]): Promise<ContentItem[]> {
+    const { data, error } = await supabase
+      .from('content_items')
+      .insert(items)
+      .select();
+    
+    if (error) {
+      console.error('Error bulk creating content items:', error);
+      throw error;
+    }
+    
+    return data || [];
+  },
+  
   async updateContentItem(id: string, item: Partial<Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>>): Promise<ContentItem> {
     const { data, error } = await supabase
       .from('content_items')
@@ -135,5 +149,39 @@ export const ContentService = {
       // Don't throw, as the file was deleted from storage already
       console.warn('Audio file was deleted from storage but not from database');
     }
+  },
+  
+  // New methods for bulk operations
+  async generateNumberContentItems(categoryId: string, language: string, startNum: number, endNum: number): Promise<Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>[]> {
+    const items: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>[] = [];
+    
+    // Generate number content items
+    for (let i = startNum; i <= endNum; i++) {
+      items.push({
+        category_id: categoryId,
+        phom_word: language === 'phom' ? String(i) : String(i),  // In a real app, you'd convert to Phom language
+        english_translation: String(i),
+        example_sentence: null,
+        audio_url: null,
+        sort_order: i
+      });
+    }
+    
+    return items;
+  },
+  
+  async searchContentItems(query: string): Promise<ContentItem[]> {
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('*')
+      .or(`phom_word.ilike.%${query}%,english_translation.ilike.%${query}%`)
+      .order('sort_order');
+    
+    if (error) {
+      console.error('Error searching content items:', error);
+      throw error;
+    }
+    
+    return data || [];
   }
 };

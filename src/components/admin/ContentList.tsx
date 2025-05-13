@@ -20,7 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Pencil, Trash2, Play } from 'lucide-react';
+import { Pencil, Trash2, Play, Pause } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import { ContentItem, Category } from '@/types/content';
 import { ContentService } from '@/services/ContentService';
@@ -29,17 +29,32 @@ type ContentListProps = {
   categoryId: string;
   categories: Category[];
   onEditItem?: (item: ContentItem) => void;
+  items?: ContentItem[]; // Optional prop to pass in pre-loaded items (for search results)
+  showCategoryName?: boolean; // Whether to show the category column
 };
 
-export default function ContentList({ categoryId, categories, onEditItem }: ContentListProps) {
+export default function ContentList({ 
+  categoryId, 
+  categories, 
+  onEditItem, 
+  items: providedItems,
+  showCategoryName = false
+}: ContentListProps) {
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteItemId, setDeleteItemId] = useState<string | null>(null);
   const [playingAudio, setPlayingAudio] = useState<HTMLAudioElement | null>(null);
+  const [playingItemId, setPlayingItemId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // Load content items when category changes
+  // Load content items when category changes or if items are provided directly
   useEffect(() => {
+    if (providedItems) {
+      setContentItems(providedItems);
+      setLoading(false);
+      return;
+    }
+    
     const loadContentItems = async () => {
       if (!categoryId) return;
       
@@ -60,7 +75,7 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
     };
     
     loadContentItems();
-  }, [categoryId, toast]);
+  }, [categoryId, providedItems, toast]);
 
   const handleDelete = async () => {
     if (!deleteItemId) return;
@@ -106,13 +121,23 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
     }
   };
 
-  const handlePlay = (audioUrl: string | null) => {
+  const handlePlay = (audioUrl: string | null, itemId: string) => {
     if (!audioUrl) {
       toast({
         variant: "destructive",
         title: "No Audio Available",
         description: "This item doesn't have an audio file."
       });
+      return;
+    }
+    
+    // If this is the currently playing audio
+    if (playingItemId === itemId && playingAudio) {
+      if (playingAudio.paused) {
+        playingAudio.play();
+      } else {
+        playingAudio.pause();
+      }
       return;
     }
     
@@ -124,6 +149,11 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
     
     // Play the new audio
     const audio = new Audio(audioUrl);
+    
+    audio.addEventListener('ended', () => {
+      setPlayingItemId(null);
+    });
+    
     audio.play().catch(err => {
       console.error('Error playing audio:', err);
       toast({
@@ -131,9 +161,11 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
         title: "Playback Failed",
         description: "There was a problem playing the audio file."
       });
+      setPlayingItemId(null);
     });
     
     setPlayingAudio(audio);
+    setPlayingItemId(itemId);
   };
 
   const getCategoryName = (id: string) => {
@@ -150,11 +182,14 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
       <Table>
         <TableCaption>
           {contentItems.length 
-            ? `Showing ${contentItems.length} content items for ${getCategoryName(categoryId)}`
-            : 'No content items found for this category'}
+            ? providedItems 
+              ? `Showing ${contentItems.length} content items`
+              : `Showing ${contentItems.length} content items for ${getCategoryName(categoryId)}`
+            : 'No content items found'}
         </TableCaption>
         <TableHeader>
           <TableRow>
+            {showCategoryName && <TableHead>Category</TableHead>}
             <TableHead>Phom Word</TableHead>
             <TableHead>English Translation</TableHead>
             <TableHead>Example</TableHead>
@@ -166,6 +201,9 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
         <TableBody>
           {contentItems.map((item) => (
             <TableRow key={item.id}>
+              {showCategoryName && (
+                <TableCell>{getCategoryName(item.category_id)}</TableCell>
+              )}
               <TableCell className="font-medium phom-font">{item.phom_word}</TableCell>
               <TableCell>{item.english_translation}</TableCell>
               <TableCell className="max-w-[200px] truncate">
@@ -176,9 +214,12 @@ export default function ContentList({ categoryId, categories, onEditItem }: Cont
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => handlePlay(item.audio_url)}
+                    onClick={() => handlePlay(item.audio_url, item.id)}
                   >
-                    <Play className="h-4 w-4" />
+                    {playingItemId === item.id 
+                      ? <Pause className="h-4 w-4" /> 
+                      : <Play className="h-4 w-4" />
+                    }
                   </Button>
                 ) : (
                   <span className="text-muted-foreground">No audio</span>
