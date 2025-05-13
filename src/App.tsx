@@ -12,6 +12,10 @@ import Footer from './components/layout/Footer';
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
 import LearnPage from "./pages/LearnPage";
+import AlphabetsPage from "./pages/AlphabetsPage";
+import DaysPage from "./pages/DaysPage";
+import MonthsPage from "./pages/MonthsPage";
+import NumbersPage from "./pages/NumbersPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
 import AboutPage from "./pages/AboutPage";
 import DonatePage from "./pages/DonatePage";
@@ -35,6 +39,10 @@ const App = () => (
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/learn" element={<LearnPage />} />
+                <Route path="/learn/alphabets" element={<AlphabetsPage />} />
+                <Route path="/learn/days" element={<DaysPage />} />
+                <Route path="/learn/months" element={<MonthsPage />} />
+                <Route path="/learn/numbers" element={<NumbersPage />} />
                 <Route path="/learn/:moduleId" element={<ModuleDetailPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/donate" element={<DonatePage />} />

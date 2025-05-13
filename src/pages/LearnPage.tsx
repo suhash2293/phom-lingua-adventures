@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import LearnLayout from '@/components/layout/LearnLayout';
 
 // Mock learning data
 const modules = [
@@ -85,56 +86,58 @@ const LearnPage = () => {
   }
 
   return (
-    <div className="container px-4 md:px-6 py-8 md:py-12">
-      <h1 className="text-3xl font-bold mb-6">Learning Modules</h1>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-        {modules.map((module) => (
-          <Card key={module.id} className="hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle>
-                <span className="mr-2">{module.emoji}</span>
-                {module.title}
-              </CardTitle>
-              <CardDescription>{module.description}</CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="mb-4">
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium">Progress</span>
-                  <span className="text-sm font-medium">{module.progress}%</span>
-                </div>
-                <Progress value={module.progress} className="h-2" />
-              </div>
+    <LearnLayout>
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        <h1 className="text-3xl font-bold mb-6">Learning Modules</h1>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+          {modules.map((module) => (
+            <Card key={module.id} className="hover:shadow-lg transition-all border-primary/20 hover:border-primary">
+              <CardHeader className="bg-primary/5 rounded-t-lg">
+                <CardTitle className="flex items-center">
+                  <span className="mr-2">{module.emoji}</span>
+                  {module.title}
+                </CardTitle>
+                <CardDescription>{module.description}</CardDescription>
+              </CardHeader>
               
-              <h4 className="font-medium mb-2">Lessons:</h4>
-              <ul className="space-y-2">
-                {module.lessons.map((lesson) => (
-                  <li key={lesson.id} className="flex items-center">
-                    <span className={`mr-2 ${lesson.completed ? 'text-green-500' : 'text-gray-400'}`}>
-                      {lesson.completed ? '✓' : '○'}
-                    </span>
-                    <span className={lesson.completed ? 'line-through opacity-70' : ''}>
-                      {lesson.title}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-            
-            <CardFooter>
-              <Button
-                className="w-full"
-                onClick={() => navigate(`/learn/${module.id}`)}
-              >
-                {module.progress > 0 ? 'Continue Learning' : 'Start Learning'}
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
+              <CardContent className="pt-6">
+                <div className="mb-4">
+                  <div className="flex justify-between mb-2">
+                    <span className="text-sm font-medium">Progress</span>
+                    <span className="text-sm font-medium">{module.progress}%</span>
+                  </div>
+                  <Progress value={module.progress} className="h-2 bg-primary/10" />
+                </div>
+                
+                <h4 className="font-medium mb-2">Lessons:</h4>
+                <ul className="space-y-2">
+                  {module.lessons.map((lesson) => (
+                    <li key={lesson.id} className="flex items-center">
+                      <span className={`mr-2 ${lesson.completed ? 'text-green-500' : 'text-primary/50'}`}>
+                        {lesson.completed ? '✓' : '○'}
+                      </span>
+                      <span className={lesson.completed ? 'line-through opacity-70' : ''}>
+                        {lesson.title}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              
+              <CardFooter className="bg-primary/5 rounded-b-lg">
+                <Button
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
+                  onClick={() => navigate(`/learn/${module.id}`)}
+                >
+                  {module.progress > 0 ? 'Continue Learning' : 'Start Learning'}
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
-    </div>
+    </LearnLayout>
   );
 };
 
