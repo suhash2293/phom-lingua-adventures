@@ -16,7 +16,7 @@ import {
   SidebarFooter,
   SidebarTrigger
 } from '@/components/ui/sidebar';
-import { Alphabet, CalendarDays, Calendar, ListOrdered } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, ListOrdered } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 type LearnLayoutProps = {
@@ -28,7 +28,7 @@ const categories = [
   {
     title: "Alphabets",
     url: "/learn/alphabets",
-    icon: Alphabet,
+    icon: ScrollText,
     description: "Learn Phom alphabets"
   },
   {
