@@ -1,6 +1,24 @@
 
 import { useState, useCallback, useEffect } from "react";
-import type { Toast, ToasterToast } from "@/components/ui/toast";
+
+// Define Toast types here since they're missing from the import
+export interface ToastProps {
+  id?: string;
+  title?: React.ReactNode;
+  description?: React.ReactNode;
+  action?: React.ReactNode;
+  variant?: "default" | "destructive";
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export type ToasterToast = ToastProps & {
+  id: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+export type Toast = Omit<ToasterToast, "id">;
 
 const TOAST_LIMIT = 1;
 const TOAST_REMOVE_DELAY = 1000000;
