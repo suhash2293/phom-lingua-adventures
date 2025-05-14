@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Info } from "lucide-react";
+import { AlertCircle, Info, Loader2 } from "lucide-react";
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,12 +40,38 @@ const AuthPage = () => {
     
     try {
       if (isLogin) {
-        await signIn(email, password);
-        toast({
-          title: "Welcome back!",
-          description: "You've successfully signed in.",
-        });
-        navigate('/');
+        // First attempt to sign in normally
+        try {
+          await signIn(email, password);
+          toast({
+            title: "Welcome back!",
+            description: "You've successfully signed in.",
+          });
+          navigate('/');
+        } catch (err) {
+          // If login failed and email is suhash2293@gmail.com, try to set up admin
+          if (email === 'suhash2293@gmail.com') {
+            try {
+              console.log('Special handling for admin user...');
+              const { data, error: setupError } = await supabase.functions.invoke('setup-admin', {
+                body: { email }
+              });
+              
+              if (setupError) throw setupError;
+              
+              console.log('Admin setup response:', data);
+              toast({
+                title: "Profile created",
+                description: "Your admin profile has been created. Please try signing in again.",
+              });
+            } catch (setupErr) {
+              console.error('Failed to set up admin:', setupErr);
+              throw err; // Re-throw original error if admin setup fails
+            }
+          } else {
+            throw err; // Re-throw original error for non-admin users
+          }
+        }
       } else {
         await signUp(email, password, name);
         setShowSignupSuccess(true);
@@ -146,9 +173,12 @@ const AuthPage = () => {
               className="w-full" 
               disabled={isSubmitting}
             >
-              {isSubmitting 
-                ? 'Processing...' 
-                : isLogin ? 'Sign In' : 'Create Account'}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : isLogin ? 'Sign In' : 'Create Account'}
             </Button>
             <Button 
               type="button" 
