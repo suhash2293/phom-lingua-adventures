@@ -35,70 +35,82 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Check for existing session on mount and setup auth state listener
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
-        setLoading(true);
         
         if (session && session.user) {
-          try {
-            // Get user profile to check admin status
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('is_admin')
-              .eq('id', session.user.id)
-              .single();
-
-            if (profileError) {
-              console.error('Error fetching user profile:', profileError);
-              
-              // If the profile doesn't exist yet, create it
-              if (profileError.code === 'PGRST116') {
-                // First time login - profile not found
-                const { data: newProfile, error: insertError } = await supabase
+          // Immediately set basic user info from auth
+          setUser({
+            id: session.user.id,
+            email: session.user.email || '',
+            name: session.user.user_metadata.name,
+            isAdmin: false // Default value until we fetch the profile
+          });
+          
+          // Fetch profile in a separate call
+          setTimeout(async () => {
+            try {
+              // Get user profile to check admin status
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('is_admin')
+                .eq('id', session.user.id)
+                .single();
+                
+              if (profileError) {
+                console.error('Error fetching user profile:', profileError);
+                
+                // If the profile doesn't exist but we have a matching email in profiles, update that profile
+                const { data: emailProfile, error: emailProfileError } = await supabase
+                  .from('profiles')
+                  .select('*')
+                  .eq('email', session.user.email)
+                  .single();
+                  
+                if (!emailProfileError && emailProfile) {
+                  console.log('Found profile by email, updating ID');
+                  
+                  // Update the profile ID to match the auth user ID
+                  const { error: updateError } = await supabase
+                    .from('profiles')
+                    .update({ id: session.user.id })
+                    .eq('email', session.user.email);
+                    
+                  if (updateError) {
+                    console.error('Error updating profile ID:', updateError);
+                  } else {
+                    setUser(prev => ({
+                      ...prev!,
+                      isAdmin: emailProfile.is_admin || false
+                    }));
+                    return;
+                  }
+                }
+                
+                // If email profile not found or update failed, create a new profile
+                const { error: insertError } = await supabase
                   .from('profiles')
                   .insert({ 
                     id: session.user.id, 
                     email: session.user.email,
                     is_admin: false 
-                  })
-                  .select()
-                  .single();
+                  });
                   
                 if (insertError) {
                   console.error('Error creating new profile:', insertError);
-                  throw insertError;
                 }
-                
-                console.log('Created new profile:', newProfile);
-                
-                setUser({
-                  id: session.user.id,
-                  email: session.user.email || '',
-                  name: session.user.user_metadata.name,
-                  isAdmin: false
-                });
               } else {
-                throw profileError;
+                console.log('Profile data:', profile);
+                
+                setUser(prev => ({
+                  ...prev!,
+                  isAdmin: profile?.is_admin || false
+                }));
               }
-            } else {
-              console.log('Profile data:', profile);
-              
-              setUser({
-                id: session.user.id,
-                email: session.user.email || '',
-                name: session.user.user_metadata.name,
-                isAdmin: profile?.is_admin || false
-              });
+            } catch (err) {
+              console.error('Error processing user profile:', err);
             }
-          } catch (err) {
-            console.error('Error processing user profile:', err);
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.user_metadata.name,
-              isAdmin: false
-            });
-          }
+          }, 0);
         } else {
           setUser(null);
         }
@@ -115,59 +127,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         console.log('Initial session:', session?.user?.email || 'No session');
         
-        if (session && session.user) {
-          // Get user profile to check admin status
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('is_admin')
-            .eq('id', session.user.id)
-            .single();
-
-          if (profileError) {
-            console.error('Error fetching initial profile:', profileError);
-            
-            // If the profile doesn't exist yet, create it
-            if (profileError.code === 'PGRST116') {
-              const { data: newProfile, error: insertError } = await supabase
-                .from('profiles')
-                .insert({ 
-                  id: session.user.id, 
-                  email: session.user.email,
-                  is_admin: false 
-                })
-                .select()
-                .single();
-                
-              if (insertError) {
-                console.error('Error creating new profile:', insertError);
-                throw insertError;
-              }
-              
-              console.log('Created new profile on init:', newProfile);
-              
-              setUser({
-                id: session.user.id,
-                email: session.user.email || '',
-                name: session.user.user_metadata.name,
-                isAdmin: false
-              });
-            } else {
-              throw profileError;
-            }
-          } else {
-            console.log('Initial profile data:', profile);
-            
-            setUser({
-              id: session.user.id,
-              email: session.user.email || '',
-              name: session.user.user_metadata.name,
-              isAdmin: profile?.is_admin || false
-            });
-          }
+        if (!session) {
+          setLoading(false);
+          return;
         }
+        
+        // Basic user info is set, detailed profile will be handled by the state change listener
       } catch (err) {
         console.error('Error initializing auth:', err);
-      } finally {
         setLoading(false);
       }
     };

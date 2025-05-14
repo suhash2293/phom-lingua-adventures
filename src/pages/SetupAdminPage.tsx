@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -65,6 +65,10 @@ const SetupAdminPage = () => {
     navigate('/auth');
   };
 
+  const goToSignUp = () => {
+    navigate('/auth');
+  };
+
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
       <div className="max-w-md mx-auto">
@@ -109,7 +113,8 @@ const SetupAdminPage = () => {
                   required
                 />
                 <p className="text-xs text-muted-foreground">
-                  Note: You must have already created an account with this email.
+                  Enter your email to create an admin account. If you haven't signed up yet, 
+                  you'll need to sign up with this email after granting admin access.
                 </p>
               </div>
             </CardContent>
@@ -128,9 +133,14 @@ const SetupAdminPage = () => {
                 </Button>
               )}
               {!success && (
-                <Button type="button" variant="link" onClick={goToSignIn} className="w-full">
-                  Back to Sign In
-                </Button>
+                <div className="w-full flex flex-col space-y-2">
+                  <Button type="button" variant="outline" onClick={goToSignIn} className="w-full">
+                    Already have an account? Sign In
+                  </Button>
+                  <Button type="button" variant="ghost" onClick={goToSignUp} className="w-full">
+                    Need to create an account? Sign Up
+                  </Button>
+                </div>
               )}
             </CardFooter>
           </form>
