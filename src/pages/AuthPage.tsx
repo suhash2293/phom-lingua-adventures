@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Info, Loader2 } from "lucide-react";
-import { supabase } from '@/integrations/supabase/client';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -40,38 +39,12 @@ const AuthPage = () => {
     
     try {
       if (isLogin) {
-        // First attempt to sign in normally
-        try {
-          await signIn(email, password);
-          toast({
-            title: "Welcome back!",
-            description: "You've successfully signed in.",
-          });
-          navigate('/');
-        } catch (err) {
-          // If login failed and email is suhash2293@gmail.com, try to set up admin
-          if (email === 'suhash2293@gmail.com') {
-            try {
-              console.log('Special handling for admin user...');
-              const { data, error: setupError } = await supabase.functions.invoke('setup-admin', {
-                body: { email }
-              });
-              
-              if (setupError) throw setupError;
-              
-              console.log('Admin setup response:', data);
-              toast({
-                title: "Profile created",
-                description: "Your admin profile has been created. Please try signing in again.",
-              });
-            } catch (setupErr) {
-              console.error('Failed to set up admin:', setupErr);
-              throw err; // Re-throw original error if admin setup fails
-            }
-          } else {
-            throw err; // Re-throw original error for non-admin users
-          }
-        }
+        await signIn(email, password);
+        toast({
+          title: "Welcome back!",
+          description: "You've successfully signed in.",
+        });
+        navigate('/');
       } else {
         await signUp(email, password, name);
         setShowSignupSuccess(true);
@@ -88,6 +61,10 @@ const AuthPage = () => {
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
     // Error is cleared in the useEffect
+  };
+
+  const goToSetupAdmin = () => {
+    navigate('/setup-admin');
   };
 
   return (
@@ -180,6 +157,7 @@ const AuthPage = () => {
                 </>
               ) : isLogin ? 'Sign In' : 'Create Account'}
             </Button>
+            
             <Button 
               type="button" 
               variant="link" 
@@ -190,6 +168,17 @@ const AuthPage = () => {
                 ? "Don't have an account? Sign Up" 
                 : "Already have an account? Sign In"}
             </Button>
+            
+            {isLogin && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={goToSetupAdmin}
+                className="w-full mt-2"
+              >
+                Setup Admin Account
+              </Button>
+            )}
           </CardFooter>
         </form>
       </Card>

@@ -1,7 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -23,16 +22,8 @@ const SetupAdminPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-
-  // Pre-fill with the current user's email if available
-  useEffect(() => {
-    if (user?.email) {
-      setEmail(user.email);
-    }
-  }, [user]);
 
   const setupAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,7 +32,7 @@ const SetupAdminPage = () => {
     setSuccess(null);
 
     try {
-      console.log('Calling setup-admin function with email:', email);
+      console.log('Setting up admin for email:', email);
       const { data, error } = await supabase.functions.invoke('setup-admin', {
         body: { email },
       });
@@ -52,10 +43,10 @@ const SetupAdminPage = () => {
         throw new Error(error.message);
       }
 
-      setSuccess(`${email} has been granted admin access. Please sign out and sign back in to apply the changes.`);
+      setSuccess(`${email} has been granted admin access. You can now sign in with this account.`);
       toast({
         title: "Admin setup successful",
-        description: "User has been granted admin access. Please sign out and sign back in for the changes to take effect.",
+        description: "Your account has been granted admin access. You can now sign in.",
       });
     } catch (err: any) {
       console.error('Error setting up admin:', err);
@@ -70,8 +61,7 @@ const SetupAdminPage = () => {
     }
   };
 
-  const handleSignOut = async () => {
-    await signOut();
+  const goToSignIn = () => {
     navigate('/auth');
   };
 
@@ -82,7 +72,7 @@ const SetupAdminPage = () => {
           <CardHeader>
             <CardTitle>Admin Setup</CardTitle>
             <CardDescription>
-              Grant admin privileges to a user by email address
+              Grant admin privileges to your account by email address
             </CardDescription>
           </CardHeader>
           
@@ -109,15 +99,18 @@ const SetupAdminPage = () => {
           <form onSubmit={setupAdmin}>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="admin-email">User Email</Label>
+                <Label htmlFor="admin-email">Your Email</Label>
                 <Input
                   id="admin-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter user email to grant admin access"
+                  placeholder="Enter your email to grant admin access"
                   required
                 />
+                <p className="text-xs text-muted-foreground">
+                  Note: You must have already created an account with this email.
+                </p>
               </div>
             </CardContent>
             <CardFooter className="flex flex-col space-y-4">
@@ -130,8 +123,13 @@ const SetupAdminPage = () => {
                 ) : 'Grant Admin Access'}
               </Button>
               {success && (
-                <Button type="button" variant="outline" onClick={handleSignOut} className="w-full">
-                  Sign Out Now
+                <Button type="button" variant="outline" onClick={goToSignIn} className="w-full">
+                  Go to Sign In
+                </Button>
+              )}
+              {!success && (
+                <Button type="button" variant="link" onClick={goToSignIn} className="w-full">
+                  Back to Sign In
                 </Button>
               )}
             </CardFooter>
