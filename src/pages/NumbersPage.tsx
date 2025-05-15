@@ -32,8 +32,19 @@ const NumbersPage = () => {
       const num = parseInt(item.english_translation, 10);
       if (isNaN(num)) return;
       
-      const groupStart = Math.floor(num / 10) * 10 + 1;
-      const groupEnd = (Math.floor(num / 10) + 1) * 10;
+      // Special handling for number 100
+      if (num === 100) {
+        const label = "91-100";
+        if (!groups[label]) {
+          groups[label] = [];
+        }
+        groups[label].push(item);
+        return;
+      }
+      
+      // Normal handling for other numbers
+      const groupStart = Math.floor((num - 1) / 10) * 10 + 1;
+      const groupEnd = groupStart + 9;
       const label = `${groupStart}-${groupEnd}`;
       
       if (!groups[label]) {
