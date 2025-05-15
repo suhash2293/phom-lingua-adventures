@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { LetterCase, CalendarDays, Calendar, Percent } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const Index = () => {
@@ -67,7 +67,7 @@ const Index = () => {
             <CardContent className="p-0">
               <AspectRatio ratio={16/9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <LetterCase className="h-8 w-8 text-primary" />
+                  <ScrollText className="h-8 w-8 text-primary" />
                 </div>
               </AspectRatio>
             </CardContent>
