@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,7 +44,7 @@ export default function Header() {
             <Link to="/learn" className="text-sm font-medium hover:text-primary transition-colors">
               Learn
             </Link>
-            <Link to="/practice" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link to="/games" className="text-sm font-medium hover:text-primary transition-colors">
               Games
             </Link>
             <Link to="/donate" className="text-sm font-medium hover:text-primary transition-colors">
@@ -110,7 +109,7 @@ export default function Header() {
                   Learn
                 </Link>
                 <Link 
-                  to="/practice" 
+                  to="/games" 
                   className="text-lg font-semibold hover:text-primary transition-colors"
                 >
                   Games
