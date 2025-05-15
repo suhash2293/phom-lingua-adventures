@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Menu } from 'lucide-react';
+import { Menu, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 import { 
@@ -11,6 +11,14 @@ import {
   SheetContent,
   SheetTrigger,
 } from '@/components/ui/sheet';
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export default function Header() {
   const isMobile = useIsMobile();
@@ -47,17 +55,32 @@ export default function Header() {
               About
             </Link>
             {user ? (
-              <>
-                <Link to="/profile" className="text-sm font-medium hover:text-primary transition-colors">
-                  Profile
-                </Link>
-                {user.isAdmin && (
-                  <Link to="/admin" className="text-sm font-medium hover:text-primary transition-colors">
-                    Admin
-                  </Link>
-                )}
-                <Button variant="outline" onClick={signOut}>Sign Out</Button>
-              </>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" className="flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    <span>{user.name || user.email.split('@')[0]}</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                    <Link to="/profile" className="cursor-pointer w-full">Profile</Link>
+                  </DropdownMenuItem>
+                  {user.isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer w-full">Admin Dashboard</Link>
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem 
+                    onClick={signOut}
+                    className="cursor-pointer"
+                  >
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
               <Link to="/auth">
                 <Button variant="default">Sign In</Button>
@@ -117,7 +140,7 @@ export default function Header() {
                         to="/admin" 
                         className="text-lg font-semibold hover:text-primary transition-colors"
                       >
-                        Admin
+                        Admin Dashboard
                       </Link>
                     )}
                     <Button variant="outline" onClick={signOut}>Sign Out</Button>
