@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { shuffle } from 'lodash';
-import { Volume2, ArrowLeft, Clock, Check, X } from 'lucide-react';
+import { Volume2, ArrowLeft, Clock, Check, X, Loader2 } from 'lucide-react';
 
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
@@ -12,6 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
+import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 
 const QUESTIONS_PER_GAME = 10;
 const SECONDS_PER_GAME = 120; // 2 minutes
@@ -22,7 +24,7 @@ const AudioChallengeGame = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  const [gameState, setGameState] = useState<'intro' | 'playing' | 'completed'>('intro');
+  const [gameState, setGameState] = useState<'intro' | 'loading' | 'playing' | 'completed'>('intro');
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(SECONDS_PER_GAME);
@@ -32,9 +34,25 @@ const AudioChallengeGame = () => {
     contentItem: ContentItem;
     options: ContentItem[];
   }[]>([]);
-  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null);
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  
+  // Replace direct audio handling with our new hook
+  const { 
+    playAudio, 
+    preloadAudioBatch, 
+    isLoading: isAudioLoading,
+    clearCache 
+  } = useAudioPreloader({
+    onLoadError: (error) => {
+      console.error("Audio loading error:", error);
+      toast({
+        title: "Audio Loading Error",
+        description: "There was a problem loading some audio files. The game experience might be affected.",
+        variant: "destructive"
+      });
+    }
+  });
   
   // Fetch content items based on category
   const { data: fetchedItems, isLoading } = useQuery({
@@ -88,18 +106,15 @@ const AudioChallengeGame = () => {
     }
   }, [gameState]);
   
-  // Clean up audio when component unmounts
+  // Clean up when component unmounts
   useEffect(() => {
     return () => {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.src = "";
-      }
+      clearCache();
     };
-  }, [currentAudio]);
+  }, [clearCache]);
   
   // Prepare questions when game starts
-  const prepareQuestions = () => {
+  const prepareQuestions = async () => {
     // Filter items with audio URLs
     const audioItems = contentItems.filter(item => item.audio_url);
     
@@ -132,41 +147,54 @@ const AudioChallengeGame = () => {
     });
     
     setGameQuestions(questions);
-    return true;
+    
+    // Preload all audio for a smoother experience
+    setGameState('loading');
+    
+    try {
+      // Get all audio URLs from the game questions
+      const audioUrls = questions.map(q => q.contentItem.audio_url).filter(Boolean) as string[];
+      
+      // Preload all game audio files
+      await preloadAudioBatch(audioUrls);
+      
+      // Start the game
+      setGameState('playing');
+      playCurrentAudio();
+      
+      return true;
+    } catch (error) {
+      console.error("Failed to preload audio:", error);
+      toast({
+        title: "Audio Preloading Error",
+        description: "Some audio files couldn't be loaded. The game will continue, but you might experience delays.",
+        variant: "destructive"
+      });
+      
+      // Continue with the game anyway
+      setGameState('playing');
+      playCurrentAudio();
+      
+      return true;
+    }
   };
   
   // Start the game
   const startGame = () => {
-    if (!prepareQuestions()) {
-      return;
-    }
-    
-    setGameState('playing');
+    setGameState('loading');
     setScore(0);
     setCurrentQuestion(0);
     setTimeRemaining(SECONDS_PER_GAME);
-    playCurrentAudio();
+    prepareQuestions();
   };
   
   // Play the audio for the current question
   const playCurrentAudio = () => {
     const question = gameQuestions[currentQuestion];
     if (question && question.contentItem.audio_url) {
-      if (currentAudio) {
-        currentAudio.pause();
-      }
-      
-      const audio = new Audio(question.contentItem.audio_url);
-      audio.play().catch(error => {
+      playAudio(question.contentItem.audio_url).catch(error => {
         console.error('Error playing audio:', error);
-        toast({
-          title: "Audio Error",
-          description: "There was a problem playing the audio. Please try again.",
-          variant: "destructive"
-        });
       });
-      
-      setCurrentAudio(audio);
     }
   };
   
@@ -228,16 +256,13 @@ const AudioChallengeGame = () => {
       });
     }
     
-    // Clean up audio
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.src = "";
-      setCurrentAudio(null);
-    }
+    // Clean up audio resources
+    clearCache();
   };
   
   // Reset the game
   const resetGame = () => {
+    clearCache();
     setGameState('intro');
     setScore(0);
     setCurrentQuestion(0);
@@ -245,14 +270,22 @@ const AudioChallengeGame = () => {
     setGameStartTime(null);
     setSelectedAnswerId(null);
     setIsCorrect(null);
-    
-    // Clean up audio
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.src = "";
-      setCurrentAudio(null);
-    }
   };
+  
+  // Generate loading screen
+  const renderLoadingScreen = () => (
+    <Card className="p-6 mb-6 text-center">
+      <div className="flex flex-col items-center justify-center gap-4">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <h2 className="text-xl font-bold">Loading Game Content</h2>
+        <p>Preloading audio files for a smoother experience...</p>
+        <Progress 
+          className="w-64 h-2" 
+          value={isAudioLoading ? 75 : 100} // Simple animation effect
+        />
+      </div>
+    </Card>
+  );
   
   if (isLoading) {
     return (
@@ -282,6 +315,8 @@ const AudioChallengeGame = () => {
         </Card>
       )}
       
+      {gameState === 'loading' && renderLoadingScreen()}
+      
       {gameState === 'playing' && gameQuestions.length > 0 && (
         <div>
           <div className="flex justify-between items-center mb-4">
@@ -303,10 +338,15 @@ const AudioChallengeGame = () => {
             <p className="text-lg font-medium mb-2">Question {currentQuestion + 1} of {QUESTIONS_PER_GAME}</p>
             <Button 
               size="icon" 
-              className="h-16 w-16 rounded-full mx-auto"
+              className="h-16 w-16 rounded-full mx-auto relative"
               onClick={playCurrentAudio}
+              disabled={isAudioLoading}
             >
-              <Volume2 className="h-8 w-8" />
+              {isAudioLoading ? (
+                <Loader2 className="h-8 w-8 animate-spin" />
+              ) : (
+                <Volume2 className="h-8 w-8" />
+              )}
             </Button>
           </div>
           
@@ -333,7 +373,7 @@ const AudioChallengeGame = () => {
                   key={option.id}
                   variant={buttonVariant}
                   className="h-auto py-4 px-6 relative"
-                  disabled={isCorrect !== null}
+                  disabled={isCorrect !== null || isAudioLoading}
                   onClick={() => handleSelectAnswer(option)}
                 >
                   {option.english_translation}

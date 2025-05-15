@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,7 @@ import { AchievementService } from '@/services/AchievementService';
 import { useAuth } from '@/contexts/AuthContext';
 import { ContentService } from '@/services/ContentService';
 import { Category } from '@/types/content';
+import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 
 const GameCard = ({ 
   title, 
@@ -79,6 +81,9 @@ const GamesPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
+  // Use the audio preloader hook for background audio preloading
+  const { preloadAudioBatch } = useAudioPreloader();
+  
   // Fetch user progress
   const { data: progress } = useQuery({
     queryKey: ['userProgress'],
@@ -98,6 +103,39 @@ const GamesPage = () => {
       AchievementService.checkAndAwardAchievements();
     }
   }, [user]);
+  
+  // Effect to preload some common audio files in the background
+  useEffect(() => {
+    const preloadCommonAudio = async () => {
+      try {
+        // Fetch a small set of audio items for preloading
+        const popularCategories = await ContentService.getCategories();
+        if (!popularCategories.length) return;
+        
+        // Get the first category's items
+        const categoryItems = await ContentService.getContentItemsByCategory(
+          popularCategories[0].id
+        );
+        
+        // Filter to items with audio and limit to 5
+        const audioItems = categoryItems
+          .filter(item => item.audio_url)
+          .slice(0, 5)
+          .map(item => item.audio_url)
+          .filter(Boolean) as string[];
+        
+        // Preload these in the background
+        if (audioItems.length) {
+          preloadAudioBatch(audioItems);
+        }
+      } catch (error) {
+        console.error("Error preloading common audio:", error);
+      }
+    };
+    
+    // Run the preloading in the background
+    preloadCommonAudio();
+  }, [preloadAudioBatch]);
   
   // Calculate level progress
   const calculateLevelProgress = (progress?: UserProgress | null) => {
