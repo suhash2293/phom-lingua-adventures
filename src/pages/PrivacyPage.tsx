@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const PrivacyPage = () => {
@@ -113,8 +112,7 @@ const PrivacyPage = () => {
             If you have any questions or concerns about our Privacy Policy or data practices, please contact us at:
           </p>
           <p className="mt-2">
-            <strong>Email:</strong> privacy@phomshah.com<br />
-            <strong>Address:</strong> PhomShah, Nagaland Language Institute, Nagaland, India
+            <strong>Email:</strong> moilenlenla@gmail.com
           </p>
         </section>
       </div>
