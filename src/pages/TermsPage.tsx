@@ -108,8 +108,7 @@ const TermsPage = () => {
             If you have any questions or concerns about these Terms, please contact us at:
           </p>
           <p className="mt-2">
-            <strong>Email:</strong> terms@phomshah.com<br />
-            <strong>Address:</strong> PhomShah, Nagaland Language Institute, Nagaland, India
+            <strong>Email:</strong> moilenlenla@gmail.com
           </p>
         </section>
       </div>
