@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { Category, ContentItem } from '@/types/content';
 
@@ -18,6 +17,26 @@ export const ContentService = {
     return data || [];
   },
   
+  async getCategoryByName(name: string): Promise<Category | null> {
+    const { data, error } = await supabase
+      .from('categories')
+      .select('*')
+      .ilike('name', `%${name}%`)
+      .limit(1)
+      .single();
+    
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No rows returned
+        return null;
+      }
+      console.error('Error fetching category by name:', error);
+      throw error;
+    }
+    
+    return data;
+  },
+  
   // Content item operations
   async getContentItemsByCategory(categoryId: string): Promise<ContentItem[]> {
     const { data, error } = await supabase
@@ -32,6 +51,18 @@ export const ContentService = {
     }
     
     return data || [];
+  },
+  
+  async getContentItemsByCategoryName(name: string): Promise<ContentItem[]> {
+    // First find the category ID
+    const category = await this.getCategoryByName(name);
+    
+    if (!category) {
+      return [];
+    }
+    
+    // Then get content items by category ID
+    return this.getContentItemsByCategory(category.id);
   },
   
   async createContentItem(item: Omit<ContentItem, 'id' | 'created_at' | 'updated_at'>): Promise<ContentItem> {
