@@ -11,8 +11,11 @@ const AboutPage = () => {
         <div>
           <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
           <p className="mb-4">Our app places learners at the center of every experience, offering an immersive journey into the Phom Naga dialect, an essential voice of the indigenous Phom Naga community in Nagaland. </p>
-          <p>
+          <p className="mb-4">
             Instead of simply building vocabulary lists, we guide you toward true dialect mastery and invite you to connect with your cultural roots. With intuitive, accessible tools and engaging lessons, we strive to safeguard the rich traditions of the Phom Naga dialect and champion the living heritage of its people.
+          </p>
+          <p>
+            Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come. 
           </p>
         </div>
         <div className="bg-phom-yellow rounded-lg overflow-hidden">
