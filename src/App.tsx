@@ -18,6 +18,8 @@ import MonthsPage from "./pages/MonthsPage";
 import NumbersPage from "./pages/NumbersPage";
 import ModuleDetailPage from "./pages/ModuleDetailPage";
 import AboutPage from "./pages/AboutPage";
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
 import DonatePage from "./pages/DonatePage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -51,6 +53,8 @@ const App = () => (
                 <Route path="/learn/numbers" element={<NumbersPage />} />
                 <Route path="/learn/:moduleId" element={<ModuleDetailPage />} />
                 <Route path="/about" element={<AboutPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
                 <Route path="/donate" element={<DonatePage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
