@@ -22,6 +22,7 @@ import ContactPage from "./pages/ContactPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import DonatePage from "./pages/DonatePage";
+import DonationSuccessPage from "./pages/DonationSuccessPage";
 import AdminPage from "./pages/AdminPage";
 import ProfilePage from "./pages/ProfilePage";
 import SetupAdminPage from "./pages/SetupAdminPage";
@@ -58,6 +59,7 @@ const App = () => (
                 <Route path="/privacy" element={<PrivacyPage />} />
                 <Route path="/terms" element={<TermsPage />} />
                 <Route path="/donate" element={<DonatePage />} />
+                <Route path="/donation-success" element={<DonationSuccessPage />} />
                 <Route path="/admin" element={<AdminPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/setup-admin" element={<SetupAdminPage />} />
