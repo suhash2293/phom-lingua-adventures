@@ -17,7 +17,7 @@ const Index = () => {
           <span className="text-phom-yellow">Welcome to PhomShah
         </span>
         </h1>
-        <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A learner's centred dialect learning platform</h2>
+        <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A learner's centred dialect learning platform</h2>
         <p className="text-lg text-muted-foreground max-w-[600px]">
           Learn Phom language and English through interactive lessons and gamified exercises.
         </p>
@@ -25,9 +25,7 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           {!user ? <Button size="lg" onClick={() => navigate('/auth')}>
               Get Started
-            </Button> : <Button size="lg" onClick={() => navigate('/learn')}>
-              Continue Learning
-            </Button>}
+            </Button> : null}
           <Button variant="outline" size="lg" onClick={() => navigate('/about')}>
             Learn More
           </Button>
