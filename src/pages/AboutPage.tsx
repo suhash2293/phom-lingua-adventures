@@ -1,29 +1,20 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
 const AboutPage = () => {
-  return (
-    <div className="container px-4 md:px-6 py-8 md:py-12">
+  return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
         <div>
           <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
-          <p className="mb-4">
-            PhomShah is dedicated to preserving and promoting the Phom language, a dialect spoken primarily in Nagaland, India. Our mission is to create accessible, engaging learning resources for both native speakers and language enthusiasts.
-          </p>
+          <p className="mb-4">Our app places learners at the center of every experience, offering an immersive journey into the Phom Naga dialect, an essential voice of the indigenous Phom Naga community in Nagaland. </p>
           <p>
             Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique language continues to thrive for generations to come.
           </p>
         </div>
         <div className="bg-phom-yellow rounded-lg overflow-hidden">
-          <img
-            src="/lovable-uploads/0d42e53f-67e0-44b9-b835-4ca4918bd0dd.png"
-            alt="Traditional Phom Cultural Element"
-            className="w-full h-full object-cover"
-          />
+          <img src="/lovable-uploads/0d42e53f-67e0-44b9-b835-4ca4918bd0dd.png" alt="Traditional Phom Cultural Element" className="w-full h-full object-cover" />
         </div>
       </div>
       
@@ -131,8 +122,6 @@ const AboutPage = () => {
           <Link to="/donate">Make a Donation</Link>
         </Button>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default AboutPage;
