@@ -11,6 +11,8 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { AlphabetKey, CalendarDays, CalendarMonth, Percent } from 'lucide-react';
+import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const Index = () => {
   const { user } = useAuth();
@@ -55,22 +57,25 @@ const Index = () => {
         <h2 className="text-3xl font-bold text-center mb-12">Learning Modules</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Alphabets Module */}
-          <Card className="hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle className="text-xl">Alphabets</CardTitle>
-              <CardDescription>
+          <Card className="hover:shadow-lg transition-all overflow-hidden group">
+            <CardHeader className="bg-gradient-to-r from-primary/30 to-primary/10 pb-2 relative">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
+              <CardTitle className="text-xl relative z-10">Alphabets</CardTitle>
+              <CardDescription className="relative z-10">
                 Learn Phom alphabet and characters
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">🔤</span>
-              </div>
+            <CardContent className="p-0">
+              <AspectRatio ratio={16/9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transform transition-transform group-hover:scale-110">
+                  <AlphabetKey className="h-8 w-8 text-primary" />
+                </div>
+              </AspectRatio>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-muted/5">
               <Button 
-                variant="outline"
-                className="w-full"
+                variant="ghost"
+                className="w-full group-hover:bg-primary/10 transition-colors"
                 onClick={() => navigate('/learn/alphabets')}
               >
                 Start Learning
@@ -79,22 +84,25 @@ const Index = () => {
           </Card>
 
           {/* Numbers Module */}
-          <Card className="hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle className="text-xl">Numbers</CardTitle>
-              <CardDescription>
+          <Card className="hover:shadow-lg transition-all overflow-hidden group">
+            <CardHeader className="bg-gradient-to-r from-blue-100/30 to-blue-50/10 dark:from-blue-900/30 dark:to-blue-800/10 pb-2 relative">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-100/30 dark:bg-blue-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
+              <CardTitle className="text-xl relative z-10">Numbers</CardTitle>
+              <CardDescription className="relative z-10">
                 Learn to count in Phom language
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">🔢</span>
-              </div>
+            <CardContent className="p-0">
+              <AspectRatio ratio={16/9} className="bg-gradient-to-br from-blue-100/50 to-blue-50/30 dark:from-blue-900/50 dark:to-blue-800/30 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-blue-200/40 dark:bg-blue-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
+                  <Percent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                </div>
+              </AspectRatio>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-blue-50/5 dark:to-blue-900/5">
               <Button 
-                variant="outline"
-                className="w-full"
+                variant="ghost"
+                className="w-full group-hover:bg-blue-100/20 dark:group-hover:bg-blue-900/20 transition-colors"
                 onClick={() => navigate('/learn/numbers')}
               >
                 Start Learning
@@ -103,22 +111,25 @@ const Index = () => {
           </Card>
 
           {/* Days Module */}
-          <Card className="hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle className="text-xl">Days</CardTitle>
-              <CardDescription>
+          <Card className="hover:shadow-lg transition-all overflow-hidden group">
+            <CardHeader className="bg-gradient-to-r from-green-100/30 to-green-50/10 dark:from-green-900/30 dark:to-green-800/10 pb-2 relative">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-green-100/30 dark:bg-green-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
+              <CardTitle className="text-xl relative z-10">Days</CardTitle>
+              <CardDescription className="relative z-10">
                 Learn days of the week in Phom
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">📅</span>
-              </div>
+            <CardContent className="p-0">
+              <AspectRatio ratio={16/9} className="bg-gradient-to-br from-green-100/50 to-green-50/30 dark:from-green-900/50 dark:to-green-800/30 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-green-200/40 dark:bg-green-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
+                  <CalendarDays className="h-8 w-8 text-green-600 dark:text-green-400" />
+                </div>
+              </AspectRatio>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-green-50/5 dark:to-green-900/5">
               <Button 
-                variant="outline"
-                className="w-full"
+                variant="ghost"
+                className="w-full group-hover:bg-green-100/20 dark:group-hover:bg-green-900/20 transition-colors"
                 onClick={() => navigate('/learn/days')}
               >
                 Start Learning
@@ -127,22 +138,25 @@ const Index = () => {
           </Card>
 
           {/* Months Module */}
-          <Card className="hover:shadow-lg transition-all">
-            <CardHeader>
-              <CardTitle className="text-xl">Months</CardTitle>
-              <CardDescription>
+          <Card className="hover:shadow-lg transition-all overflow-hidden group">
+            <CardHeader className="bg-gradient-to-r from-amber-100/30 to-amber-50/10 dark:from-amber-900/30 dark:to-amber-800/10 pb-2 relative">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-amber-100/30 dark:bg-amber-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
+              <CardTitle className="text-xl relative z-10">Months</CardTitle>
+              <CardDescription className="relative z-10">
                 Learn months and seasons in Phom
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-32 rounded-md bg-muted flex items-center justify-center">
-                <span className="text-4xl">🗓️</span>
-              </div>
+            <CardContent className="p-0">
+              <AspectRatio ratio={16/9} className="bg-gradient-to-br from-amber-100/50 to-amber-50/30 dark:from-amber-900/50 dark:to-amber-800/30 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-amber-200/40 dark:bg-amber-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
+                  <CalendarMonth className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                </div>
+              </AspectRatio>
             </CardContent>
-            <CardFooter>
+            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-amber-50/5 dark:to-amber-900/5">
               <Button 
-                variant="outline"
-                className="w-full"
+                variant="ghost"
+                className="w-full group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20 transition-colors"
                 onClick={() => navigate('/learn/months')}
               >
                 Start Learning
