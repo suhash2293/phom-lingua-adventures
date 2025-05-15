@@ -11,7 +11,7 @@ import { ContentService } from '@/services/ContentService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from '@/hooks/use-toast';
 
 const NumbersPage = () => {
   const { user } = useAuth();

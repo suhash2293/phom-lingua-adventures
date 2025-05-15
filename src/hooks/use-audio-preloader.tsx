@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from "@/hooks/use-toast";
 
 // Define an interface for audio cache entries that store both the AudioBuffer and HTMLAudioElement
 interface AudioCacheEntry {
@@ -59,6 +59,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
     if (!audioCache[url]) {
       const audio = new Audio();
       audio.preload = "auto"; // Force preloading
+      audio.crossOrigin = "anonymous"; // Add CORS support
       
       audioCache[url] = {
         audio,
@@ -87,8 +88,14 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       // Mark as loading
       entry.loading = true;
       
-      // Fetch the audio file
-      const response = await fetch(url);
+      // Fetch the audio file with credentials
+      const response = await fetch(url, { 
+        credentials: 'same-origin',
+        headers: {
+          'Accept': 'audio/*'
+        }
+      });
+      
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       
       // Get the array buffer from the response
@@ -117,8 +124,38 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         // Set up for retry if needed
         if (entry.retries < (options?.maxRetries || 2)) {
           entry.retries++;
-          // Retry loading after a short delay
-          setTimeout(() => loadAudioFile(url, priority), 1000);
+          // Retry loading after a short delay with exponential backoff
+          const delay = 1000 * Math.pow(2, entry.retries - 1);
+          console.log(`Retrying audio load for ${url} in ${delay}ms (attempt ${entry.retries})`);
+          setTimeout(() => loadAudioFile(url, priority), delay);
+        } else {
+          // After max retries, try HTML Audio API as a fallback
+          try {
+            const audio = new Audio();
+            audio.crossOrigin = "anonymous";
+            audio.src = url;
+            
+            // Listen for the canplaythrough event to know when it's loaded
+            audio.addEventListener('canplaythrough', () => {
+              if (entry) {
+                entry.audio = audio;
+                entry.loaded = true;
+                entry.loading = false;
+                entry.error = false;
+                console.log(`Fallback HTML Audio loaded for ${url}`);
+              }
+            });
+            
+            // Handle load errors
+            audio.addEventListener('error', (e) => {
+              console.error(`HTML Audio fallback error for ${url}:`, e);
+            });
+            
+            // Start loading
+            audio.load();
+          } catch (audioError) {
+            console.error(`HTML Audio fallback failed for ${url}:`, audioError);
+          }
         }
       }
       
@@ -243,9 +280,14 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
           // This usually happens only once, then subsequent plays work
           const playPromise = entry.audio.play();
           if (playPromise !== undefined) {
-            playPromise.catch(() => {
+            playPromise.catch((err) => {
               // Give up silently after this retry
-              console.error("Audio couldn't be played even after retry");
+              console.error("Audio couldn't be played even after retry:", err);
+              toast({
+                title: "Audio Playback Error",
+                description: "Browser prevented audio playback. Try clicking elsewhere on the page first.",
+                variant: "destructive"
+              });
             });
           }
         }
