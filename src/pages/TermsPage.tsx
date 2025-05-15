@@ -1,9 +1,6 @@
-
 import React from 'react';
-
 const TermsPage = () => {
-  return (
-    <div className="container px-4 md:px-6 py-8 md:py-12">
+  return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">Terms and Conditions</h1>
       
       <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
@@ -32,9 +29,7 @@ const TermsPage = () => {
           </p>
           
           <h3 className="text-xl font-semibold mb-2">2.3 Age Restrictions</h3>
-          <p>
-            The Platform is intended for users who are 13 years of age or older. By using the Platform, you confirm that you are at least 13 years old. If you are under 18, you represent that you have your parent's or guardian's permission to use the Platform.
-          </p>
+          <p>The Platform is intended for users who are 13 years of age or older. By using the Platform, you confirm that you are at least 13 years old. If you are under 13, you represent that you have your parent's or guardian's permission to use the Platform.</p>
         </section>
         
         <section className="mb-8">
@@ -112,8 +107,6 @@ const TermsPage = () => {
           </p>
         </section>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default TermsPage;
