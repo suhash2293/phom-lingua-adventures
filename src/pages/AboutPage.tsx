@@ -1,16 +1,18 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+
 const AboutPage = () => {
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-        <div className="Instead of simply building vocabulary lists, we guide you toward true dialect mastery and invite you to connect with your cultural roots. With intuitive, accessible tools and engaging lessons, we strive to safeguard the rich traditions of the Phom Naga dialect and champion the living heritage of its people. \n\nThrough our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come.">
+        <div>
           <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
           <p className="mb-4">Our app places learners at the center of every experience, offering an immersive journey into the Phom Naga dialect, an essential voice of the indigenous Phom Naga community in Nagaland. </p>
           <p>
-            Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique language continues to thrive for generations to come.
+            Instead of simply building vocabulary lists, we guide you toward true dialect mastery and invite you to connect with your cultural roots. With intuitive, accessible tools and engaging lessons, we strive to safeguard the rich traditions of the Phom Naga dialect and champion the living heritage of its people.
           </p>
         </div>
         <div className="bg-phom-yellow rounded-lg overflow-hidden">
