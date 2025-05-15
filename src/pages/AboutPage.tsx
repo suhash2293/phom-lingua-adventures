@@ -6,7 +6,7 @@ const AboutPage = () => {
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
-        <div>
+        <div className="Instead of simply building vocabulary lists, we guide you toward true dialect mastery and invite you to connect with your cultural roots. With intuitive, accessible tools and engaging lessons, we strive to safeguard the rich traditions of the Phom Naga dialect and champion the living heritage of its people. \n\nThrough our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come.">
           <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
           <p className="mb-4">Our app places learners at the center of every experience, offering an immersive journey into the Phom Naga dialect, an essential voice of the indigenous Phom Naga community in Nagaland. </p>
           <p>
