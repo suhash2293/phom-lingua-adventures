@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { shuffle } from 'lodash';
@@ -37,11 +36,12 @@ const AudioChallengeGame = () => {
   const [selectedAnswerId, setSelectedAnswerId] = useState<string | null>(null);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   
-  // Replace direct audio handling with our new hook
+  // Use the improved audio preloader hook with memoized callback functions
   const { 
     playAudio, 
     preloadAudioBatch, 
     isLoading: isAudioLoading,
+    progress: audioLoadingProgress,
     clearCache 
   } = useAudioPreloader({
     onLoadError: (error) => {
@@ -51,7 +51,8 @@ const AudioChallengeGame = () => {
         description: "There was a problem loading some audio files. The game experience might be affected.",
         variant: "destructive"
       });
-    }
+    },
+    maxRetries: 2
   });
   
   // Fetch content items based on category
@@ -106,15 +107,55 @@ const AudioChallengeGame = () => {
     }
   }, [gameState]);
   
-  // Clean up when component unmounts
-  useEffect(() => {
-    return () => {
-      clearCache();
-    };
-  }, [clearCache]);
+  // Memoized endGame function to avoid recreation in dependencies
+  const endGame = useCallback(async () => {
+    setGameState('completed');
+    
+    const finalScore = score;
+    
+    // Calculate time taken
+    const timeTaken = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : SECONDS_PER_GAME;
+    
+    // Calculate XP earned based on score and time
+    const scoreRatio = finalScore / (QUESTIONS_PER_GAME * 10);
+    const timeBonus = Math.max(0, (SECONDS_PER_GAME - timeTaken) / 10);
+    const xpEarned = Math.floor((scoreRatio * 60) + timeBonus); // Audio is harder, more XP
+    
+    // Record game session if user is logged in
+    if (user) {
+      try {
+        await GameProgressService.recordGameSession(
+          'audio-challenge',
+          finalScore,
+          timeTaken,
+          xpEarned,
+          categoryId
+        );
+      } catch (error) {
+        console.error("Failed to record game progress:", error);
+      }
+    } else {
+      toast({
+        title: "Game completed!",
+        description: "Sign in to save your progress and earn XP.",
+      });
+    }
+    
+    // Don't clear cache on game end for better performance across multiple games
+  }, [score, gameStartTime, user, categoryId]);
   
-  // Prepare questions when game starts
-  const prepareQuestions = async () => {
+  // Play the audio for the current question using memoized function
+  const playCurrentAudio = useCallback(() => {
+    const question = gameQuestions[currentQuestion];
+    if (question && question.contentItem.audio_url) {
+      playAudio(question.contentItem.audio_url).catch(error => {
+        console.error('Error playing audio:', error);
+      });
+    }
+  }, [gameQuestions, currentQuestion, playAudio]);
+  
+  // Prepare questions when game starts - memoized to prevent recreation
+  const prepareQuestions = useCallback(async () => {
     // Filter items with audio URLs
     const audioItems = contentItems.filter(item => item.audio_url);
     
@@ -155,12 +196,13 @@ const AudioChallengeGame = () => {
       // Get all audio URLs from the game questions
       const audioUrls = questions.map(q => q.contentItem.audio_url).filter(Boolean) as string[];
       
-      // Preload all game audio files
-      await preloadAudioBatch(audioUrls);
+      // Preload all game audio files with high priority
+      await preloadAudioBatch(audioUrls, true);
       
       // Start the game
       setGameState('playing');
-      playCurrentAudio();
+      // Small delay to ensure UI is updated before playing audio
+      setTimeout(playCurrentAudio, 300);
       
       return true;
     } catch (error) {
@@ -173,33 +215,23 @@ const AudioChallengeGame = () => {
       
       // Continue with the game anyway
       setGameState('playing');
-      playCurrentAudio();
+      setTimeout(playCurrentAudio, 300);
       
       return true;
     }
-  };
+  }, [contentItems, preloadAudioBatch, playCurrentAudio]);
   
   // Start the game
-  const startGame = () => {
+  const startGame = useCallback(() => {
     setGameState('loading');
     setScore(0);
     setCurrentQuestion(0);
     setTimeRemaining(SECONDS_PER_GAME);
     prepareQuestions();
-  };
-  
-  // Play the audio for the current question
-  const playCurrentAudio = () => {
-    const question = gameQuestions[currentQuestion];
-    if (question && question.contentItem.audio_url) {
-      playAudio(question.contentItem.audio_url).catch(error => {
-        console.error('Error playing audio:', error);
-      });
-    }
-  };
+  }, [prepareQuestions]);
   
   // Handle answer selection
-  const handleSelectAnswer = (selectedItem: ContentItem) => {
+  const handleSelectAnswer = useCallback((selectedItem: ContentItem) => {
     if (isCorrect !== null) return; // Already answered
     
     const question = gameQuestions[currentQuestion];
@@ -219,50 +251,18 @@ const AudioChallengeGame = () => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedAnswerId(null);
         setIsCorrect(null);
+        
+        // Small delay to ensure UI is updated before playing audio
         setTimeout(playCurrentAudio, 300);
       } else {
         endGame();
       }
     }, 1500);
-  };
+  }, [currentQuestion, gameQuestions, endGame, isCorrect, playCurrentAudio]);
   
-  // End the game
-  const endGame = async () => {
-    setGameState('completed');
-    
-    const finalScore = score;
-    
-    // Calculate time taken
-    const timeTaken = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : SECONDS_PER_GAME;
-    
-    // Calculate XP earned based on score and time
-    const scoreRatio = finalScore / (QUESTIONS_PER_GAME * 10);
-    const timeBonus = Math.max(0, (SECONDS_PER_GAME - timeTaken) / 10);
-    const xpEarned = Math.floor((scoreRatio * 60) + timeBonus); // Audio is harder, more XP
-    
-    // Record game session if user is logged in
-    if (user) {
-      await GameProgressService.recordGameSession(
-        'audio-challenge',
-        finalScore,
-        timeTaken,
-        xpEarned,
-        categoryId
-      );
-    } else {
-      toast({
-        title: "Game completed!",
-        description: "Sign in to save your progress and earn XP.",
-      });
-    }
-    
-    // Clean up audio resources
-    clearCache();
-  };
-  
-  // Reset the game
-  const resetGame = () => {
-    clearCache();
+  // Reset the game - memoized to avoid recreation
+  const resetGame = useCallback(() => {
+    // Don't clear cache, keep preloaded audio for better performance
     setGameState('intro');
     setScore(0);
     setCurrentQuestion(0);
@@ -270,19 +270,28 @@ const AudioChallengeGame = () => {
     setGameStartTime(null);
     setSelectedAnswerId(null);
     setIsCorrect(null);
-  };
+  }, []);
   
-  // Generate loading screen
+  // Clean up when component unmounts
+  useEffect(() => {
+    return () => {
+      // Only clear cache when component completely unmounts
+      clearCache();
+    };
+  }, [clearCache]);
+  
+  // Generate loading screen with progress bar
   const renderLoadingScreen = () => (
     <Card className="p-6 mb-6 text-center">
       <div className="flex flex-col items-center justify-center gap-4">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <h2 className="text-xl font-bold">Loading Game Content</h2>
-        <p>Preloading audio files for a smoother experience...</p>
+        <h2 className="text-xl font-bold">Loading Game Audio</h2>
+        <p>Preloading audio files for instant playback...</p>
         <Progress 
           className="w-64 h-2" 
-          value={isAudioLoading ? 75 : 100} // Simple animation effect
+          value={audioLoadingProgress} // Use actual progress from hook
         />
+        <p className="text-sm text-muted-foreground">{audioLoadingProgress}% complete</p>
       </div>
     </Card>
   );

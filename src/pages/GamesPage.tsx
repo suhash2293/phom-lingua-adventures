@@ -1,5 +1,4 @@
-
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -81,8 +80,10 @@ const GamesPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Use the audio preloader hook for background audio preloading
-  const { preloadAudioBatch } = useAudioPreloader();
+  // Use the improved audio preloader hook
+  const { preloadAudioBatch } = useAudioPreloader({
+    maxRetries: 1 // Lower retry count for background loading
+  });
   
   // Fetch user progress
   const { data: progress } = useQuery({
@@ -104,38 +105,46 @@ const GamesPage = () => {
     }
   }, [user]);
   
+  // Memoized audio preloading function to avoid recreation on renders
+  const preloadCommonAudio = useCallback(async () => {
+    try {
+      // Fetch a small set of audio items for preloading
+      const popularCategories = await ContentService.getCategories();
+      if (!popularCategories.length) return;
+      
+      // Get the first category's items
+      const categoryItems = await ContentService.getContentItemsByCategory(
+        popularCategories[0].id
+      );
+      
+      // Filter to items with audio and limit to 5
+      const audioItems = categoryItems
+        .filter(item => item.audio_url)
+        .slice(0, 5)
+        .map(item => item.audio_url)
+        .filter(Boolean) as string[];
+      
+      // Preload these in the background with lower priority
+      if (audioItems.length) {
+        preloadAudioBatch(audioItems, false);
+      }
+    } catch (error) {
+      console.error("Error preloading common audio:", error);
+    }
+  }, [preloadAudioBatch]);
+  
   // Effect to preload some common audio files in the background
   useEffect(() => {
-    const preloadCommonAudio = async () => {
-      try {
-        // Fetch a small set of audio items for preloading
-        const popularCategories = await ContentService.getCategories();
-        if (!popularCategories.length) return;
-        
-        // Get the first category's items
-        const categoryItems = await ContentService.getContentItemsByCategory(
-          popularCategories[0].id
-        );
-        
-        // Filter to items with audio and limit to 5
-        const audioItems = categoryItems
-          .filter(item => item.audio_url)
-          .slice(0, 5)
-          .map(item => item.audio_url)
-          .filter(Boolean) as string[];
-        
-        // Preload these in the background
-        if (audioItems.length) {
-          preloadAudioBatch(audioItems);
-        }
-      } catch (error) {
-        console.error("Error preloading common audio:", error);
-      }
-    };
-    
-    // Run the preloading in the background
-    preloadCommonAudio();
-  }, [preloadAudioBatch]);
+    // Use requestIdleCallback if available to preload without impacting performance
+    if (typeof window.requestIdleCallback === 'function') {
+      window.requestIdleCallback(() => {
+        preloadCommonAudio();
+      }, { timeout: 2000 });
+    } else {
+      // Fallback to setTimeout with a delay to avoid impacting initial page load
+      setTimeout(preloadCommonAudio, 2000);
+    }
+  }, [preloadCommonAudio]);
   
   // Calculate level progress
   const calculateLevelProgress = (progress?: UserProgress | null) => {
