@@ -1,11 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
+import { Input } from '@/components/ui/input';
 
 const DonatePage = () => {
   const { toast } = useToast();
+  const [customAmount, setCustomAmount] = useState<string>('');
   
   const handleDonate = (amount: string) => {
     // In a real implementation, this would open Stripe checkout
@@ -13,6 +15,20 @@ const DonatePage = () => {
       title: "Donation Flow Started",
       description: `Thank you for your generous ${amount} donation! This would open Stripe in a real implementation.`,
     });
+  };
+
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Only allow numbers
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setCustomAmount(value);
+  };
+
+  const handleCustomDonate = () => {
+    // Convert to number to ensure it's at least 1
+    const amount = parseInt(customAmount);
+    if (amount >= 1) {
+      handleDonate(`₹${amount}`);
+    }
   };
 
   return (
@@ -87,16 +103,40 @@ const DonatePage = () => {
               Choose your own contribution amount
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex gap-4">
-            {['₹100', '₹250', '₹5,000', 'Other'].map((amount) => (
-              <Button 
-                key={amount}
-                variant="outline" 
-                onClick={() => handleDonate(amount)}
-              >
-                {amount}
-              </Button>
-            ))}
+          <CardContent>
+            <div className="flex flex-col space-y-4">
+              <div className="flex flex-wrap gap-4 mb-4">
+                {['₹100', '₹250', '₹5,000', 'Other'].map((amount) => (
+                  <Button 
+                    key={amount}
+                    variant="outline" 
+                    onClick={() => handleDonate(amount)}
+                  >
+                    {amount}
+                  </Button>
+                ))}
+              </div>
+              
+              <div className="flex gap-2 items-center">
+                <div className="relative flex-grow">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2">₹</span>
+                  <Input
+                    type="text"
+                    placeholder="Enter amount (min ₹1)"
+                    value={customAmount}
+                    onChange={handleCustomAmountChange}
+                    className="pl-7"
+                    min={1}
+                  />
+                </div>
+                <Button 
+                  onClick={handleCustomDonate}
+                  disabled={!customAmount || parseInt(customAmount) < 1}
+                >
+                  Donate
+                </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
         
