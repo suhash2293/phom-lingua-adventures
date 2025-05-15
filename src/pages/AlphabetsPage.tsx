@@ -125,7 +125,19 @@ const AlphabetsPage = () => {
     return alphabets.map((item: ContentItem) => (
       <Card key={item.id} className="border-primary/20 hover:border-primary hover:shadow-md transition-all">
         <CardHeader className="bg-primary/5 pb-2">
-          <CardTitle className="flex items-center justify-center text-4xl">{item.phom_word}</CardTitle>
+          <div className="flex flex-col items-center">
+            {/* Uppercase letter */}
+            <CardTitle className="flex items-center justify-center text-4xl">
+              {item.phom_word}
+            </CardTitle>
+            
+            {/* Lowercase letter display */}
+            <div className="mt-2 px-3 py-1 bg-primary/10 rounded-md border border-primary/20">
+              <span className="text-2xl font-medium">
+                {item.phom_word.toLowerCase()}
+              </span>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="pt-4">
           <p className="text-center mb-2 font-medium">English: <span className="font-normal">{item.english_translation}</span></p>
