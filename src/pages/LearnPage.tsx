@@ -101,28 +101,14 @@ const LearnPage = () => {
                 <CardDescription>{module.description}</CardDescription>
               </CardHeader>
               
-              <CardContent className="pt-6">
-                <div className="mb-4">
+              <CardContent className="pt-6 pb-6">
+                <div>
                   <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium">Progress</span>
                     <span className="text-sm font-medium">{module.progress}%</span>
                   </div>
                   <Progress value={module.progress} className="h-2 bg-primary/10" />
                 </div>
-                
-                <h4 className="font-medium mb-2">Lessons:</h4>
-                <ul className="space-y-2">
-                  {module.lessons.map((lesson) => (
-                    <li key={lesson.id} className="flex items-center">
-                      <span className={`mr-2 ${lesson.completed ? 'text-green-500' : 'text-primary/50'}`}>
-                        {lesson.completed ? '✓' : '○'}
-                      </span>
-                      <span className={lesson.completed ? 'line-through opacity-70' : ''}>
-                        {lesson.title}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
               </CardContent>
               
               <CardFooter className="bg-primary/5 rounded-b-lg">
