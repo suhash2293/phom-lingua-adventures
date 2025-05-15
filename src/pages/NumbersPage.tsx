@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,16 +6,35 @@ import LearnLayout from '@/components/layout/LearnLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Headphones } from 'lucide-react';
+import { Headphones, Volume2, VolumeX } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAudioPreloader } from '@/hooks/use-audio-preloader';
+import { toast } from '@/components/ui/use-toast';
 
 const NumbersPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("1-10");
+
+  // Use our enhanced audio preloader hook
+  const { 
+    playAudio, 
+    preloadAudioBatch, 
+    isLoading: isAudioLoading, 
+    progress: audioLoadingProgress,
+    isCached
+  } = useAudioPreloader({
+    onLoadError: () => {
+      toast({
+        title: "Audio Loading Error",
+        description: "Some audio files couldn't be loaded. You may experience playback issues.",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Fetch numbers data
   const { data: numbers, isLoading, error } = useQuery({
@@ -73,38 +91,65 @@ const NumbersPage = () => {
     return startA - startB;
   });
 
-  // Play audio function
-  const playAudio = (url: string | null, itemId: string) => {
+  // Preload audio files when numbers data is available and tab changes
+  useEffect(() => {
+    if (numbers && numbers.length > 0 && activeTab) {
+      const currentTabItems = numberGroups[activeTab] || [];
+      
+      // Extract valid audio URLs from current tab items (high priority)
+      const currentTabAudioUrls = currentTabItems
+        .filter(item => item.audio_url)
+        .map(item => item.audio_url as string);
+      
+      if (currentTabAudioUrls.length > 0) {
+        // Preload current tab audio files with high priority
+        preloadAudioBatch(currentTabAudioUrls, true);
+      }
+      
+      // Queue up preloading for other tabs in the background with lower priority
+      const otherTabsAudioUrls: string[] = [];
+      Object.entries(numberGroups).forEach(([tabKey, tabItems]) => {
+        if (tabKey !== activeTab) {
+          tabItems.forEach(item => {
+            if (item.audio_url) {
+              otherTabsAudioUrls.push(item.audio_url as string);
+            }
+          });
+        }
+      });
+      
+      if (otherTabsAudioUrls.length > 0) {
+        // Preload other tabs in the background with lower priority
+        setTimeout(() => {
+          preloadAudioBatch(otherTabsAudioUrls, false);
+        }, 1000);
+      }
+    }
+  }, [numbers, numberGroups, activeTab, preloadAudioBatch]);
+
+  // Enhanced play audio function
+  const handlePlayAudio = async (url: string | null, itemId: string) => {
     if (!url) return;
     
-    // Stop current audio if playing
-    if (audioRef.current) {
-      audioRef.current.pause();
-      audioRef.current = null;
-    }
-    
-    // Play new audio
-    const audio = new Audio(url);
-    audioRef.current = audio;
-    audio.play();
-    setPlayingAudio(itemId);
-    
-    // Reset state when audio ends
-    audio.onended = () => {
+    try {
+      setPlayingAudio(itemId);
+      await playAudio(url);
+      
+      // Reset playing state after a short delay to keep button in "playing" state
+      // for a minimum time for better UX
+      setTimeout(() => {
+        setPlayingAudio(null);
+      }, 500);
+    } catch (error) {
+      console.error("Error playing audio:", error);
       setPlayingAudio(null);
-      audioRef.current = null;
-    };
+      toast({
+        title: "Playback Error",
+        description: "Unable to play this audio. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
-
-  // Cleanup audio on component unmount
-  useEffect(() => {
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
 
   // Redirect to login if no user
   useEffect(() => {
@@ -162,7 +207,26 @@ const NumbersPage = () => {
         <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
         <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
         
-        <Tabs defaultValue={groupKeys[0] || "1-10"} className="w-full">
+        {isAudioLoading && audioLoadingProgress < 100 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium">Loading audio files...</span>
+              <span className="text-sm font-medium">{audioLoadingProgress}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <div 
+                className="bg-primary h-2.5 rounded-full transition-all duration-300" 
+                style={{ width: `${audioLoadingProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+        
+        <Tabs 
+          defaultValue={groupKeys[0] || "1-10"} 
+          className="w-full"
+          onValueChange={setActiveTab}
+        >
           <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-8">
             {groupKeys.map((group) => (
               <TabsTrigger 
@@ -186,12 +250,27 @@ const NumbersPage = () => {
                       {item.audio_url && (
                         <Button 
                           size="sm" 
-                          variant="ghost"
+                          variant={isCached(item.audio_url) ? "ghost" : "secondary"}
                           className="mt-2 flex items-center gap-1"
-                          onClick={() => playAudio(item.audio_url, item.id)}
+                          onClick={() => handlePlayAudio(item.audio_url, item.id)}
+                          disabled={playingAudio !== null && playingAudio !== item.id}
                         >
-                          <Headphones className="h-4 w-4" />
-                          {playingAudio === item.id ? 'Playing...' : 'Listen'}
+                          {playingAudio === item.id ? (
+                            <>
+                              <Volume2 className="h-4 w-4 animate-pulse" />
+                              Playing...
+                            </>
+                          ) : !isCached(item.audio_url) ? (
+                            <>
+                              <VolumeX className="h-4 w-4" />
+                              Loading...
+                            </>
+                          ) : (
+                            <>
+                              <Headphones className="h-4 w-4" />
+                              Listen
+                            </>
+                          )}
                         </Button>
                       )}
                     </CardContent>
