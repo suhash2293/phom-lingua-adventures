@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from "@/hooks/use-toast";
 
 // Define an interface for audio cache entries that store both the AudioBuffer and HTMLAudioElement
@@ -21,6 +21,8 @@ export interface AudioPreloaderOptions {
   onLoadComplete?: () => void;
   onLoadError?: (error: any) => void;
   maxRetries?: number;
+  maxConcurrent?: number; // Maximum number of concurrent audio loads
+  debug?: boolean; // Enable debug mode
 }
 
 /**
@@ -31,6 +33,17 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
   const [loadedUrls, setLoadedUrls] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
   const [isAudioContextInitialized, setIsAudioContextInitialized] = useState(false);
+  const activeLoadsRef = useRef<number>(0);
+  const queuedLoadsRef = useRef<Array<{url: string, priority: boolean, resolve: (success: boolean) => void}>>([]);
+  const maxConcurrent = options?.maxConcurrent || 3; // Default to 3 concurrent loads
+  const debug = options?.debug || false;
+  
+  // Debug logger
+  const logDebug = useCallback((message: string, ...args: any[]) => {
+    if (debug) {
+      console.log(`🔊 [AudioLoader] ${message}`, ...args);
+    }
+  }, [debug]);
   
   /**
    * Initialize the AudioContext on user interaction
@@ -39,22 +52,59 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
   const initializeAudioContext = useCallback(() => {
     if (!audioContext) {
       try {
+        logDebug("Initializing AudioContext");
         // Create AudioContext only on user interaction
         audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
         setIsAudioContextInitialized(true);
+        
+        // Set up audio context state change listener
+        audioContext.addEventListener('statechange', () => {
+          logDebug(`AudioContext state changed to: ${audioContext?.state}`);
+        });
+        
         return true;
       } catch (error) {
         console.error("Failed to create AudioContext:", error);
         toast({
           title: "Audio Playback Issue",
-          description: "Your browser may have limited audio support. Some sounds might not play correctly.",
+          description: "Your browser may have limited audio support. Using fallback mode.",
           variant: "destructive"
         });
         return false;
       }
     }
     return true;
-  }, []);
+  }, [logDebug]);
+  
+  /**
+   * Process the audio loading queue
+   */
+  const processQueue = useCallback(() => {
+    logDebug(`Processing queue: ${queuedLoadsRef.current.length} items, ${activeLoadsRef.current} active loads`);
+    
+    while (queuedLoadsRef.current.length > 0 && activeLoadsRef.current < maxConcurrent) {
+      const next = queuedLoadsRef.current.shift();
+      if (next) {
+        const { url, priority, resolve } = next;
+        activeLoadsRef.current++;
+        
+        // Actual loading happens here
+        loadAudioFileInternal(url, priority)
+          .then(success => {
+            activeLoadsRef.current--;
+            resolve(success);
+            // Process more from queue
+            processQueue();
+          })
+          .catch(() => {
+            activeLoadsRef.current--;
+            resolve(false);
+            // Process more from queue
+            processQueue();
+          });
+      }
+    }
+  }, [maxConcurrent]);
   
   /**
    * Initialize an audio entry in the cache
@@ -77,9 +127,9 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
   }, []);
 
   /**
-   * Load a single audio file into cache
+   * Internal function to load a single audio file into cache without queue management
    */
-  const loadAudioFile = useCallback(async (url: string, priority = false): Promise<boolean> => {
+  const loadAudioFileInternal = useCallback(async (url: string, priority = false): Promise<boolean> => {
     if (!url) return false;
     
     try {
@@ -91,18 +141,43 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // Mark as loading
       entry.loading = true;
+      logDebug(`Loading audio: ${url}`, { priority });
       
-      // Initialize AudioContext if needed
-      if (!audioContext && !initializeAudioContext()) {
-        // Fall back to HTML Audio API if AudioContext fails
+      // Initialize AudioContext if needed (but don't force it if not on user interaction)
+      if (!audioContext && window.AudioContext) {
         try {
+          initializeAudioContext();
+        } catch (e) {
+          logDebug("AudioContext initialization deferred until user interaction");
+        }
+      }
+      
+      // If AudioContext is not available or suspended, fall back to HTML Audio API
+      if (!audioContext || audioContext.state === 'suspended') {
+        try {
+          logDebug(`Using HTML Audio fallback for ${url}`);
           const audio = new Audio(url);
           audio.crossOrigin = "anonymous";
           
           // Set up event listeners
           const loadPromise = new Promise<void>((resolve, reject) => {
-            audio.addEventListener('canplaythrough', () => resolve(), { once: true });
-            audio.addEventListener('error', (e) => reject(e), { once: true });
+            const onLoad = () => {
+              logDebug(`HTML Audio loaded: ${url}`);
+              resolve();
+            };
+            
+            const onError = (e: ErrorEvent) => {
+              logDebug(`HTML Audio error: ${url}`, e);
+              reject(e);
+            };
+            
+            audio.addEventListener('canplaythrough', onLoad, { once: true });
+            audio.addEventListener('error', onError, { once: true });
+            
+            // Add timeout to avoid hanging
+            setTimeout(() => {
+              reject(new Error("Audio load timeout"));
+            }, 15000);
           });
           
           // Start loading
@@ -117,7 +192,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
           
           return true;
         } catch (error) {
-          console.error(`HTML Audio fallback failed for ${url}:`, error);
+          console.warn(`HTML Audio fallback failed for ${url}:`, error);
           entry.loading = false;
           entry.error = true;
           return false;
@@ -132,7 +207,9 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         }
       });
       
-      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
       
       // Get the array buffer from the response
       const arrayBuffer = await response.arrayBuffer();
@@ -149,6 +226,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       entry.buffer = audioBuffer;
       entry.loaded = true;
       entry.loading = false;
+      logDebug(`Successfully loaded audio: ${url}`);
       
       // Also set up the HTML audio element as a fallback
       entry.audio.src = url;
@@ -167,11 +245,17 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
           entry.retries++;
           // Retry loading after a short delay with exponential backoff
           const delay = 1000 * Math.pow(2, entry.retries - 1);
-          console.log(`Retrying audio load for ${url} in ${delay}ms (attempt ${entry.retries})`);
-          setTimeout(() => loadAudioFile(url, priority), delay);
+          logDebug(`Retrying audio load for ${url} in ${delay}ms (attempt ${entry.retries})`);
+          return new Promise(resolve => {
+            setTimeout(async () => {
+              const success = await loadAudioFileInternal(url, priority);
+              resolve(success);
+            }, delay);
+          });
         } else {
           // After max retries, try HTML Audio API as a fallback
           try {
+            logDebug(`Trying final HTML Audio fallback for ${url}`);
             const audio = new Audio();
             audio.crossOrigin = "anonymous";
             audio.src = url;
@@ -183,7 +267,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
                 entry.loaded = true;
                 entry.loading = false;
                 entry.error = false;
-                console.log(`Fallback HTML Audio loaded for ${url}`);
+                logDebug(`Fallback HTML Audio loaded for ${url}`);
               }
             });
             
@@ -202,7 +286,34 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       return false;
     }
-  }, [initAudioEntry, initializeAudioContext]);
+  }, [initAudioEntry, initializeAudioContext, options?.maxRetries, logDebug]);
+
+  /**
+   * Queue a single audio file load
+   */
+  const loadAudioFile = useCallback(async (url: string, priority = false): Promise<boolean> => {
+    if (!url) return false;
+    
+    // If already loaded, return immediately
+    if (audioCache[url]?.loaded) return true;
+    
+    // If already loading with equal or higher priority, skip
+    if (audioCache[url]?.loading && !priority) return false;
+    
+    // Queue the load and return a promise
+    return new Promise<boolean>(resolve => {
+      if (priority) {
+        // Add to front of queue for high priority items
+        queuedLoadsRef.current.unshift({url, priority, resolve});
+      } else {
+        // Add to end of queue for normal priority
+        queuedLoadsRef.current.push({url, priority, resolve});
+      }
+      
+      // Process queue on next tick to batch loads
+      setTimeout(() => processQueue(), 0);
+    });
+  }, [processQueue]);
 
   /**
    * Preload a batch of audio files with prioritization
@@ -217,6 +328,8 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       // Filter out already loaded URLs if not forcing reload
       const urlsToLoad = urls.filter(url => !audioCache[url]?.loaded);
       
+      logDebug(`Preloading batch: ${urlsToLoad.length} files`, { highPriority });
+      
       if (urlsToLoad.length === 0) {
         setIsLoading(false);
         options?.onLoadComplete?.();
@@ -228,8 +341,14 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       let completedCount = 0;
       
-      // Load all files with prioritization
-      const loadPromises = urlsToLoad.map(async (url) => {
+      // Load all files with prioritization - process in smaller batches
+      const batchSize = Math.min(5, urlsToLoad.length); // Start with just visible items
+      const initialBatch = urlsToLoad.slice(0, batchSize);
+      
+      logDebug(`Starting initial batch of ${initialBatch.length} files`);
+      
+      // Start with initial batch
+      const initialPromises = initialBatch.map(async (url) => {
         const success = await loadAudioFile(url, highPriority);
         
         // Update progress
@@ -239,30 +358,50 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         return { url, success };
       });
       
-      // Wait for all to complete
-      const results = await Promise.allSettled(loadPromises);
+      // Wait for initial batch to complete
+      await Promise.allSettled(initialPromises);
       
-      // Update loaded URLs list
-      const newLoadedUrls = results
-        .filter((result): result is PromiseFulfilledResult<{url: string, success: boolean}> => 
-          result.status === 'fulfilled' && result.value.success)
-        .map(result => result.value.url);
-      
-      setLoadedUrls(prev => {
-        const uniqueUrls = new Set([...prev, ...newLoadedUrls]);
-        return Array.from(uniqueUrls);
-      });
-      
-      // Check for any errors
-      const errors = results.filter(
-        result => result.status === 'rejected' || 
-        (result.status === 'fulfilled' && !result.value.success)
-      );
-      
-      if (errors.length > 0) {
-        console.warn(`Failed to load ${errors.length} of ${urlsToLoad.length} audio files`);
-        if (options?.onLoadError) {
-          options.onLoadError(errors);
+      // Then load the rest if any
+      if (urlsToLoad.length > batchSize) {
+        const remainingBatch = urlsToLoad.slice(batchSize);
+        
+        logDebug(`Loading remaining ${remainingBatch.length} files with lower priority`);
+        
+        const remainingPromises = remainingBatch.map(async (url) => {
+          const success = await loadAudioFile(url, false); // Lower priority for rest
+          
+          // Update progress
+          completedCount++;
+          setProgress(Math.floor((completedCount / urlsToLoad.length) * 100));
+          
+          return { url, success };
+        });
+        
+        // Wait for all to complete
+        const results = await Promise.allSettled(remainingPromises);
+        
+        // Update loaded URLs list
+        const newLoadedUrls = results
+          .filter((result): result is PromiseFulfilledResult<{url: string, success: boolean}> => 
+            result.status === 'fulfilled' && result.value.success)
+          .map(result => result.value.url);
+        
+        setLoadedUrls(prev => {
+          const uniqueUrls = new Set([...prev, ...newLoadedUrls]);
+          return Array.from(uniqueUrls);
+        });
+        
+        // Check for any errors
+        const errors = results.filter(
+          result => result.status === 'rejected' || 
+          (result.status === 'fulfilled' && !result.value.success)
+        );
+        
+        if (errors.length > 0) {
+          logDebug(`Failed to load ${errors.length} of ${urlsToLoad.length} audio files`);
+          if (options?.onLoadError) {
+            options.onLoadError(errors);
+          }
         }
       }
     } catch (error) {
@@ -275,7 +414,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       setProgress(100);
       options?.onLoadComplete?.();
     }
-  }, [loadAudioFile, initAudioEntry, options]);
+  }, [loadAudioFile, initAudioEntry, options, logDebug]);
 
   /**
    * Play an audio file from cache with optimized playback
@@ -284,8 +423,11 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
     if (!url) return;
     
     try {
+      logDebug(`Attempting to play: ${url}`);
+      
       // Initialize AudioContext if it's the first play
       if (!audioContext) {
+        logDebug("Initializing AudioContext for playback");
         if (!initializeAudioContext()) {
           throw new Error("Unable to initialize AudioContext");
         }
@@ -293,6 +435,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // Check if context is suspended and resume it
       if (audioContext && audioContext.state === 'suspended') {
+        logDebug("Resuming suspended AudioContext");
         await audioContext.resume();
       }
       
@@ -301,11 +444,13 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // If not loaded yet, load it immediately with high priority
       if (!entry.loaded && !entry.loading) {
+        logDebug("Audio not loaded yet, loading with high priority");
         await loadAudioFile(url, true);
       }
       
       // Play using Web Audio API if we have the buffer and context
       if (audioContext && entry.buffer) {
+        logDebug("Playing using Web Audio API");
         // Create a new source node for playback
         const source = audioContext.createBufferSource();
         source.buffer = entry.buffer;
@@ -316,6 +461,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // Fallback to HTML Audio API if Web Audio API failed
       if (entry.audio) {
+        logDebug("Playing using HTML Audio API");
         entry.audio.currentTime = 0;
         entry.audio.pause();
         
@@ -333,7 +479,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
               console.error("Audio couldn't be played even after retry:", err);
               toast({
                 title: "Audio Playback Error",
-                description: "Browser prevented audio playback. Try interacting with the page first.",
+                description: "Please interact with the page first before playing audio.",
                 variant: "destructive"
               });
             });
@@ -348,7 +494,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         variant: "destructive"
       });
     }
-  }, [initAudioEntry, loadAudioFile, initializeAudioContext]);
+  }, [initAudioEntry, loadAudioFile, initializeAudioContext, logDebug]);
 
   /**
    * Clear specific URLs or all from the cache
@@ -364,6 +510,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         delete audioCache[url];
       });
       setLoadedUrls([]);
+      logDebug("Cleared entire audio cache");
     } else {
       // Clear specific URLs
       urls.forEach(url => {
@@ -375,8 +522,9 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         }
       });
       setLoadedUrls(prev => prev.filter(url => !urls.includes(url)));
+      logDebug(`Cleared ${urls.length} items from audio cache`);
     }
-  }, []);
+  }, [logDebug]);
 
   // Clean up on unmount - but don't clear the entire cache
   useEffect(() => {
@@ -388,8 +536,29 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
           entry.audio.pause();
         }
       });
+      logDebug("Component unmounting, paused all audio");
     };
-  }, []);
+  }, [logDebug]);
+
+  // Listen for visibility changes to optimize resource usage
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        logDebug("Page hidden, pausing all audio");
+        // Pause all audio when tab is inactive
+        Object.values(audioCache).forEach(entry => {
+          if (entry.audio) {
+            entry.audio.pause();
+          }
+        });
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [logDebug]);
 
   return {
     preloadAudioBatch,

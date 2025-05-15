@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,20 +16,24 @@ const AlphabetsPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  const [audioInitialized, setAudioInitialized] = useState(false);
 
-  // Use our enhanced audio preloader hook
+  // Use our enhanced audio preloader hook with improved options
   const { 
     playAudio, 
     preloadAudioBatch, 
+    initializeAudioContext,
     isLoading: isAudioLoading, 
     progress: audioLoadingProgress,
     isCached
   } = useAudioPreloader({
+    maxConcurrent: 3, // Limit concurrent audio loads
+    maxRetries: 3, // Increased retries
     onLoadError: () => {
       toast({
-        title: "Audio Loading Error",
-        description: "Some audio files couldn't be loaded. You may experience playback issues.",
-        variant: "destructive"
+        title: "Audio Loading Notice",
+        description: "Some audio files are being prepared. Click on any element to enable audio playback.",
+        variant: "default"
       });
     }
   });
@@ -41,26 +44,61 @@ const AlphabetsPage = () => {
     queryFn: () => ContentService.getContentItemsByCategoryName('Alphabet'),
   });
 
-  // Preload audio files when alphabets data is available
+  // Initialize audio system on first user interaction with the page
+  const handlePageInteraction = () => {
+    if (!audioInitialized) {
+      initializeAudioContext();
+      setAudioInitialized(true);
+    }
+  };
+
+  // Add event listeners for user interaction to initialize audio
   useEffect(() => {
-    if (alphabets && alphabets.length > 0) {
+    const initAudio = () => {
+      if (!audioInitialized) {
+        initializeAudioContext();
+        setAudioInitialized(true);
+        // Remove event listeners after first interaction
+        document.removeEventListener('click', initAudio);
+        document.removeEventListener('touchstart', initAudio);
+      }
+    };
+
+    document.addEventListener('click', initAudio, { once: true });
+    document.addEventListener('touchstart', initAudio, { once: true });
+
+    return () => {
+      document.removeEventListener('click', initAudio);
+      document.removeEventListener('touchstart', initAudio);
+    };
+  }, [audioInitialized, initializeAudioContext]);
+
+  // Preload audio files when alphabets data is available (more efficiently now)
+  useEffect(() => {
+    if (alphabets && alphabets.length > 0 && audioInitialized) {
       // Extract valid audio URLs
       const audioUrls = alphabets
         .filter(item => item.audio_url)
         .map(item => item.audio_url as string);
       
       if (audioUrls.length > 0) {
-        // Preload all audio files
+        // Preload all audio files with progressive loading
         preloadAudioBatch(audioUrls);
       }
     }
-  }, [alphabets, preloadAudioBatch]);
+  }, [alphabets, preloadAudioBatch, audioInitialized]);
 
   // Enhanced play audio function
   const handlePlayAudio = async (url: string | null, itemId: string) => {
     if (!url) return;
     
     try {
+      // Initialize audio context if not already done
+      if (!audioInitialized) {
+        initializeAudioContext();
+        setAudioInitialized(true);
+      }
+      
       setPlayingAudio(itemId);
       await playAudio(url);
       
@@ -123,7 +161,11 @@ const AlphabetsPage = () => {
     }
 
     return alphabets.map((item: ContentItem) => (
-      <Card key={item.id} className="border-primary/20 hover:border-primary hover:shadow-md transition-all">
+      <Card 
+        key={item.id} 
+        className="border-primary/20 hover:border-primary hover:shadow-md transition-all"
+        onClick={handlePageInteraction}
+      >
         <CardHeader className="bg-primary/5 pb-2">
           <div className="flex flex-col items-center">
             {/* Uppercase letter */}
@@ -158,10 +200,10 @@ const AlphabetsPage = () => {
                     <Volume2 className="h-4 w-4 animate-pulse" />
                     Playing...
                   </>
-                ) : !isCached(item.audio_url) ? (
+                ) : !isCached(item.audio_url) || !audioInitialized ? (
                   <>
                     <VolumeX className="h-4 w-4" />
-                    Loading...
+                    {audioInitialized ? "Loading..." : "Click to Enable Audio"}
                   </>
                 ) : (
                   <>
@@ -179,11 +221,17 @@ const AlphabetsPage = () => {
 
   return (
     <LearnLayout>
-      <div className="container px-4 md:px-6 py-8 md:py-12">
+      <div className="container px-4 md:px-6 py-8 md:py-12" onClick={handlePageInteraction}>
         <h1 className="text-3xl font-bold mb-6">Phom Alphabets</h1>
         <p className="text-lg mb-8">Learn the Phom alphabet with pronunciation and examples.</p>
         
-        {isAudioLoading && audioLoadingProgress < 100 && (
+        {!audioInitialized && (
+          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <p className="text-center">👆 Click anywhere or interact with the page to enable audio playback</p>
+          </div>
+        )}
+        
+        {isAudioLoading && audioInitialized && audioLoadingProgress < 100 && (
           <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Loading audio files...</span>
