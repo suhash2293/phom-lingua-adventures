@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -373,7 +372,7 @@ const MemoryChallengeGame = () => {
         </Card>
       )}
       
-      <style jsx>{`
+      <style>{`
         .perspective-1000 {
           perspective: 1000px;
         }

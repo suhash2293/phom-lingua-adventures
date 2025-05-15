@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { shuffle } from 'lodash';
-import { VolumeUp, ArrowLeft, Clock, Check, X } from 'lucide-react';
+import { Volume2, ArrowLeft, Clock, Check, X } from 'lucide-react';
 
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
@@ -307,7 +306,7 @@ const AudioChallengeGame = () => {
               className="h-16 w-16 rounded-full mx-auto"
               onClick={playCurrentAudio}
             >
-              <VolumeUp className="h-8 w-8" />
+              <Volume2 className="h-8 w-8" />
             </Button>
           </div>
           

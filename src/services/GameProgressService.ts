@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
@@ -83,8 +82,7 @@ export const GameProgressService = {
       });
     } else if (amount > 0) {
       toast({
-        description: `+${amount} XP earned!`,
-        duration: 2000,
+        description: `+${amount} XP earned!`
       });
     }
     

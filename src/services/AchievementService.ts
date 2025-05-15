@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { GameProgressService } from './GameProgressService';
 
 export type Achievement = {
   id: string;
@@ -157,15 +157,13 @@ export const AchievementService = {
     
     // Add XP reward
     if (achievement.xp_reward > 0) {
-      const { data: gameProgressService } = await import('./GameProgressService');
-      await gameProgressService.GameProgressService.addXP(achievement.xp_reward);
+      await GameProgressService.addXP(achievement.xp_reward);
     }
     
     // Show achievement notification
     toast({
       title: "Achievement Unlocked!",
-      description: `${achievement.name}: ${achievement.description}`,
-      duration: 5000,
+      description: `${achievement.name}: ${achievement.description}`
     });
     
     return data;
