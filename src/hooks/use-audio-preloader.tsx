@@ -30,13 +30,19 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
   const [isLoading, setIsLoading] = useState(false);
   const [loadedUrls, setLoadedUrls] = useState<string[]>([]);
   const [progress, setProgress] = useState(0);
+  const [isAudioContextInitialized, setIsAudioContextInitialized] = useState(false);
   
-  // Initialize AudioContext on first use
-  useEffect(() => {
+  /**
+   * Initialize the AudioContext on user interaction
+   * This should be called after a user gesture (click, touch, etc.)
+   */
+  const initializeAudioContext = useCallback(() => {
     if (!audioContext) {
       try {
-        // Create AudioContext only on user interaction if possible
+        // Create AudioContext only on user interaction
         audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        setIsAudioContextInitialized(true);
+        return true;
       } catch (error) {
         console.error("Failed to create AudioContext:", error);
         toast({
@@ -44,14 +50,12 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
           description: "Your browser may have limited audio support. Some sounds might not play correctly.",
           variant: "destructive"
         });
+        return false;
       }
     }
-    
-    return () => {
-      // Don't close the audioContext on component unmount as it might be used by other components
-    };
+    return true;
   }, []);
-
+  
   /**
    * Initialize an audio entry in the cache
    */
@@ -76,7 +80,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
    * Load a single audio file into cache
    */
   const loadAudioFile = useCallback(async (url: string, priority = false): Promise<boolean> => {
-    if (!url || !audioContext) return false;
+    if (!url) return false;
     
     try {
       let entry = initAudioEntry(url);
@@ -87,6 +91,38 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // Mark as loading
       entry.loading = true;
+      
+      // Initialize AudioContext if needed
+      if (!audioContext && !initializeAudioContext()) {
+        // Fall back to HTML Audio API if AudioContext fails
+        try {
+          const audio = new Audio(url);
+          audio.crossOrigin = "anonymous";
+          
+          // Set up event listeners
+          const loadPromise = new Promise<void>((resolve, reject) => {
+            audio.addEventListener('canplaythrough', () => resolve(), { once: true });
+            audio.addEventListener('error', (e) => reject(e), { once: true });
+          });
+          
+          // Start loading
+          audio.load();
+          await loadPromise;
+          
+          // Store in cache
+          entry.audio = audio;
+          entry.loaded = true;
+          entry.loading = false;
+          entry.error = false;
+          
+          return true;
+        } catch (error) {
+          console.error(`HTML Audio fallback failed for ${url}:`, error);
+          entry.loading = false;
+          entry.error = true;
+          return false;
+        }
+      }
       
       // Fetch the audio file with credentials
       const response = await fetch(url, { 
@@ -100,6 +136,11 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // Get the array buffer from the response
       const arrayBuffer = await response.arrayBuffer();
+      
+      // Make sure we have AudioContext before decoding
+      if (!audioContext) {
+        if (!initializeAudioContext()) throw new Error("Failed to initialize AudioContext");
+      }
       
       // Decode the audio data in the background
       const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
@@ -161,7 +202,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       return false;
     }
-  }, [initAudioEntry]);
+  }, [initAudioEntry, initializeAudioContext]);
 
   /**
    * Preload a batch of audio files with prioritization
@@ -243,6 +284,18 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
     if (!url) return;
     
     try {
+      // Initialize AudioContext if it's the first play
+      if (!audioContext) {
+        if (!initializeAudioContext()) {
+          throw new Error("Unable to initialize AudioContext");
+        }
+      }
+      
+      // Check if context is suspended and resume it
+      if (audioContext && audioContext.state === 'suspended') {
+        await audioContext.resume();
+      }
+      
       // Initialize entry if not in cache
       const entry = initAudioEntry(url);
       
@@ -253,11 +306,6 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
       
       // Play using Web Audio API if we have the buffer and context
       if (audioContext && entry.buffer) {
-        // Check if context is suspended and resume it
-        if (audioContext.state === 'suspended') {
-          await audioContext.resume();
-        }
-        
         // Create a new source node for playback
         const source = audioContext.createBufferSource();
         source.buffer = entry.buffer;
@@ -285,7 +333,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
               console.error("Audio couldn't be played even after retry:", err);
               toast({
                 title: "Audio Playback Error",
-                description: "Browser prevented audio playback. Try clicking elsewhere on the page first.",
+                description: "Browser prevented audio playback. Try interacting with the page first.",
                 variant: "destructive"
               });
             });
@@ -300,7 +348,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
         variant: "destructive"
       });
     }
-  }, [initAudioEntry, loadAudioFile]);
+  }, [initAudioEntry, loadAudioFile, initializeAudioContext]);
 
   /**
    * Clear specific URLs or all from the cache
@@ -350,6 +398,7 @@ export function useAudioPreloader(options?: AudioPreloaderOptions) {
     isLoading,
     loadedUrls,
     progress,
-    isCached: useCallback((url: string) => !!audioCache[url]?.loaded, [])
+    isCached: useCallback((url: string) => !!audioCache[url]?.loaded, []),
+    initializeAudioContext // Export this function to let components initialize audio on user gesture
   };
 }

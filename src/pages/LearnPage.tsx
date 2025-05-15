@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import LearnLayout from '@/components/layout/LearnLayout';
+import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 
 // Mock learning data
 const modules = [
@@ -73,13 +74,22 @@ const modules = [
 const LearnPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { initializeAudioContext } = useAudioPreloader();
 
   // Redirect to login if no user
-  React.useEffect(() => {
+  useEffect(() => {
     if (!user) {
       navigate('/auth');
     }
   }, [user, navigate]);
+
+  // Handle module click - initialize audio context and navigate
+  const handleModuleClick = (moduleId: string) => {
+    // Initialize audio context on user interaction
+    initializeAudioContext();
+    // Navigate to the module page
+    navigate(`/learn/${moduleId}`);
+  };
 
   if (!user) {
     return null;
@@ -114,7 +124,7 @@ const LearnPage = () => {
               <CardFooter className="bg-primary/5 rounded-b-lg">
                 <Button
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
-                  onClick={() => navigate(`/learn/${module.id}`)}
+                  onClick={() => handleModuleClick(module.id)}
                 >
                   {module.progress > 0 ? 'Continue Learning' : 'Start Learning'}
                 </Button>
