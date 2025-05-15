@@ -46,7 +46,7 @@ export default function Header() {
               Learn
             </Link>
             <Link to="/practice" className="text-sm font-medium hover:text-primary transition-colors">
-              Practice
+              Games
             </Link>
             <Link to="/donate" className="text-sm font-medium hover:text-primary transition-colors">
               Donate
@@ -113,7 +113,7 @@ export default function Header() {
                   to="/practice" 
                   className="text-lg font-semibold hover:text-primary transition-colors"
                 >
-                  Practice
+                  Games
                 </Link>
                 <Link 
                   to="/donate" 
