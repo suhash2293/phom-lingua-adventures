@@ -30,6 +30,7 @@ serve(async (req) => {
     
     // Get user information if available
     let userEmail = "guest@example.com"; // Default for guest donations
+    let userId = null;
     
     // Create Supabase client to verify user if JWT is provided
     const supabaseClient = createClient(
@@ -41,10 +42,13 @@ serve(async (req) => {
     if (authHeader) {
       const token = authHeader.replace("Bearer ", "");
       const { data } = await supabaseClient.auth.getUser(token);
-      if (data?.user?.email) {
-        userEmail = data.user.email;
+      if (data?.user) {
+        userEmail = data.user.email || userEmail;
+        userId = data.user.id;
       }
     }
+
+    console.log(`Creating payment for ${userEmail}, amount: ${amount} ${currency}`);
 
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -68,6 +72,8 @@ serve(async (req) => {
       cancel_url: `${req.headers.get("origin")}/donate`,
     });
 
+    console.log(`Created stripe session: ${session.id}`);
+
     // Record the donation in our database
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
@@ -79,6 +85,7 @@ serve(async (req) => {
       amount: amount,
       currency: currency,
       email: userEmail,
+      user_id: userId,
       stripe_session_id: session.id,
       status: "pending",
     });

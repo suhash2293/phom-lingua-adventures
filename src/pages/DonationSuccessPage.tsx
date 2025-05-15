@@ -4,24 +4,64 @@ import { useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
+
+interface DonationDetails {
+  amount?: number;
+  currency?: string;
+  email?: string;
+  status?: string;
+}
 
 const DonationSuccessPage = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const [donationDetails, setDonationDetails] = useState<{ amount?: number; currency?: string }>({});
+  const [donationDetails, setDonationDetails] = useState<DonationDetails>({});
+  const [loading, setLoading] = useState<boolean>(true);
   
   useEffect(() => {
-    // In a production app, you would verify the payment status
-    // using the sessionId with the Stripe API via a backend function
-    console.log("Donation successful with session ID:", sessionId);
+    async function fetchDonationDetails() {
+      if (!sessionId) {
+        setLoading(false);
+        return;
+      }
+      
+      try {
+        // Fetch donation details from the database
+        const { data, error } = await supabase
+          .from('donations')
+          .select('amount, currency, email, status')
+          .eq('stripe_session_id', sessionId)
+          .maybeSingle();
+        
+        if (error) {
+          throw error;
+        }
+        
+        if (data) {
+          setDonationDetails(data);
+        } else {
+          // Fallback to a default amount if we can't find the donation
+          setDonationDetails({
+            amount: 1000,
+            currency: "inr",
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching donation details:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch donation details. Please contact support.",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
     
-    // For demo purposes, we're simulating getting donation details
-    // In a real app, you would fetch this from your database
-    setDonationDetails({
-      amount: 1000, // Example amount
-      currency: "inr",
-    });
+    fetchDonationDetails();
   }, [sessionId]);
   
   return (
@@ -38,11 +78,15 @@ const DonationSuccessPage = () => {
             Your contribution will help us preserve the Phom language and create new learning resources.
           </p>
           
-          {donationDetails.amount && (
+          {loading ? (
+            <div className="flex justify-center py-4">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : donationDetails.amount ? (
             <p className="text-xl font-semibold">
-              Amount: {donationDetails.currency === 'inr' ? '₹' : '$'}{(donationDetails.amount/100).toFixed(2)}
+              Amount: {donationDetails.currency === 'inr' ? '₹' : '$'}{(donationDetails.amount).toFixed(2)}
             </p>
-          )}
+          ) : null}
           
           <div className="pt-6">
             <p className="text-muted-foreground mb-6">
