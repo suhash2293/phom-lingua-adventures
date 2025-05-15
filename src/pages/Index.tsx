@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -11,7 +10,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import { AlphabetKey, CalendarDays, CalendarMonth, Percent } from 'lucide-react';
+import { LetterCase, CalendarDays, Calendar, Percent } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const Index = () => {
@@ -68,7 +67,7 @@ const Index = () => {
             <CardContent className="p-0">
               <AspectRatio ratio={16/9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <AlphabetKey className="h-8 w-8 text-primary" />
+                  <LetterCase className="h-8 w-8 text-primary" />
                 </div>
               </AspectRatio>
             </CardContent>
@@ -149,7 +148,7 @@ const Index = () => {
             <CardContent className="p-0">
               <AspectRatio ratio={16/9} className="bg-gradient-to-br from-amber-100/50 to-amber-50/30 dark:from-amber-900/50 dark:to-amber-800/30 flex items-center justify-center">
                 <div className="w-16 h-16 rounded-full bg-amber-200/40 dark:bg-amber-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <CalendarMonth className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+                  <Calendar className="h-8 w-8 text-amber-600 dark:text-amber-400" />
                 </div>
               </AspectRatio>
             </CardContent>
