@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -180,10 +179,10 @@ const GamesPage = () => {
         />
         
         <GameCard 
-          title="Sentence Builder" 
-          description="Arrange words to form correct sentences" 
+          title="Word Scramble" 
+          description="Unscramble the letters to form the correct Phom words" 
           icon={<ChevronRight className="h-6 w-6" />}
-          path="/games/sentence-builder"
+          path="/games/word-scramble"
           categories={categories}
         />
         

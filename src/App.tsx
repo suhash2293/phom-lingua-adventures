@@ -26,7 +26,7 @@ import NotFound from "./pages/NotFound";
 import GamesPage from "./pages/GamesPage";
 import WordMatchGame from "./pages/games/WordMatchGame";
 import AudioChallengeGame from "./pages/games/AudioChallengeGame";
-import SentenceBuilderGame from "./pages/games/SentenceBuilderGame";
+import WordScrambleGame from "./pages/games/WordScrambleGame";
 import MemoryChallengeGame from "./pages/games/MemoryChallengeGame";
 
 const queryClient = new QueryClient();
@@ -58,7 +58,7 @@ const App = () => (
                 <Route path="/games" element={<GamesPage />} />
                 <Route path="/games/word-match/:categoryId?" element={<WordMatchGame />} />
                 <Route path="/games/audio-challenge/:categoryId?" element={<AudioChallengeGame />} />
-                <Route path="/games/sentence-builder/:categoryId?" element={<SentenceBuilderGame />} />
+                <Route path="/games/word-scramble/:categoryId?" element={<WordScrambleGame />} />
                 <Route path="/games/memory-challenge/:categoryId?" element={<MemoryChallengeGame />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
