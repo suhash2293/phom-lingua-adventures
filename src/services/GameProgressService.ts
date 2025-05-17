@@ -1,6 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
+import { useConfettiStore } from '@/stores/confetti';
 
 export type UserProgress = {
   id: string;
@@ -48,9 +48,27 @@ export const GameProgressService = {
     return data;
   },
   
-  // New method to create initial user progress if missing
+  // Improved method to create initial user progress if missing
   async createInitialUserProgress(userId: string): Promise<UserProgress | null> {
     console.log('Creating initial user progress for user:', userId);
+    
+    // Check if a user is authenticated first
+    const { data: authData } = await supabase.auth.getUser();
+    if (!authData.user) {
+      console.error('No authenticated user when trying to create progress');
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to track your progress.",
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    // Ensure we're creating progress for the authenticated user
+    if (userId !== authData.user.id) {
+      console.error('User ID mismatch when creating progress');
+      return null;
+    }
     
     const initialProgress = {
       user_id: userId,
@@ -61,23 +79,59 @@ export const GameProgressService = {
       last_played_at: null
     };
     
-    const { data, error } = await supabase
-      .from('user_progress')
-      .insert(initialProgress)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error creating initial user progress:', error);
+    try {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .insert(initialProgress)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating initial user progress:', error);
+        
+        // Show more specific error messages based on error types
+        if (error.code === '42501') {
+          toast({
+            title: "Permission Error",
+            description: "You don't have permission to create progress records.",
+            variant: "destructive"
+          });
+        } else if (error.code === '23505') {
+          // If duplicate key error, try to fetch the existing record instead
+          console.log('Progress record already exists, fetching it instead');
+          const { data: existingData } = await supabase
+            .from('user_progress')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+            
+          return existingData;
+        } else {
+          toast({
+            title: "Error",
+            description: "Failed to create progress record. Please try signing out and back in.",
+            variant: "destructive"
+          });
+        }
+        return null;
+      }
+      
+      // If successful, show a welcome toast
+      toast({
+        title: "Welcome!",
+        description: "Your progress tracking has been set up.",
+      });
+      
+      return data;
+    } catch (unexpectedError) {
+      console.error('Unexpected error in createInitialUserProgress:', unexpectedError);
       toast({
         title: "Error",
-        description: "Failed to create progress record. Please try signing out and back in.",
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
       return null;
     }
-    
-    return data;
   },
   
   async updateUserProgress(updates: Partial<UserProgress>): Promise<UserProgress | null> {
@@ -137,6 +191,9 @@ export const GameProgressService = {
           title: "Level Up!",
           description: `Congratulations! You've reached level ${newLevel}!`,
         });
+        
+        // Trigger confetti for level up
+        useConfettiStore.getState().fire();
       } else if (amount > 0) {
         toast({
           description: `+${amount} XP earned!`
