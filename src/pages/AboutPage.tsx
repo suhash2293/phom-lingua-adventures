@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
 const AboutPage = () => {
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
@@ -98,9 +96,7 @@ const AboutPage = () => {
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="md:w-2/3">
             <h2 className="text-2xl font-bold mb-4">Join Our Community</h2>
-            <p className="mb-6">
-              Whether you're a native Phom speaker looking to improve your English, or you're interested in learning this unique dialect, our community welcomes you. Start your language journey today.
-            </p>
+            <p className="mb-6">Whether you're a native Phom speaker looking to improve your native dialect, or you are interested in learning it, our community welcomes you. Start your language journey today.</p>
             <div className="flex flex-wrap gap-4">
               <Button asChild>
                 <Link to="/auth">Create Free Account</Link>
