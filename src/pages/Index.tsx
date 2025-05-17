@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -135,10 +134,9 @@ const Index = () => {
       <section className="py-8 flex justify-center">
         <Button 
           onClick={() => navigate('/games')}
-          size="lg" 
-          className="group bg-purple-600 hover:bg-purple-700 hover:shadow-lg transition-all duration-300 transform hover:scale-105 px-8 py-6 h-auto text-lg"
+          className="group bg-phom-yellow hover:bg-amber-500 hover:shadow-lg transition-all duration-300 transform hover:scale-105 px-6 py-3 h-auto"
         >
-          <Gamepad className="mr-2 h-6 w-6 group-hover:animate-pulse" />
+          <Gamepad className="mr-2 h-5 w-5 group-hover:animate-pulse" />
           Play Interactive Games
         </Button>
       </section>
