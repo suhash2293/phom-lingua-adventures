@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -116,10 +115,16 @@ const GamesPage = () => {
   // Define the alphabets category ID to exclude from some games
   const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
   
-  // Effect to check and award achievements
+  // Enhanced effect for checking achievements and user progress
   useEffect(() => {
     if (user) {
+      // Check for achievements
       AchievementService.checkAndAwardAchievements();
+      
+      // Make sure user progress exists
+      GameProgressService.getUserProgress().catch(error => {
+        console.error("Error fetching user progress:", error);
+      });
     }
   }, [user]);
   
@@ -164,13 +169,19 @@ const GamesPage = () => {
     }
   }, [preloadCommonAudio]);
   
-  // Calculate level progress
+  // Enhanced level progress calculation with error handling
   const calculateLevelProgress = (progress?: UserProgress | null) => {
     if (!progress) return 0;
     
-    const currentLevelXP = GameProgressService.calculateXPForNextLevel(progress.level);
-    // Simple estimate - assume starting from 0 for current level
-    return Math.min(100, Math.floor((progress.xp % currentLevelXP) / currentLevelXP * 100));
+    try {
+      const currentLevelXP = GameProgressService.calculateXPForNextLevel(progress.level);
+      // Calculate XP progress within current level
+      const levelXP = progress.xp % currentLevelXP;
+      return Math.min(100, Math.floor(levelXP / currentLevelXP * 100));
+    } catch (error) {
+      console.error("Error calculating level progress:", error);
+      return 0;
+    }
   };
   
   return (

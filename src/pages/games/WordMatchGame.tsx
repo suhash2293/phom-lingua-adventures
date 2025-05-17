@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -208,6 +207,30 @@ const WordMatchGame = () => {
     setTimeRemaining(SECONDS_PER_GAME);
     setGameStartTime(null);
     setMatchedPairs([]);
+  };
+  
+  // Function to record game results
+  const recordGameResults = async (
+    finalScore: number, 
+    durationSeconds: number,
+    categoryId?: string
+  ) => {
+    // Calculate XP based on score, time, etc.
+    // For example: 10 XP per correct match
+    const xpEarned = Math.max(10, finalScore * 10);
+    
+    try {
+      await GameProgressService.recordGameSession(
+        'word-match',  // game type identifier
+        finalScore,    // user's score in this game
+        durationSeconds, // how long the game took
+        xpEarned,      // XP to award
+        categoryId     // Optional category played
+      );
+    } catch (error) {
+      console.error("Failed to record game progress:", error);
+      // Game can continue even if progress saving fails
+    }
   };
   
   if (isLoading) {

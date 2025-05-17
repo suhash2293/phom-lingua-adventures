@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -282,6 +281,29 @@ const WordScrambleGame = () => {
     setAvailableLetters([]);
     setHasSubmitted(false);
     setIsCorrect(null);
+  };
+  
+  // Function to record game results
+  const recordGameResults = async (
+    finalScore: number, 
+    durationSeconds: number,
+    categoryId?: string
+  ) => {
+    // Calculate XP based on difficulty, score, time, etc.
+    const xpEarned = Math.max(10, finalScore * 15); // Scramble can award a bit more XP since it's more challenging
+    
+    try {
+      await GameProgressService.recordGameSession(
+        'word-scramble',  // game type identifier
+        finalScore,       // user's score in this game
+        durationSeconds,  // how long the game took
+        xpEarned,         // XP to award
+        categoryId        // Optional category played
+      );
+    } catch (error) {
+      console.error("Failed to record game progress:", error);
+      // Game can continue even if progress saving fails
+    }
   };
   
   if (isLoading) {

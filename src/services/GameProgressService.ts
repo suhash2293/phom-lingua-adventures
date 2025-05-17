@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
@@ -35,6 +36,44 @@ export const GameProgressService = {
     
     if (error) {
       console.error('Error fetching user progress:', error);
+      
+      // If no progress record found, attempt to create one
+      if (error.code === 'PGRST116') {
+        return this.createInitialUserProgress(user.user.id);
+      }
+      
+      return null;
+    }
+    
+    return data;
+  },
+  
+  // New method to create initial user progress if missing
+  async createInitialUserProgress(userId: string): Promise<UserProgress | null> {
+    console.log('Creating initial user progress for user:', userId);
+    
+    const initialProgress = {
+      user_id: userId,
+      xp: 0,
+      level: 1,
+      current_streak: 0,
+      max_streak: 0,
+      last_played_at: null
+    };
+    
+    const { data, error } = await supabase
+      .from('user_progress')
+      .insert(initialProgress)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating initial user progress:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create progress record. Please try signing out and back in.",
+        variant: "destructive"
+      });
       return null;
     }
     
@@ -45,6 +84,15 @@ export const GameProgressService = {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) return null;
     
+    // First ensure user progress record exists
+    const currentProgress = await this.getUserProgress();
+    if (!currentProgress) {
+      console.log('No progress record found when trying to update, creating one first');
+      const newProgress = await this.createInitialUserProgress(user.user.id);
+      if (!newProgress) return null;
+    }
+    
+    // Apply the updates
     const { data, error } = await supabase
       .from('user_progress')
       .update(updates)
@@ -54,6 +102,11 @@ export const GameProgressService = {
     
     if (error) {
       console.error('Error updating user progress:', error);
+      toast({
+        title: "Sync Error",
+        description: "Failed to save your progress. We'll try again later.",
+        variant: "destructive"
+      });
       return null;
     }
     
@@ -61,62 +114,86 @@ export const GameProgressService = {
   },
   
   async addXP(amount: number): Promise<UserProgress | null> {
-    const userProgress = await this.getUserProgress();
-    if (!userProgress) return null;
-    
-    // Calculate new level based on XP
-    const newXP = userProgress.xp + amount;
-    const newLevel = this.calculateLevel(newXP);
-    
-    const wasLevelUp = newLevel > userProgress.level;
-    
-    const updatedProgress = await this.updateUserProgress({
-      xp: newXP,
-      level: newLevel
-    });
-    
-    if (wasLevelUp && updatedProgress) {
-      toast({
-        title: "Level Up!",
-        description: `Congratulations! You've reached level ${newLevel}!`,
+    try {
+      const userProgress = await this.getUserProgress();
+      if (!userProgress) {
+        console.log('No user progress found when adding XP');
+        return null;
+      }
+      
+      // Calculate new level based on XP
+      const newXP = userProgress.xp + amount;
+      const newLevel = this.calculateLevel(newXP);
+      
+      const wasLevelUp = newLevel > userProgress.level;
+      
+      const updatedProgress = await this.updateUserProgress({
+        xp: newXP,
+        level: newLevel
       });
-    } else if (amount > 0) {
+      
+      if (wasLevelUp && updatedProgress) {
+        toast({
+          title: "Level Up!",
+          description: `Congratulations! You've reached level ${newLevel}!`,
+        });
+      } else if (amount > 0) {
+        toast({
+          description: `+${amount} XP earned!`
+        });
+      }
+      
+      return updatedProgress;
+    } catch (error) {
+      console.error('Error adding XP:', error);
+      // Show toast but don't interrupt the game flow
       toast({
-        description: `+${amount} XP earned!`
+        title: "XP Update Error",
+        description: "We couldn't update your XP right now, but your game progress is saved.",
+        variant: "destructive"
       });
+      return null;
     }
-    
-    return updatedProgress;
   },
   
   async updateStreak(): Promise<UserProgress | null> {
-    const userProgress = await this.getUserProgress();
-    if (!userProgress) return null;
-    
-    const lastPlayed = userProgress.last_played_at 
-      ? new Date(userProgress.last_played_at) 
-      : null;
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    let updatedStreak = userProgress.current_streak;
-    let wasStreakUpdated = false;
-    
-    // If they've never played before or it's been more than 2 days, reset streak
-    if (!lastPlayed || this.daysBetween(lastPlayed, today) > 1) {
-      updatedStreak = 1;
-      wasStreakUpdated = true;
-    } 
-    // If they last played yesterday, increment streak
-    else if (this.daysBetween(lastPlayed, today) === 1) {
-      updatedStreak = userProgress.current_streak + 1;
-      wasStreakUpdated = true;
-    }
-    
-    // Only update if the streak changed
-    if (wasStreakUpdated) {
-      const maxStreak = Math.max(userProgress.max_streak, updatedStreak);
+    try {
+      const userProgress = await this.getUserProgress();
+      if (!userProgress) {
+        console.log('No user progress found when updating streak');
+        return null;
+      }
+      
+      const lastPlayed = userProgress.last_played_at 
+        ? new Date(userProgress.last_played_at) 
+        : null;
+      
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let updatedStreak = userProgress.current_streak;
+      let wasStreakUpdated = false;
+      
+      // If they've never played before or it's been more than 2 days, reset streak
+      if (!lastPlayed || this.daysBetween(lastPlayed, today) > 1) {
+        updatedStreak = 1;
+        wasStreakUpdated = true;
+      } 
+      // If they last played yesterday, increment streak
+      else if (this.daysBetween(lastPlayed, today) === 1) {
+        updatedStreak = userProgress.current_streak + 1;
+        wasStreakUpdated = true;
+      } 
+      // If they already played today, no streak update needed but still update last_played_at
+      else if (this.daysBetween(lastPlayed, today) === 0) {
+        // Just update last_played_at below
+      }
+      
+      // Validate streak value to ensure it's always positive
+      if (updatedStreak < 0) updatedStreak = 1;
+      
+      // Only update if the streak changed or we need to update last_played_at
+      const maxStreak = Math.max(userProgress.max_streak || 0, updatedStreak);
       
       const updatedProgress = await this.updateUserProgress({
         current_streak: updatedStreak,
@@ -124,7 +201,7 @@ export const GameProgressService = {
         last_played_at: new Date().toISOString()
       });
       
-      if (updatedStreak > 1) {
+      if (wasStreakUpdated && updatedStreak > 1) {
         toast({
           title: `${updatedStreak}-Day Streak!`,
           description: "Keep up the good work! Daily practice makes perfect.",
@@ -132,12 +209,16 @@ export const GameProgressService = {
       }
       
       return updatedProgress;
+    } catch (error) {
+      console.error('Error updating streak:', error);
+      // Show toast but don't interrupt game flow
+      toast({
+        title: "Streak Update Error",
+        description: "We couldn't update your streak right now.",
+        variant: "destructive"
+      });
+      return null;
     }
-    
-    // If already played today, just update last_played_at
-    return this.updateUserProgress({
-      last_played_at: new Date().toISOString()
-    });
   },
   
   async recordGameSession(
@@ -148,52 +229,77 @@ export const GameProgressService = {
     categoryId?: string
   ): Promise<GameSession | null> {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return null;
-    
-    const { data, error } = await supabase
-      .from('game_sessions')
-      .insert({
-        user_id: user.user.id,
-        game_type: gameType,
-        score,
-        duration_seconds: durationSeconds,
-        xp_earned: xpEarned,
-        category_id: categoryId || null
-      })
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error recording game session:', error);
+    if (!user.user) {
+      console.log('No user found when recording game session');
       return null;
     }
     
-    // Update XP and streak
-    await this.addXP(xpEarned);
-    await this.updateStreak();
-    
-    return data;
+    try {
+      // First record the game session
+      const { data, error } = await supabase
+        .from('game_sessions')
+        .insert({
+          user_id: user.user.id,
+          game_type: gameType,
+          score,
+          duration_seconds: durationSeconds,
+          xp_earned: xpEarned,
+          category_id: categoryId || null
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error recording game session:', error);
+        return null;
+      }
+      
+      // Then update XP and streak - continue even if the game session was saved
+      try {
+        await this.addXP(xpEarned);
+        await this.updateStreak();
+      } catch (progressError) {
+        console.error('Error updating progress after game session:', progressError);
+        // Game session was still saved, so return it
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Unexpected error recording game session:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your game results. Please check your connection.",
+        variant: "destructive"
+      });
+      return null;
+    }
   },
   
   async getGameHistory(limit = 10): Promise<GameSession[]> {
-    const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return [];
-    
-    const { data, error } = await supabase
-      .from('game_sessions')
-      .select('*')
-      .eq('user_id', user.user.id)
-      .order('created_at', { ascending: false })
-      .limit(limit);
-    
-    if (error) {
-      console.error('Error fetching game history:', error);
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return [];
+      
+      const { data, error } = await supabase
+        .from('game_sessions')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      
+      if (error) {
+        console.error('Error fetching game history:', error);
+        return [];
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Unexpected error fetching game history:', error);
       return [];
     }
-    
-    return data;
   },
   
+  // Helper methods
   calculateLevel(xp: number): number {
     // Simple level calculation: each level requires 20% more XP than the previous
     // Level 1: 0-100 XP
