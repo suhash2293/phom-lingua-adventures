@@ -5,11 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollText, CalendarDays, Calendar, Percent } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+
 const Index = () => {
   const {
     user
   } = useAuth();
   const navigate = useNavigate();
+
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
@@ -156,9 +158,7 @@ const Index = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           {!user ? <Button size="lg" onClick={() => navigate('/auth')}>
               Create Free Account
-            </Button> : <Button size="lg" onClick={() => navigate('/learn')}>
-              Continue Learning
-            </Button>}
+            </Button> : null}
           <Button variant="outline" size="lg" onClick={() => navigate('/donate')}>
             Support Our Mission
           </Button>
