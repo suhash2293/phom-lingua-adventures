@@ -226,7 +226,7 @@ const GamesPage = () => {
         </div>
       )}
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <GameCard 
           title="Word Match" 
           description="Match Phom words with their English translations" 
@@ -251,14 +251,6 @@ const GamesPage = () => {
           path="/games/word-scramble"
           categories={categories}
           excludeCategories={[ALPHABETS_CATEGORY_ID]}
-        />
-        
-        <GameCard 
-          title="Memory Challenge" 
-          description="Flip cards to match pairs of related words" 
-          icon={<ChevronRight className="h-6 w-6" />}
-          path="/games/memory-challenge"
-          categories={categories}
         />
       </div>
       
