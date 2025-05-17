@@ -8,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from './contexts/AuthContext';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
+import { Confetti } from './components/ui/confetti';
 
 import Index from "./pages/Index";
 import AuthPage from "./pages/AuthPage";
@@ -40,6 +41,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <Confetti />
         <BrowserRouter>
           <div className="min-h-screen flex flex-col">
             <Header />
