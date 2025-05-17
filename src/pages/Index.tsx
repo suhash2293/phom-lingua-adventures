@@ -1,15 +1,18 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+
 const Index = () => {
   const {
     user
   } = useAuth();
   const navigate = useNavigate();
+
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
@@ -128,6 +131,18 @@ const Index = () => {
         </div>
       </section>
 
+      {/* Games Button Section */}
+      <section className="py-8 flex justify-center">
+        <Button 
+          onClick={() => navigate('/games')}
+          size="lg" 
+          className="group bg-purple-600 hover:bg-purple-700 hover:shadow-lg transition-all duration-300 transform hover:scale-105 px-8 py-6 h-auto text-lg"
+        >
+          <Gamepad className="mr-2 h-6 w-6 group-hover:animate-pulse" />
+          Play Interactive Games
+        </Button>
+      </section>
+
       {/* Testimonial/About Section */}
       <section className="py-12 bg-muted rounded-xl p-6 my-12">
         <div className="flex flex-col md:flex-row gap-8 items-center">
@@ -162,4 +177,5 @@ const Index = () => {
       </section>
     </div>;
 };
+
 export default Index;
