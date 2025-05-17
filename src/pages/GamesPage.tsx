@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -19,16 +20,30 @@ const GameCard = ({
   description, 
   icon, 
   path,
-  categories
+  categories,
+  excludeCategories = []
 }: { 
   title: string; 
   description: string; 
   icon: React.ReactNode;
   path: string;
   categories: Category[];
+  excludeCategories?: string[];
 }) => {
+  // Filter out excluded categories
+  const filteredCategories = categories.filter(
+    category => !excludeCategories.includes(category.id)
+  );
+  
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const navigate = useNavigate();
+  
+  // Reset selected category if it was removed from the filtered list
+  useEffect(() => {
+    if (selectedCategory && !filteredCategories.find(c => c.id === selectedCategory)) {
+      setSelectedCategory(null);
+    }
+  }, [filteredCategories, selectedCategory]);
   
   const handlePlay = () => {
     if (selectedCategory) {
@@ -59,7 +74,7 @@ const GameCard = ({
             onChange={(e) => setSelectedCategory(e.target.value || null)}
           >
             <option value="">Random Mix</option>
-            {categories.map(category => (
+            {filteredCategories.map(category => (
               <option key={category.id} value={category.id}>{category.name}</option>
             ))}
           </select>
@@ -97,6 +112,9 @@ const GamesPage = () => {
     queryKey: ['categories'],
     queryFn: () => ContentService.getCategories()
   });
+  
+  // Define the alphabets category ID to exclude from some games
+  const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
   
   // Effect to check and award achievements
   useEffect(() => {
@@ -215,6 +233,7 @@ const GamesPage = () => {
           icon={<ChevronRight className="h-6 w-6" />}
           path="/games/word-match"
           categories={categories}
+          excludeCategories={[ALPHABETS_CATEGORY_ID]}
         />
         
         <GameCard 
@@ -231,6 +250,7 @@ const GamesPage = () => {
           icon={<ChevronRight className="h-6 w-6" />}
           path="/games/word-scramble"
           categories={categories}
+          excludeCategories={[ALPHABETS_CATEGORY_ID]}
         />
         
         <GameCard 
