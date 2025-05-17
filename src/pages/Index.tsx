@@ -5,13 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollText, CalendarDays, Calendar, Percent } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-
 const Index = () => {
   const {
     user
   } = useAuth();
   const navigate = useNavigate();
-
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
@@ -20,9 +18,7 @@ const Index = () => {
         </span>
         </h1>
         <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A learner's centred dialect learning platform</h2>
-        <p className="text-lg text-muted-foreground max-w-[600px]">
-          Learn Phom language and English through interactive lessons and gamified exercises.
-        </p>
+        <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom Dialect and English through interactive lessons and gamified exercises.</p>
         
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           {!user ? <Button size="lg" onClick={() => navigate('/auth')}>
