@@ -53,6 +53,21 @@ export const ContentService = {
     return data || [];
   },
   
+  async getAllContentItems(): Promise<ContentItem[]> {
+    // Fetch a random mix of content items from all categories
+    const { data, error } = await supabase
+      .from('content_items')
+      .select('*')
+      .order('sort_order');
+    
+    if (error) {
+      console.error('Error fetching all content items:', error);
+      throw error;
+    }
+    
+    return data || [];
+  },
+  
   async getContentItemsByCategoryName(name: string): Promise<ContentItem[]> {
     // First find the category ID
     const category = await this.getCategoryByName(name);
