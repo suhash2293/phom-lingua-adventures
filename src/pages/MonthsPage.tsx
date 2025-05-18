@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,24 +11,27 @@ import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
-
 const MonthsPage = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
 
   // Use our enhanced audio preloader hook with improved options
-  const { 
-    playAudio, 
-    preloadAudioBatch, 
+  const {
+    playAudio,
+    preloadAudioBatch,
     initializeAudioContext,
-    isLoading: isAudioLoading, 
+    isLoading: isAudioLoading,
     progress: audioLoadingProgress,
     isCached
   } = useAudioPreloader({
-    maxConcurrent: 3, // Limit concurrent audio loads
-    maxRetries: 3, // Increased retries
+    maxConcurrent: 3,
+    // Limit concurrent audio loads
+    maxRetries: 3,
+    // Increased retries
     onLoadError: () => {
       toast({
         title: "Audio Loading Notice",
@@ -40,9 +42,13 @@ const MonthsPage = () => {
   });
 
   // Fetch months data
-  const { data: months, isLoading, error } = useQuery({
+  const {
+    data: months,
+    isLoading,
+    error
+  } = useQuery({
     queryKey: ['months'],
-    queryFn: () => ContentService.getContentItemsByCategoryName('Months'),
+    queryFn: () => ContentService.getContentItemsByCategoryName('Months')
   });
 
   // Initialize audio system on first user interaction with the page
@@ -64,10 +70,12 @@ const MonthsPage = () => {
         document.removeEventListener('touchstart', initAudio);
       }
     };
-
-    document.addEventListener('click', initAudio, { once: true });
-    document.addEventListener('touchstart', initAudio, { once: true });
-
+    document.addEventListener('click', initAudio, {
+      once: true
+    });
+    document.addEventListener('touchstart', initAudio, {
+      once: true
+    });
     return () => {
       document.removeEventListener('click', initAudio);
       document.removeEventListener('touchstart', initAudio);
@@ -78,10 +86,7 @@ const MonthsPage = () => {
   useEffect(() => {
     if (months && months.length > 0 && audioInitialized) {
       // Extract valid audio URLs
-      const audioUrls = months
-        .filter(item => item.audio_url)
-        .map(item => item.audio_url as string);
-      
+      const audioUrls = months.filter(item => item.audio_url).map(item => item.audio_url as string);
       if (audioUrls.length > 0) {
         // Preload all audio files
         preloadAudioBatch(audioUrls);
@@ -92,17 +97,15 @@ const MonthsPage = () => {
   // Enhanced play audio function
   const handlePlayAudio = async (url: string | null, itemId: string) => {
     if (!url) return;
-    
     try {
       // Initialize audio context if not already done
       if (!audioInitialized) {
         initializeAudioContext();
         setAudioInitialized(true);
       }
-      
       setPlayingAudio(itemId);
       await playAudio(url);
-      
+
       // Reset playing state after a short delay to keep button in "playing" state
       // for a minimum time for better UX
       setTimeout(() => {
@@ -122,12 +125,10 @@ const MonthsPage = () => {
   // Function to determine season based on month name
   const getSeason = (monthName: string): string => {
     const lowerName = monthName.toLowerCase();
-    
     if (['december', 'january', 'february'].includes(lowerName)) return 'Winter';
     if (['march', 'april', 'may'].includes(lowerName)) return 'Spring';
     if (['june', 'july', 'august'].includes(lowerName)) return 'Summer';
     if (['september', 'october', 'november'].includes(lowerName)) return 'Fall';
-    
     return '';
   };
 
@@ -137,15 +138,14 @@ const MonthsPage = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
-
   if (!user) {
     return null;
   }
-
   const renderMonthCards = () => {
     if (isLoading) {
-      return Array.from({ length: 12 }).map((_, index) => (
-        <Card key={`skeleton-${index}`} className="border-primary/20">
+      return Array.from({
+        length: 12
+      }).map((_, index) => <Card key={`skeleton-${index}`} className="border-primary/20">
           <CardHeader className="bg-primary/5 pb-2">
             <Skeleton className="h-6 w-24 mx-auto" />
           </CardHeader>
@@ -153,44 +153,27 @@ const MonthsPage = () => {
             <Skeleton className="h-6 w-full mb-2" />
             <Skeleton className="h-4 w-3/4 mx-auto" />
           </CardContent>
-        </Card>
-      ));
+        </Card>);
     }
-
     if (error) {
-      return (
-        <div className="col-span-full text-center py-8">
+      return <div className="col-span-full text-center py-8">
           <p className="text-red-500">Error loading months. Please try again later.</p>
-        </div>
-      );
+        </div>;
     }
-
     if (!months || months.length === 0) {
-      return (
-        <div className="col-span-full text-center py-8">
+      return <div className="col-span-full text-center py-8">
           <p>No months content found. Please check back later.</p>
-        </div>
-      );
+        </div>;
     }
 
     // Sort months in correct calendar order
-    const monthOrder = [
-      'january', 'february', 'march', 'april', 'may', 'june',
-      'july', 'august', 'september', 'october', 'november', 'december'
-    ];
-    
+    const monthOrder = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
     const sortedMonths = [...months].sort((a, b) => {
       const indexA = monthOrder.indexOf(a.english_translation.toLowerCase());
       const indexB = monthOrder.indexOf(b.english_translation.toLowerCase());
       return indexA - indexB;
     });
-
-    return sortedMonths.map((month: ContentItem) => (
-      <Card 
-        key={month.id} 
-        className="border-primary/20 hover:border-primary hover:shadow-md transition-all"
-        onClick={handlePageInteraction}
-      >
+    return sortedMonths.map((month: ContentItem) => <Card key={month.id} className="border-primary/20 hover:border-primary hover:shadow-md transition-all" onClick={handlePageInteraction}>
         <CardHeader className="bg-primary/5 pb-2">
           <CardTitle className="text-center">{month.english_translation}</CardTitle>
         </CardHeader>
@@ -199,72 +182,48 @@ const MonthsPage = () => {
           <p className="text-sm text-center text-muted-foreground">
             Season: {month.example_sentence || getSeason(month.english_translation)}
           </p>
-          {month.audio_url && (
-            <div className="mt-3 flex justify-center">
-              <Button 
-                size="sm" 
-                variant={isCached(month.audio_url) ? "outline" : "secondary"}
-                className="flex items-center gap-1"
-                onClick={() => handlePlayAudio(month.audio_url, month.id)}
-                disabled={playingAudio !== null && playingAudio !== month.id}
-              >
-                {playingAudio === month.id ? (
-                  <>
+          {month.audio_url && <div className="mt-3 flex justify-center">
+              <Button size="sm" variant={isCached(month.audio_url) ? "outline" : "secondary"} className="flex items-center gap-1" onClick={() => handlePlayAudio(month.audio_url, month.id)} disabled={playingAudio !== null && playingAudio !== month.id}>
+                {playingAudio === month.id ? <>
                     <Volume2 className="h-4 w-4 animate-pulse" />
                     Playing...
-                  </>
-                ) : !isCached(month.audio_url) || !audioInitialized ? (
-                  <>
+                  </> : !isCached(month.audio_url) || !audioInitialized ? <>
                     <VolumeX className="h-4 w-4" />
                     {audioInitialized ? "Loading..." : "Click to Enable Audio"}
-                  </>
-                ) : (
-                  <>
+                  </> : <>
                     <Headphones className="h-4 w-4" />
                     Listen
-                  </>
-                )}
+                  </>}
               </Button>
-            </div>
-          )}
+            </div>}
         </CardContent>
-      </Card>
-    ));
+      </Card>);
   };
-
-  return (
-    <LearnLayout>
+  return <LearnLayout>
       <div className="container px-4 md:px-6 py-8 md:py-12" onClick={handlePageInteraction}>
         <h1 className="text-3xl font-bold mb-6">Months in Phom</h1>
-        <p className="text-lg mb-8">Learn the months of the year in Phom language.</p>
+        <p className="text-lg mb-8">Learn the names of the months of the year in Phom language.</p>
         
-        {!audioInitialized && (
-          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+        {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-center">👆 Click anywhere or interact with the page to enable audio playback</p>
-          </div>
-        )}
+          </div>}
         
-        {isAudioLoading && audioInitialized && audioLoadingProgress < 100 && (
-          <div className="mb-6">
+        {isAudioLoading && audioInitialized && audioLoadingProgress < 100 && <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Loading audio files...</span>
               <span className="text-sm font-medium">{audioLoadingProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-              <div 
-                className="bg-primary h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: `${audioLoadingProgress}%` }}
-              ></div>
+              <div className="bg-primary h-2.5 rounded-full transition-all duration-300" style={{
+            width: `${audioLoadingProgress}%`
+          }}></div>
             </div>
-          </div>
-        )}
+          </div>}
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {renderMonthCards()}
         </div>
       </div>
-    </LearnLayout>
-  );
+    </LearnLayout>;
 };
-
 export default MonthsPage;
