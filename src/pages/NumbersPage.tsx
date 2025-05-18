@@ -5,20 +5,23 @@ import { useQuery } from '@tanstack/react-query';
 import LearnLayout from '@/components/layout/LearnLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Headphones, Volume2, VolumeX } from 'lucide-react';
+import { Headphones, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const NumbersPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("1-10");
-
+  const isMobile = useIsMobile();
+  
   // Use our enhanced audio preloader hook
   const { 
     playAudio, 
@@ -162,6 +165,7 @@ const NumbersPage = () => {
     return null;
   }
 
+  // Loading state
   if (isLoading) {
     return (
       <LearnLayout>
@@ -179,6 +183,7 @@ const NumbersPage = () => {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <LearnLayout>
@@ -190,6 +195,7 @@ const NumbersPage = () => {
     );
   }
 
+  // No data state
   if (!numbers || numbers.length === 0) {
     return (
       <LearnLayout>
@@ -227,17 +233,26 @@ const NumbersPage = () => {
           className="w-full"
           onValueChange={setActiveTab}
         >
-          <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-8">
-            {groupKeys.map((group) => (
-              <TabsTrigger 
-                key={group} 
-                value={group}
-                className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-              >
-                {group}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+          <div className="relative mb-8">
+            {isMobile && (
+              <div className="flex justify-between absolute -top-10 right-0">
+                <span className="text-sm text-muted-foreground">Swipe tabs to view more</span>
+              </div>
+            )}
+            <ScrollArea className="w-full" orientation="horizontal">
+              <TabsList className={`${isMobile ? 'inline-flex w-max' : 'grid grid-cols-2 md:grid-cols-5'} mb-0`}>
+                {groupKeys.map((group) => (
+                  <TabsTrigger 
+                    key={group} 
+                    value={group}
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                  >
+                    {group}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </ScrollArea>
+          </div>
           
           {groupKeys.map((group) => (
             <TabsContent key={group} value={group} className="mt-4">
