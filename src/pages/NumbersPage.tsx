@@ -309,16 +309,16 @@ const NumbersPage = () => {
                     className="border-primary/20 hover:border-primary hover:shadow-md transition-all"
                     onClick={handlePageInteraction}
                   >
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <span className="text-2xl font-bold min-w-[40px]">{item.english_translation}</span>
+                    <CardContent className={`p-3 ${isMobile ? 'px-2' : 'p-4'} flex items-center justify-between`}>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-2xl font-bold min-w-[36px]">{item.english_translation}</span>
                         <span className="text-lg text-primary-foreground">{item.phom_word}</span>
                       </div>
                       {item.audio_url && (
                         <Button 
                           size="sm" 
                           variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-1 ml-2"
                           onClick={() => handlePlayAudio(item.audio_url, item.id)}
                           disabled={playingAudio !== null && playingAudio !== item.id}
                         >
