@@ -1,10 +1,10 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LearnLayout from '@/components/layout/LearnLayout';
 import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Headphones, Volume2, VolumeX } from 'lucide-react';
@@ -19,7 +19,6 @@ const NumbersPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("1-10");
   const [audioInitialized, setAudioInitialized] = useState(false);
   const isMobile = useIsMobile();
   
@@ -78,90 +77,45 @@ const NumbersPage = () => {
     };
   }, [audioInitialized, initializeAudioContext]);
 
-  // Group numbers by tens for tabs
-  const groupNumbersByTens = (items: ContentItem[] = []) => {
-    const groups: Record<string, ContentItem[]> = {};
+  // Sort numbers by their numeric value
+  const sortedNumbers = React.useMemo(() => {
+    if (!numbers) return [];
     
-    items.forEach(item => {
-      const num = parseInt(item.english_translation, 10);
-      if (isNaN(num)) return;
-      
-      // Special handling for number 100
-      if (num === 100) {
-        const label = "91-100";
-        if (!groups[label]) {
-          groups[label] = [];
-        }
-        groups[label].push(item);
-        return;
-      }
-      
-      // Normal handling for other numbers
-      const groupStart = Math.floor((num - 1) / 10) * 10 + 1;
-      const groupEnd = groupStart + 9;
-      const label = `${groupStart}-${groupEnd}`;
-      
-      if (!groups[label]) {
-        groups[label] = [];
-      }
-      
-      groups[label].push(item);
+    return [...numbers].sort((a, b) => {
+      const numA = parseInt(a.english_translation, 10);
+      const numB = parseInt(b.english_translation, 10);
+      return numA - numB;
     });
-    
-    // Sort each group by the number value
-    Object.keys(groups).forEach(key => {
-      groups[key].sort((a, b) => {
-        const numA = parseInt(a.english_translation, 10);
-        const numB = parseInt(b.english_translation, 10);
-        return numA - numB;
-      });
-    });
-    
-    return groups;
-  };
-  
-  const numberGroups = groupNumbersByTens(numbers);
-  const groupKeys = Object.keys(numberGroups).sort((a, b) => {
-    const [startA] = a.split('-').map(Number);
-    const [startB] = b.split('-').map(Number);
-    return startA - startB;
-  });
+  }, [numbers]);
 
-  // Preload audio files when numbers data is available and tab changes
+  // Divide numbers into two rows (optional - can be adjusted to show in a single row)
+  const firstRow = React.useMemo(() => {
+    return sortedNumbers.filter((_, index) => index < 50);
+  }, [sortedNumbers]);
+
+  const secondRow = React.useMemo(() => {
+    return sortedNumbers.filter((_, index) => index >= 50);
+  }, [sortedNumbers]);
+
+  // Preload audio files when numbers data is available
   useEffect(() => {
-    if (numbers && numbers.length > 0 && activeTab && audioInitialized) {
-      const currentTabItems = numberGroups[activeTab] || [];
-      
-      // Extract valid audio URLs from current tab items (high priority)
-      const currentTabAudioUrls = currentTabItems
+    if (sortedNumbers.length > 0 && audioInitialized) {
+      // Extract valid audio URLs
+      const audioUrls = sortedNumbers
         .filter(item => item.audio_url)
         .map(item => item.audio_url as string);
       
-      if (currentTabAudioUrls.length > 0) {
-        // Preload current tab audio files with high priority
-        preloadAudioBatch(currentTabAudioUrls, true);
-      }
-      
-      // Queue up preloading for other tabs in the background with lower priority
-      const otherTabsAudioUrls: string[] = [];
-      Object.entries(numberGroups).forEach(([tabKey, tabItems]) => {
-        if (tabKey !== activeTab) {
-          tabItems.forEach(item => {
-            if (item.audio_url) {
-              otherTabsAudioUrls.push(item.audio_url as string);
-            }
-          });
-        }
-      });
-      
-      if (otherTabsAudioUrls.length > 0) {
-        // Preload other tabs in the background with lower priority
+      if (audioUrls.length > 0) {
+        // Preload audio files in batches
+        preloadAudioBatch(audioUrls.slice(0, 20), true); // First 20 with high priority
+        
+        // Load the rest with lower priority
         setTimeout(() => {
-          preloadAudioBatch(otherTabsAudioUrls, false);
+          preloadAudioBatch(audioUrls.slice(20), false);
         }, 1000);
       }
     }
-  }, [numbers, numberGroups, activeTab, preloadAudioBatch, audioInitialized]);
+  }, [sortedNumbers, preloadAudioBatch, audioInitialized]);
 
   // Enhanced play audio function
   const handlePlayAudio = async (url: string | null, itemId: string) => {
@@ -177,8 +131,7 @@ const NumbersPage = () => {
       setPlayingAudio(itemId);
       await playAudio(url);
       
-      // Reset playing state after a short delay to keep button in "playing" state
-      // for a minimum time for better UX
+      // Reset playing state after a short delay
       setTimeout(() => {
         setPlayingAudio(null);
       }, 500);
@@ -212,9 +165,9 @@ const NumbersPage = () => {
           <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
           <Skeleton className="h-10 w-full mb-8" />
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-5 gap-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
+              <Skeleton key={i} className="h-20 w-full" />
             ))}
           </div>
         </div>
@@ -246,6 +199,7 @@ const NumbersPage = () => {
     );
   }
 
+  // Render the numbers in horizontally scrollable rows
   return (
     <LearnLayout>
       <div className="container px-4 md:px-6 py-8 md:py-12" onClick={handlePageInteraction}>
@@ -273,76 +227,101 @@ const NumbersPage = () => {
           </div>
         )}
         
-        <Tabs 
-          defaultValue={groupKeys[0] || "1-10"} 
-          className="w-full"
-          onValueChange={setActiveTab}
-        >
-          <div className="relative mb-8">
-            <div className="flex justify-between mb-2">
-              <span className="text-sm text-muted-foreground">
-                Swipe to view all number groups
-              </span>
-            </div>
-            <ScrollArea className="w-full pb-4">
-              <TabsList className="inline-flex w-max">
-                {groupKeys.map((group) => (
-                  <TabsTrigger 
-                    key={group} 
-                    value={group}
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-w-[70px]"
-                  >
-                    {group}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-              <ScrollBar orientation="horizontal" className="mt-2" />
-            </ScrollArea>
+        {/* First row of numbers (1-50) */}
+        <div className="mb-6">
+          <div className="flex justify-between mb-2">
+            <span className="text-sm text-muted-foreground">
+              Numbers 1-50 (swipe to see all)
+            </span>
           </div>
-          
-          {groupKeys.map((group) => (
-            <TabsContent key={group} value={group} className="mt-4">
-              <div className="py-2">
-                <h3 className="text-md font-medium mb-4">Numbers {group}</h3>
-                
-                {/* 3-column grid layout with fixed row height for each number */}
-                <div className="grid grid-cols-3 gap-3 overflow-y-auto">
-                  {numberGroups[group].map((item) => (
-                    <Card 
-                      key={item.id} 
-                      className="border-primary/20 hover:border-primary hover:shadow-md transition-all h-[100px] min-h-[100px]"
-                      onClick={handlePageInteraction}
-                    >
-                      <CardContent className="flex flex-col p-3 h-full justify-center items-center">
-                        <div className="flex flex-col items-center justify-center mb-1">
-                          <span className="text-xl font-bold">{item.english_translation}</span>
-                          <span className="text-base text-primary mt-1">{item.phom_word}</span>
-                        </div>
-                        {item.audio_url && (
-                          <Button 
-                            size="sm" 
-                            variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-                            className="flex items-center gap-1 mt-1 h-8 min-w-[48px] min-h-[48px] p-1"
-                            onClick={() => handlePlayAudio(item.audio_url, item.id)}
-                            disabled={playingAudio !== null && playingAudio !== item.id}
-                          >
-                            {playingAudio === item.id ? (
-                              <Volume2 className="h-4 w-4 animate-pulse" />
-                            ) : !isCached(item.audio_url) || !audioInitialized ? (
-                              <VolumeX className="h-4 w-4" />
-                            ) : (
-                              <Headphones className="h-4 w-4" />
-                            )}
-                          </Button>
+          <ScrollArea className="w-full pb-4">
+            <div className="flex gap-2 pb-1 min-w-max">
+              {firstRow.map((item) => (
+                <Card 
+                  key={item.id} 
+                  className="border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0"
+                  style={{ width: '70px', height: '90px' }}
+                >
+                  <CardContent className="flex flex-col p-2 h-full justify-center items-center">
+                    <div className="flex flex-col items-center justify-center mb-1">
+                      <span className="text-lg font-bold">{item.english_translation}</span>
+                      <span className="text-xs text-primary mt-1 truncate w-full text-center" title={item.phom_word}>
+                        {item.phom_word}
+                      </span>
+                    </div>
+                    {item.audio_url && (
+                      <Button 
+                        size="sm" 
+                        variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
+                        className="flex items-center justify-center mt-1 h-6 w-6 min-h-[24px] p-0"
+                        onClick={() => handlePlayAudio(item.audio_url, item.id)}
+                        disabled={playingAudio !== null && playingAudio !== item.id}
+                        title="Play audio"
+                      >
+                        {playingAudio === item.id ? (
+                          <Volume2 className="h-3 w-3 animate-pulse" />
+                        ) : !isCached(item.audio_url) || !audioInitialized ? (
+                          <VolumeX className="h-3 w-3" />
+                        ) : (
+                          <Headphones className="h-3 w-3" />
                         )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-          ))}
-        </Tabs>
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" className="mt-2" />
+          </ScrollArea>
+        </div>
+        
+        {/* Second row of numbers (51-100) */}
+        <div>
+          <div className="flex justify-between mb-2">
+            <span className="text-sm text-muted-foreground">
+              Numbers 51-100 (swipe to see all)
+            </span>
+          </div>
+          <ScrollArea className="w-full pb-4">
+            <div className="flex gap-2 pb-1 min-w-max">
+              {secondRow.map((item) => (
+                <Card 
+                  key={item.id} 
+                  className="border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0"
+                  style={{ width: '70px', height: '90px' }}
+                >
+                  <CardContent className="flex flex-col p-2 h-full justify-center items-center">
+                    <div className="flex flex-col items-center justify-center mb-1">
+                      <span className="text-lg font-bold">{item.english_translation}</span>
+                      <span className="text-xs text-primary mt-1 truncate w-full text-center" title={item.phom_word}>
+                        {item.phom_word}
+                      </span>
+                    </div>
+                    {item.audio_url && (
+                      <Button 
+                        size="sm" 
+                        variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
+                        className="flex items-center justify-center mt-1 h-6 w-6 min-h-[24px] p-0"
+                        onClick={() => handlePlayAudio(item.audio_url, item.id)}
+                        disabled={playingAudio !== null && playingAudio !== item.id}
+                        title="Play audio"
+                      >
+                        {playingAudio === item.id ? (
+                          <Volume2 className="h-3 w-3 animate-pulse" />
+                        ) : !isCached(item.audio_url) || !audioInitialized ? (
+                          <VolumeX className="h-3 w-3" />
+                        ) : (
+                          <Headphones className="h-3 w-3" />
+                        )}
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" className="mt-2" />
+          </ScrollArea>
+        </div>
       </div>
     </LearnLayout>
   );
