@@ -15,6 +15,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 
 const NumbersPage = () => {
   const { user } = useAuth();
@@ -280,25 +281,53 @@ const NumbersPage = () => {
           onValueChange={setActiveTab}
         >
           <div className="relative mb-8">
-            {isMobile && (
-              <div className="flex justify-between absolute -top-10 right-0">
-                <span className="text-sm text-muted-foreground">Swipe tabs to view more</span>
-              </div>
-            )}
-            <ScrollArea className="w-full">
-              <TabsList className={`${isMobile ? 'inline-flex w-max' : 'grid grid-cols-2 md:grid-cols-5'} mb-0`}>
+            <div className="flex justify-between mb-2">
+              <span className="text-sm text-muted-foreground">
+                {!isMobile ? "Scroll horizontally to view all number groups" : "Swipe tabs to view more"}
+              </span>
+            </div>
+            <ScrollArea className="w-full pb-4">
+              <TabsList className="inline-flex w-max">
                 {groupKeys.map((group) => (
                   <TabsTrigger 
                     key={group} 
                     value={group}
-                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
+                    className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground min-w-[70px]"
                   >
                     {group}
                   </TabsTrigger>
                 ))}
               </TabsList>
-              <ScrollBar orientation="horizontal" />
+              <ScrollBar orientation="horizontal" className="mt-2" />
             </ScrollArea>
+            
+            {/* Add a pagination indicator for better navigation */}
+            <Pagination className="mt-4">
+              <PaginationContent>
+                {groupKeys.map((group, index) => {
+                  // For larger sets, only show selected ones
+                  if (groupKeys.length > 10 && 
+                      index !== 0 && 
+                      index !== groupKeys.length - 1 && 
+                      group !== activeTab && 
+                      Math.abs(groupKeys.indexOf(activeTab) - index) > 2) {
+                    return null;
+                  }
+                  
+                  return (
+                    <PaginationItem key={group}>
+                      <PaginationLink 
+                        onClick={() => setActiveTab(group)}
+                        isActive={activeTab === group}
+                        className="w-8 h-8 p-0 flex items-center justify-center"
+                      >
+                        {Math.floor(parseInt(group.split('-')[0]) / 10) + 1}
+                      </PaginationLink>
+                    </PaginationItem>
+                  );
+                })}
+              </PaginationContent>
+            </Pagination>
           </div>
           
           {groupKeys.map((group) => (
