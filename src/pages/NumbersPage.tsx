@@ -199,7 +199,42 @@ const NumbersPage = () => {
     );
   }
 
-  // Render the numbers in horizontally scrollable rows
+  const renderNumberCard = (item: ContentItem) => (
+    <Card 
+      key={item.id} 
+      className="border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0"
+      style={{ width: '70px', height: '90px' }}
+    >
+      <CardContent className="flex flex-col p-2 h-full justify-center items-center">
+        <div className="flex flex-col items-center justify-center mb-1">
+          <span className="text-lg font-bold">{item.english_translation}</span>
+          <span className="text-xs text-primary mt-1 truncate w-full text-center" title={item.phom_word}>
+            {item.phom_word}
+          </span>
+        </div>
+        {item.audio_url && (
+          <Button 
+            size="sm" 
+            variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
+            className="flex items-center justify-center mt-1 h-6 w-6 min-h-[24px] p-0"
+            onClick={() => handlePlayAudio(item.audio_url, item.id)}
+            disabled={playingAudio !== null && playingAudio !== item.id}
+            title="Play audio"
+          >
+            {playingAudio === item.id ? (
+              <Volume2 className="h-3 w-3 animate-pulse" />
+            ) : !isCached(item.audio_url) || !audioInitialized ? (
+              <VolumeX className="h-3 w-3" />
+            ) : (
+              <Headphones className="h-3 w-3" />
+            )}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
+  );
+
+  // Render the numbers in different layouts based on device type
   return (
     <LearnLayout>
       <div className="container px-4 md:px-6 py-8 md:py-12" onClick={handlePageInteraction}>
@@ -227,101 +262,54 @@ const NumbersPage = () => {
           </div>
         )}
         
-        {/* First row of numbers (1-50) */}
-        <div className="mb-6">
-          <div className="flex justify-between mb-2">
-            <span className="text-sm text-muted-foreground">
-              Numbers 1-50 (swipe to see all)
-            </span>
-          </div>
-          <ScrollArea className="w-full pb-4">
-            <div className="flex gap-2 pb-1 min-w-max">
-              {firstRow.map((item) => (
-                <Card 
-                  key={item.id} 
-                  className="border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0"
-                  style={{ width: '70px', height: '90px' }}
-                >
-                  <CardContent className="flex flex-col p-2 h-full justify-center items-center">
-                    <div className="flex flex-col items-center justify-center mb-1">
-                      <span className="text-lg font-bold">{item.english_translation}</span>
-                      <span className="text-xs text-primary mt-1 truncate w-full text-center" title={item.phom_word}>
-                        {item.phom_word}
-                      </span>
-                    </div>
-                    {item.audio_url && (
-                      <Button 
-                        size="sm" 
-                        variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-                        className="flex items-center justify-center mt-1 h-6 w-6 min-h-[24px] p-0"
-                        onClick={() => handlePlayAudio(item.audio_url, item.id)}
-                        disabled={playingAudio !== null && playingAudio !== item.id}
-                        title="Play audio"
-                      >
-                        {playingAudio === item.id ? (
-                          <Volume2 className="h-3 w-3 animate-pulse" />
-                        ) : !isCached(item.audio_url) || !audioInitialized ? (
-                          <VolumeX className="h-3 w-3" />
-                        ) : (
-                          <Headphones className="h-3 w-3" />
-                        )}
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+        {isMobile ? (
+          // Mobile layout - vertical grid
+          <div className="space-y-6">
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Numbers 1-100
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+                {sortedNumbers.map(renderNumberCard)}
+              </div>
             </div>
-            <ScrollBar orientation="horizontal" className="mt-2" />
-          </ScrollArea>
-        </div>
-        
-        {/* Second row of numbers (51-100) */}
-        <div>
-          <div className="flex justify-between mb-2">
-            <span className="text-sm text-muted-foreground">
-              Numbers 51-100 (swipe to see all)
-            </span>
           </div>
-          <ScrollArea className="w-full pb-4">
-            <div className="flex gap-2 pb-1 min-w-max">
-              {secondRow.map((item) => (
-                <Card 
-                  key={item.id} 
-                  className="border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0"
-                  style={{ width: '70px', height: '90px' }}
-                >
-                  <CardContent className="flex flex-col p-2 h-full justify-center items-center">
-                    <div className="flex flex-col items-center justify-center mb-1">
-                      <span className="text-lg font-bold">{item.english_translation}</span>
-                      <span className="text-xs text-primary mt-1 truncate w-full text-center" title={item.phom_word}>
-                        {item.phom_word}
-                      </span>
-                    </div>
-                    {item.audio_url && (
-                      <Button 
-                        size="sm" 
-                        variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-                        className="flex items-center justify-center mt-1 h-6 w-6 min-h-[24px] p-0"
-                        onClick={() => handlePlayAudio(item.audio_url, item.id)}
-                        disabled={playingAudio !== null && playingAudio !== item.id}
-                        title="Play audio"
-                      >
-                        {playingAudio === item.id ? (
-                          <Volume2 className="h-3 w-3 animate-pulse" />
-                        ) : !isCached(item.audio_url) || !audioInitialized ? (
-                          <VolumeX className="h-3 w-3" />
-                        ) : (
-                          <Headphones className="h-3 w-3" />
-                        )}
-                      </Button>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+        ) : (
+          // Desktop layout - horizontal scroll
+          <div className="space-y-6">
+            {/* First row of numbers (1-50) */}
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Numbers 1-50 (swipe to see all)
+                </span>
+              </div>
+              <ScrollArea className="w-full pb-4">
+                <div className="flex gap-2 pb-1 min-w-max">
+                  {firstRow.map(renderNumberCard)}
+                </div>
+                <ScrollBar orientation="horizontal" className="mt-2" />
+              </ScrollArea>
             </div>
-            <ScrollBar orientation="horizontal" className="mt-2" />
-          </ScrollArea>
-        </div>
+            
+            {/* Second row of numbers (51-100) */}
+            <div>
+              <div className="flex justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Numbers 51-100 (swipe to see all)
+                </span>
+              </div>
+              <ScrollArea className="w-full pb-4">
+                <div className="flex gap-2 pb-1 min-w-max">
+                  {secondRow.map(renderNumberCard)}
+                </div>
+                <ScrollBar orientation="horizontal" className="mt-2" />
+              </ScrollArea>
+            </div>
+          </div>
+        )}
       </div>
     </LearnLayout>
   );
