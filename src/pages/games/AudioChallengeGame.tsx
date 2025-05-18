@@ -1,7 +1,9 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Howl } from 'howler';
+import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -203,7 +205,12 @@ const AudioChallengeGame = () => {
   
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Audio Challenge</h1>
+      <div className="flex items-center mb-4 gap-2">
+        <Button variant="ghost" size="icon" onClick={() => navigate('/games')} className="h-8 w-8">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
+        <h1 className="text-2xl font-bold">Audio Challenge</h1>
+      </div>
       
       {categoryId && categories ? (
         <div className="mb-4">
