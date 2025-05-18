@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -165,9 +164,9 @@ const NumbersPage = () => {
           <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
           <Skeleton className="h-10 w-full mb-8" />
-          <div className="grid grid-cols-5 gap-3">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-20 w-full" />
+          <div className="grid grid-cols-2 gap-4">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full" />
             ))}
           </div>
         </div>
@@ -202,13 +201,20 @@ const NumbersPage = () => {
   const renderNumberCard = (item: ContentItem) => (
     <Card 
       key={item.id} 
-      className="border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0"
-      style={{ width: '70px', height: '90px' }}
+      className={`border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0 ${
+        isMobile ? "w-full h-32" : ""
+      }`}
+      style={!isMobile ? { width: '70px', height: '90px' } : undefined}
     >
-      <CardContent className="flex flex-col p-2 h-full justify-center items-center">
+      <CardContent className="flex flex-col p-3 h-full justify-center items-center">
         <div className="flex flex-col items-center justify-center mb-1">
-          <span className="text-lg font-bold">{item.english_translation}</span>
-          <span className="text-xs text-primary mt-1 truncate w-full text-center" title={item.phom_word}>
+          <span className={`font-bold ${isMobile ? "text-2xl" : "text-lg"}`}>
+            {item.english_translation}
+          </span>
+          <span 
+            className={`text-primary mt-1 text-center ${isMobile ? "text-base" : "text-xs truncate w-full"}`}
+            title={item.phom_word}
+          >
             {item.phom_word}
           </span>
         </div>
@@ -216,17 +222,19 @@ const NumbersPage = () => {
           <Button 
             size="sm" 
             variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-            className="flex items-center justify-center mt-1 h-6 w-6 min-h-[24px] p-0"
+            className={`flex items-center justify-center mt-2 p-0 ${
+              isMobile ? "h-8 w-8 min-h-[32px]" : "h-6 w-6 min-h-[24px]"
+            }`}
             onClick={() => handlePlayAudio(item.audio_url, item.id)}
             disabled={playingAudio !== null && playingAudio !== item.id}
             title="Play audio"
           >
             {playingAudio === item.id ? (
-              <Volume2 className="h-3 w-3 animate-pulse" />
+              <Volume2 className={isMobile ? "h-4 w-4" : "h-3 w-3"} />
             ) : !isCached(item.audio_url) || !audioInitialized ? (
-              <VolumeX className="h-3 w-3" />
+              <VolumeX className={isMobile ? "h-4 w-4" : "h-3 w-3"} />
             ) : (
-              <Headphones className="h-3 w-3" />
+              <Headphones className={isMobile ? "h-4 w-4" : "h-3 w-3"} />
             )}
           </Button>
         )}
@@ -263,16 +271,27 @@ const NumbersPage = () => {
         )}
         
         {isMobile ? (
-          // Mobile layout - vertical grid
-          <div className="space-y-6">
+          // Mobile layout - vertical grid with 2 columns
+          <div className="space-y-8">
             <div>
-              <div className="flex justify-between mb-2">
+              <div className="flex justify-between mb-3">
                 <span className="text-sm text-muted-foreground">
-                  Numbers 1-100
+                  Numbers 1-50
                 </span>
               </div>
-              <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-                {sortedNumbers.map(renderNumberCard)}
+              <div className="grid grid-cols-2 gap-4">
+                {firstRow.map(renderNumberCard)}
+              </div>
+            </div>
+            
+            <div className="mt-8">
+              <div className="flex justify-between mb-3">
+                <span className="text-sm text-muted-foreground">
+                  Numbers 51-100
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                {secondRow.map(renderNumberCard)}
               </div>
             </div>
           </div>
