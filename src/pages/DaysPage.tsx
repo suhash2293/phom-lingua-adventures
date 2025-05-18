@@ -11,6 +11,7 @@ import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
+
 const DaysPage = () => {
   const {
     user
@@ -161,7 +162,7 @@ const DaysPage = () => {
             <CardTitle className="text-center">{day.english_translation}</CardTitle>
           </CardHeader>
           <CardContent className="p-4 md:w-2/3 flex flex-col justify-center">
-            <p className="text-xl font-medium mb-2 text-primary-foreground">{day.phom_word}</p>
+            <p className="text-xl font-medium mb-2 text-black">{day.phom_word}</p>
             {day.example_sentence && <p className="text-sm text-muted-foreground">{day.example_sentence}</p>}
             {day.audio_url && <div className="mt-3">
                 <Button size="sm" variant={isCached(day.audio_url) ? "outline" : "secondary"} className="flex items-center gap-1" onClick={() => handlePlayAudio(day.audio_url, day.id)} disabled={playingAudio !== null && playingAudio !== day.id}>
@@ -208,4 +209,5 @@ const DaysPage = () => {
       </div>
     </LearnLayout>;
 };
+
 export default DaysPage;

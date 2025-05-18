@@ -212,7 +212,7 @@ const NumbersPage = () => {
             {item.english_translation}
           </span>
           <span 
-            className={`text-primary mt-1 text-center ${isMobile ? "text-base" : "text-xs truncate w-full"}`}
+            className={`text-black mt-1 text-center ${isMobile ? "text-base" : "text-xs truncate w-full"}`}
             title={item.phom_word}
           >
             {item.phom_word}
