@@ -75,14 +75,14 @@ const GameCard = ({
         <div className="mb-4">
           <label className="block text-sm mb-2">Choose a category:</label>
           <Select
-            value={selectedCategory || ""}
+            value={selectedCategory || undefined}
             onValueChange={(value) => setSelectedCategory(value || null)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Random Mix" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Random Mix</SelectItem>
+              <SelectItem value="random-mix">Random Mix</SelectItem>
               {filteredCategories.map(category => (
                 <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
               ))}
