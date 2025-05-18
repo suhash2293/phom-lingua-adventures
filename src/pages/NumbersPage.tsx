@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -8,20 +7,13 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Headphones, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Headphones, Volume2, VolumeX } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { 
-  Carousel, 
-  CarouselContent, 
-  CarouselItem, 
-  CarouselPrevious, 
-  CarouselNext 
-} from '@/components/ui/carousel';
 
 const NumbersPage = () => {
   const { user } = useAuth();
@@ -220,9 +212,9 @@ const NumbersPage = () => {
           <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
           <Skeleton className="h-10 w-full mb-8" />
-          <div className="flex flex-col space-y-4">
+          <div className="grid grid-cols-3 gap-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-16 w-full" />
+              <Skeleton key={i} className="h-24 w-full" />
             ))}
           </div>
         </div>
@@ -289,7 +281,7 @@ const NumbersPage = () => {
           <div className="relative mb-8">
             <div className="flex justify-between mb-2">
               <span className="text-sm text-muted-foreground">
-                {!isMobile ? "Scroll horizontally to view all number groups" : "Swipe tabs to view more"}
+                Swipe to view all number groups
               </span>
             </div>
             <ScrollArea className="w-full pb-4">
@@ -310,82 +302,42 @@ const NumbersPage = () => {
           
           {groupKeys.map((group) => (
             <TabsContent key={group} value={group} className="mt-4">
-              <div className="relative py-2">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-md font-medium">Swipe to explore numbers {group}</h3>
-                  <div className="flex items-center space-x-2">
-                    <div className="hidden md:flex text-sm text-muted-foreground">
-                      Use arrow buttons to navigate
-                    </div>
-                  </div>
-                </div>
+              <div className="py-2">
+                <h3 className="text-md font-medium mb-4">Numbers {group}</h3>
                 
-                <div className="mb-6">
-                  <Carousel 
-                    opts={{
-                      align: "start",
-                      loop: false,
-                      dragFree: true
-                    }}
-                    className="w-full"
-                  >
-                    <CarouselContent className="-ml-2 md:-ml-4">
-                      {numberGroups[group].map((item) => (
-                        <CarouselItem 
-                          key={item.id} 
-                          className={isMobile ? "pl-2 basis-4/5 md:basis-1/2 lg:basis-1/3" : "pl-4 basis-1/3 md:basis-1/4 lg:basis-1/5"}
-                        >
-                          <Card 
-                            className="border-primary/20 hover:border-primary hover:shadow-md transition-all h-full"
-                            onClick={handlePageInteraction}
+                {/* 3-column grid layout with fixed row height for each number */}
+                <div className="grid grid-cols-3 gap-3 overflow-y-auto">
+                  {numberGroups[group].map((item) => (
+                    <Card 
+                      key={item.id} 
+                      className="border-primary/20 hover:border-primary hover:shadow-md transition-all h-[100px] min-h-[100px]"
+                      onClick={handlePageInteraction}
+                    >
+                      <CardContent className="flex flex-col p-3 h-full justify-center items-center">
+                        <div className="flex flex-col items-center justify-center mb-1">
+                          <span className="text-xl font-bold">{item.english_translation}</span>
+                          <span className="text-base text-primary mt-1">{item.phom_word}</span>
+                        </div>
+                        {item.audio_url && (
+                          <Button 
+                            size="sm" 
+                            variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
+                            className="flex items-center gap-1 mt-1 h-8 min-w-[48px] min-h-[48px] p-1"
+                            onClick={() => handlePlayAudio(item.audio_url, item.id)}
+                            disabled={playingAudio !== null && playingAudio !== item.id}
                           >
-                            <CardContent className="flex flex-col p-4 h-full justify-center items-center">
-                              <div className="flex flex-col items-center justify-center mb-3">
-                                <span className="text-3xl font-bold">{item.english_translation}</span>
-                                <span className="text-xl text-primary mt-2">{item.phom_word}</span>
-                              </div>
-                              {item.audio_url && (
-                                <Button 
-                                  size="sm" 
-                                  variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-                                  className="flex items-center gap-1 mt-2"
-                                  onClick={() => handlePlayAudio(item.audio_url, item.id)}
-                                  disabled={playingAudio !== null && playingAudio !== item.id}
-                                >
-                                  {playingAudio === item.id ? (
-                                    <>
-                                      <Volume2 className="h-4 w-4 animate-pulse" />
-                                      <span>Playing...</span>
-                                    </>
-                                  ) : !isCached(item.audio_url) || !audioInitialized ? (
-                                    <>
-                                      <VolumeX className="h-4 w-4" />
-                                      <span>
-                                        {audioInitialized ? "Loading..." : "Enable Audio"}
-                                      </span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Headphones className="h-4 w-4" />
-                                      <span>Listen</span>
-                                    </>
-                                  )}
-                                </Button>
-                              )}
-                            </CardContent>
-                          </Card>
-                        </CarouselItem>
-                      ))}
-                    </CarouselContent>
-                    <div className="hidden md:block">
-                      <CarouselPrevious className="-left-4 md:-left-6" />
-                      <CarouselNext className="-right-4 md:-right-6" />
-                    </div>
-                  </Carousel>
-                </div>
-                
-                <div className="text-center text-sm text-muted-foreground mt-2">
-                  {isMobile ? "Swipe cards horizontally to see more numbers" : ""}
+                            {playingAudio === item.id ? (
+                              <Volume2 className="h-4 w-4 animate-pulse" />
+                            ) : !isCached(item.audio_url) || !audioInitialized ? (
+                              <VolumeX className="h-4 w-4" />
+                            ) : (
+                              <Headphones className="h-4 w-4" />
+                            )}
+                          </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  ))}
                 </div>
               </div>
             </TabsContent>
