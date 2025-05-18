@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query';
 import LearnLayout from '@/components/layout/LearnLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Headphones, Volume2, VolumeX, ChevronLeft, ChevronRight } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
@@ -239,7 +239,7 @@ const NumbersPage = () => {
                 <span className="text-sm text-muted-foreground">Swipe tabs to view more</span>
               </div>
             )}
-            <ScrollArea className="w-full" orientation="horizontal">
+            <ScrollArea className="w-full">
               <TabsList className={`${isMobile ? 'inline-flex w-max' : 'grid grid-cols-2 md:grid-cols-5'} mb-0`}>
                 {groupKeys.map((group) => (
                   <TabsTrigger 
@@ -251,6 +251,7 @@ const NumbersPage = () => {
                   </TabsTrigger>
                 ))}
               </TabsList>
+              <ScrollBar orientation="horizontal" />
             </ScrollArea>
           </div>
           
