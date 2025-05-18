@@ -7,6 +7,13 @@ import { ChevronRight, Award, Clock, Trophy } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { GameProgressService, UserProgress } from '@/services/GameProgressService';
 import { AchievementService } from '@/services/AchievementService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -67,16 +74,20 @@ const GameCard = ({
         
         <div className="mb-4">
           <label className="block text-sm mb-2">Choose a category:</label>
-          <select 
-            className="w-full p-2 border rounded-md"
+          <Select
             value={selectedCategory || ""}
-            onChange={(e) => setSelectedCategory(e.target.value || null)}
+            onValueChange={(value) => setSelectedCategory(value || null)}
           >
-            <option value="">Random Mix</option>
-            {filteredCategories.map(category => (
-              <option key={category.id} value={category.id}>{category.name}</option>
-            ))}
-          </select>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Random Mix" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Random Mix</SelectItem>
+              {filteredCategories.map(category => (
+                <SelectItem key={category.id} value={category.id}>{category.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         
         <Button 
