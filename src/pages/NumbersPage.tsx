@@ -212,9 +212,9 @@ const NumbersPage = () => {
           <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
           <Skeleton className="h-10 w-full mb-8" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          <div className="flex flex-col space-y-4">
             {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-24 w-full" />
+              <Skeleton key={i} className="h-16 w-full" />
             ))}
           </div>
         </div>
@@ -302,38 +302,42 @@ const NumbersPage = () => {
           
           {groupKeys.map((group) => (
             <TabsContent key={group} value={group} className="mt-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+              <div className="flex flex-col space-y-3">
                 {numberGroups[group].map((item) => (
                   <Card 
                     key={item.id} 
                     className="border-primary/20 hover:border-primary hover:shadow-md transition-all"
                     onClick={handlePageInteraction}
                   >
-                    <CardContent className="p-4 flex flex-col items-center justify-center">
-                      <span className="text-2xl font-bold">{item.english_translation}</span>
-                      <span className="text-lg text-primary-foreground">{item.phom_word}</span>
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <span className="text-2xl font-bold min-w-[40px]">{item.english_translation}</span>
+                        <span className="text-lg text-primary-foreground">{item.phom_word}</span>
+                      </div>
                       {item.audio_url && (
                         <Button 
                           size="sm" 
                           variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-                          className="mt-2 flex items-center gap-1"
+                          className="flex items-center gap-1"
                           onClick={() => handlePlayAudio(item.audio_url, item.id)}
                           disabled={playingAudio !== null && playingAudio !== item.id}
                         >
                           {playingAudio === item.id ? (
                             <>
                               <Volume2 className="h-4 w-4 animate-pulse" />
-                              Playing...
+                              <span className={isMobile ? "sr-only" : ""}>Playing...</span>
                             </>
                           ) : !isCached(item.audio_url) || !audioInitialized ? (
                             <>
                               <VolumeX className="h-4 w-4" />
-                              {audioInitialized ? "Loading..." : "Enable Audio"}
+                              <span className={isMobile ? "sr-only" : ""}>
+                                {audioInitialized ? "Loading..." : "Enable Audio"}
+                              </span>
                             </>
                           ) : (
                             <>
                               <Headphones className="h-4 w-4" />
-                              Listen
+                              <span className={isMobile ? "sr-only" : ""}>Listen</span>
                             </>
                           )}
                         </Button>
