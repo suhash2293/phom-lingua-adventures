@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -15,7 +14,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Pagination, PaginationContent, PaginationItem, PaginationLink } from '@/components/ui/pagination';
 
 const NumbersPage = () => {
   const { user } = useAuth();
@@ -300,34 +298,6 @@ const NumbersPage = () => {
               </TabsList>
               <ScrollBar orientation="horizontal" className="mt-2" />
             </ScrollArea>
-            
-            {/* Add a pagination indicator for better navigation */}
-            <Pagination className="mt-4">
-              <PaginationContent>
-                {groupKeys.map((group, index) => {
-                  // For larger sets, only show selected ones
-                  if (groupKeys.length > 10 && 
-                      index !== 0 && 
-                      index !== groupKeys.length - 1 && 
-                      group !== activeTab && 
-                      Math.abs(groupKeys.indexOf(activeTab) - index) > 2) {
-                    return null;
-                  }
-                  
-                  return (
-                    <PaginationItem key={group}>
-                      <PaginationLink 
-                        onClick={() => setActiveTab(group)}
-                        isActive={activeTab === group}
-                        className="w-8 h-8 p-0 flex items-center justify-center"
-                      >
-                        {Math.floor(parseInt(group.split('-')[0]) / 10) + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-              </PaginationContent>
-            </Pagination>
           </div>
           
           {groupKeys.map((group) => (
