@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -14,7 +15,9 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { toast } from '@/components/ui/use-toast';
 
-const QUESTIONS_PER_GAME = 10;
+// Default questions count - will be dynamically adjusted based on content availability
+const DEFAULT_QUESTIONS_PER_GAME = 10;
+const MIN_QUESTIONS_REQUIRED = 3; // Minimum number of questions needed for a meaningful game
 const SECONDS_PER_GAME = 120; // 2 minutes
 
 type LetterTile = {
@@ -45,12 +48,24 @@ const WordScrambleGame = () => {
   const [availableLetters, setAvailableLetters] = useState<LetterTile[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [questionsPerGame, setQuestionsPerGame] = useState(DEFAULT_QUESTIONS_PER_GAME);
+  const [categoryName, setCategoryName] = useState<string>("");
   
   // Fetch content items based on category
   const { data: fetchedItems, isLoading } = useQuery({
     queryKey: ['contentItems', categoryId],
     queryFn: async () => {
       if (categoryId) {
+        // Also get the category name for better user feedback
+        try {
+          const categories = await ContentService.getCategories();
+          const currentCategory = categories.find(cat => cat.id === categoryId);
+          if (currentCategory) {
+            setCategoryName(currentCategory.name);
+          }
+        } catch (error) {
+          console.error("Error fetching category name:", error);
+        }
         return ContentService.getContentItemsByCategory(categoryId);
       } else {
         // Get all categories and select random items from each
@@ -63,6 +78,7 @@ const WordScrambleGame = () => {
           allItems = [...allItems, ...categoryItems];
         }
         
+        setCategoryName("Random Mix");
         return shuffle(allItems).slice(0, 30); // Limit to 30 random items
       }
     }
@@ -72,6 +88,18 @@ const WordScrambleGame = () => {
   useEffect(() => {
     if (fetchedItems && fetchedItems.length > 0) {
       setContentItems(fetchedItems);
+      
+      // Dynamically adjust questions per game based on available content
+      const availableItems = fetchedItems.filter(item => item.phom_word.length >= 3).length;
+      if (availableItems < DEFAULT_QUESTIONS_PER_GAME) {
+        // Adjust questions count based on available items
+        // Ensure at least MIN_QUESTIONS_REQUIRED questions
+        const adjustedCount = Math.max(MIN_QUESTIONS_REQUIRED, availableItems);
+        setQuestionsPerGame(adjustedCount);
+        console.log(`Adjusted questions count to ${adjustedCount} based on available content`);
+      } else {
+        setQuestionsPerGame(DEFAULT_QUESTIONS_PER_GAME);
+      }
     }
   }, [fetchedItems]);
   
@@ -137,17 +165,17 @@ const WordScrambleGame = () => {
     // Filter out items with very short words (less than 3 letters)
     const validItems = contentItems.filter(item => item.phom_word.length >= 3);
     
-    if (validItems.length < QUESTIONS_PER_GAME) {
+    if (validItems.length < MIN_QUESTIONS_REQUIRED) {
       toast({
         title: "Not enough content",
-        description: "There aren't enough words in this category to play the game.",
+        description: `There aren't enough words in the "${categoryName}" category to play the game. Please select another category.`,
         variant: "destructive"
       });
       return false;
     }
     
-    // Select random items for this game
-    const gameItems = shuffle(validItems).slice(0, QUESTIONS_PER_GAME);
+    // Select random items for this game, limited by the adjusted questionsPerGame
+    const gameItems = shuffle(validItems).slice(0, questionsPerGame);
     
     // Create questions with scrambled letters
     const questions = gameItems.map(item => {
@@ -246,7 +274,7 @@ const WordScrambleGame = () => {
     const timeTaken = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : SECONDS_PER_GAME;
     
     // Calculate XP earned based on score and time
-    const scoreRatio = finalScore / (QUESTIONS_PER_GAME * 10);
+    const scoreRatio = finalScore / (questionsPerGame * 10);
     const timeBonus = Math.max(0, (SECONDS_PER_GAME - timeTaken) / 10);
     const xpEarned = Math.floor((scoreRatio * 75) + timeBonus);
     
@@ -331,6 +359,14 @@ const WordScrambleGame = () => {
             The English translation is provided as a hint. 
             Select letters in the correct order to build the word.
           </p>
+          {contentItems.length > 0 && contentItems.filter(item => item.phom_word.length >= 3).length < DEFAULT_QUESTIONS_PER_GAME && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-4">
+              <p className="text-yellow-800 text-sm">
+                Note: The "{categoryName}" category has {contentItems.filter(item => item.phom_word.length >= 3).length} suitable words available. 
+                This game will use {questionsPerGame} words instead of the standard {DEFAULT_QUESTIONS_PER_GAME}.
+              </p>
+            </div>
+          )}
           <Button onClick={startGame}>Start Game</Button>
         </Card>
       )}
@@ -348,12 +384,12 @@ const WordScrambleGame = () => {
           </div>
           
           <Progress 
-            value={((currentQuestion + 1) / QUESTIONS_PER_GAME) * 100} 
+            value={((currentQuestion + 1) / gameQuestions.length) * 100} 
             className="h-2 mb-8" 
           />
           
           <div className="text-center mb-6">
-            <p className="text-lg font-medium mb-2">Question {currentQuestion + 1} of {QUESTIONS_PER_GAME}</p>
+            <p className="text-lg font-medium mb-2">Question {currentQuestion + 1} of {gameQuestions.length}</p>
             
             {/* Clue - show the English translation */}
             <Card className="p-4 mb-8 max-w-2xl mx-auto">
@@ -441,7 +477,7 @@ const WordScrambleGame = () => {
           <div className="mb-4">
             <p className="text-lg">Final Score: {score}</p>
             <p className="text-muted-foreground">
-              You correctly unscrambled {score / 10} out of {QUESTIONS_PER_GAME} words.
+              You correctly unscrambled {score / 10} out of {gameQuestions.length} words.
             </p>
           </div>
           <div className="flex gap-4">

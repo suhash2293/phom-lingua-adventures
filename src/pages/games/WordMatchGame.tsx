@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -20,7 +21,9 @@ type MatchPair = {
   isMatched: boolean;
 };
 
-const QUESTIONS_PER_GAME = 10;
+// Default questions count - will be dynamically adjusted based on content availability
+const DEFAULT_QUESTIONS_PER_GAME = 10;
+const MIN_QUESTIONS_REQUIRED = 4; // Minimum number of questions needed for a meaningful game
 const SECONDS_PER_GAME = 120; // 2 minutes
 
 const WordMatchGame = () => {
@@ -40,12 +43,24 @@ const WordMatchGame = () => {
   const [matchedPairs, setMatchedPairs] = useState<string[]>([]);
   const [contentItems, setContentItems] = useState<ContentItem[]>([]);
   const [pairsForRound, setPairsForRound] = useState<MatchPair[]>([]);
+  const [questionsPerGame, setQuestionsPerGame] = useState(DEFAULT_QUESTIONS_PER_GAME);
+  const [categoryName, setCategoryName] = useState<string>("");
   
   // Fetch content items based on category
   const { data: fetchedItems, isLoading } = useQuery({
     queryKey: ['contentItems', categoryId],
     queryFn: async () => {
       if (categoryId) {
+        // Also get the category name for better user feedback
+        try {
+          const categories = await ContentService.getCategories();
+          const currentCategory = categories.find(cat => cat.id === categoryId);
+          if (currentCategory) {
+            setCategoryName(currentCategory.name);
+          }
+        } catch (error) {
+          console.error("Error fetching category name:", error);
+        }
         return ContentService.getContentItemsByCategory(categoryId);
       } else {
         // Get all categories and select random items from each
@@ -58,6 +73,7 @@ const WordMatchGame = () => {
           allItems = [...allItems, ...categoryItems];
         }
         
+        setCategoryName("Random Mix");
         return shuffle(allItems).slice(0, 30); // Limit to 30 random items
       }
     }
@@ -67,6 +83,18 @@ const WordMatchGame = () => {
   useEffect(() => {
     if (fetchedItems && fetchedItems.length > 0) {
       setContentItems(fetchedItems);
+      
+      // Dynamically adjust questions per game based on available content
+      const availableItems = fetchedItems.length;
+      if (availableItems < DEFAULT_QUESTIONS_PER_GAME) {
+        // Adjust questions count based on available items
+        // Ensure at least MIN_QUESTIONS_REQUIRED questions
+        const adjustedCount = Math.max(MIN_QUESTIONS_REQUIRED, availableItems);
+        setQuestionsPerGame(adjustedCount);
+        console.log(`Adjusted questions count to ${adjustedCount} based on available content`);
+      } else {
+        setQuestionsPerGame(DEFAULT_QUESTIONS_PER_GAME);
+      }
     }
   }, [fetchedItems]);
   
@@ -91,10 +119,10 @@ const WordMatchGame = () => {
   
   // Start the game
   const startGame = () => {
-    if (contentItems.length < QUESTIONS_PER_GAME) {
+    if (contentItems.length < MIN_QUESTIONS_REQUIRED) {
       toast({
         title: "Not enough content",
-        description: "There aren't enough words to play this game with the selected category.",
+        description: `There aren't enough words to play this game with the "${categoryName}" category. Please select another category.`,
         variant: "destructive"
       });
       return;
@@ -110,8 +138,8 @@ const WordMatchGame = () => {
   
   // Prepare a round of word matching
   const prepareRound = () => {
-    // Select random content items for this round
-    const roundItems = shuffle(contentItems).slice(0, QUESTIONS_PER_GAME);
+    // Select random content items for this round, limited by the adjusted questionsPerGame
+    const roundItems = shuffle(contentItems).slice(0, questionsPerGame);
     
     // Create pairs
     const pairs = roundItems.map(item => ({
@@ -152,7 +180,7 @@ const WordMatchGame = () => {
         setMatchedPairs(prev => [...prev, matchingPair.id]);
         
         // Update progress if all pairs are matched
-        if (matchedPairs.length + 1 >= QUESTIONS_PER_GAME) {
+        if (matchedPairs.length + 1 >= questionsPerGame) {
           endGame();
         }
       } else {
@@ -176,7 +204,7 @@ const WordMatchGame = () => {
     const timeTaken = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : SECONDS_PER_GAME;
     
     // Calculate XP earned based on score and time
-    const scoreRatio = finalScore / (QUESTIONS_PER_GAME * 10);
+    const scoreRatio = finalScore / (questionsPerGame * 10);
     const timeBonus = Math.max(0, (SECONDS_PER_GAME - timeTaken) / 10);
     const xpEarned = Math.floor((scoreRatio * 50) + timeBonus);
     
@@ -258,6 +286,14 @@ const WordMatchGame = () => {
             Select one word from each column to make a pair.
             You'll earn points for correct matches and lose points for incorrect ones.
           </p>
+          {contentItems.length > 0 && contentItems.length < DEFAULT_QUESTIONS_PER_GAME && (
+            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md mb-4">
+              <p className="text-yellow-800 text-sm">
+                Note: The "{categoryName}" category has {contentItems.length} words available. 
+                This game will use {questionsPerGame} words instead of the standard {DEFAULT_QUESTIONS_PER_GAME}.
+              </p>
+            </div>
+          )}
           <Button onClick={startGame}>Start Game</Button>
         </Card>
       )}
@@ -275,7 +311,7 @@ const WordMatchGame = () => {
           </div>
           
           <Progress 
-            value={(matchedPairs.length / QUESTIONS_PER_GAME) * 100} 
+            value={(matchedPairs.length / questionsPerGame) * 100} 
             className="h-2 mb-6" 
           />
           
@@ -333,7 +369,7 @@ const WordMatchGame = () => {
           <div className="mb-4">
             <p className="text-lg">Final Score: {score}</p>
             <p className="text-muted-foreground">
-              You matched {matchedPairs.length} out of {QUESTIONS_PER_GAME} word pairs.
+              You matched {matchedPairs.length} out of {questionsPerGame} word pairs.
             </p>
           </div>
           <div className="flex gap-4">
