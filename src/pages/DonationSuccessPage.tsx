@@ -1,68 +1,51 @@
 
-import React, { useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { CheckCircle, Loader2 } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useEffect } from 'react';
 
-interface DonationDetails {
+interface LocationState {
   amount?: number;
-  currency?: string;
-  email?: string;
-  status?: string;
+  transactionId?: string;
 }
 
 const DonationSuccessPage = () => {
-  const [searchParams] = useSearchParams();
-  const sessionId = searchParams.get('session_id');
-  const [donationDetails, setDonationDetails] = useState<DonationDetails>({});
-  const [loading, setLoading] = useState<boolean>(true);
+  const location = useLocation();
+  const state = location.state as LocationState;
+  const { toast } = useToast();
+  const { user } = useAuth();
   
+  const donationAmount = state?.amount || 0;
+  const transactionId = state?.transactionId || 'unknown';
+  
+  // Record the donation in Supabase (optional, for tracking purposes)
   useEffect(() => {
-    async function fetchDonationDetails() {
-      if (!sessionId) {
-        setLoading(false);
-        return;
-      }
-      
-      try {
-        // Fetch donation details from the database
-        const { data, error } = await supabase
-          .from('donations')
-          .select('amount, currency, email, status')
-          .eq('stripe_session_id', sessionId)
-          .maybeSingle();
-        
-        if (error) {
-          throw error;
-        }
-        
-        if (data) {
-          setDonationDetails(data);
-        } else {
-          // Fallback to a default amount if we can't find the donation
-          setDonationDetails({
-            amount: 1000,
-            currency: "inr",
+    const recordDonation = async () => {
+      if (donationAmount > 0 && user) {
+        try {
+          // Record the donation in our database
+          await supabase.from('donations').insert({
+            amount: donationAmount,
+            currency: 'inr',
+            email: user.email,
+            user_id: user.id,
+            google_play_transaction_id: transactionId,
+            status: 'completed',
           });
+        } catch (error) {
+          console.error('Error recording donation:', error);
+          // Non-critical error, don't show to user
         }
-      } catch (error) {
-        console.error("Error fetching donation details:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to fetch donation details. Please contact support.",
-        });
-      } finally {
-        setLoading(false);
       }
-    }
+    };
     
-    fetchDonationDetails();
-  }, [sessionId]);
+    recordDonation();
+  }, [donationAmount, transactionId, user]);
   
   return (
     <div className="container px-4 md:px-6 py-12 max-w-3xl mx-auto">
@@ -78,20 +61,15 @@ const DonationSuccessPage = () => {
             Your contribution will help us preserve the Phom language and create new learning resources.
           </p>
           
-          {loading ? (
-            <div className="flex justify-center py-4">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : donationDetails.amount ? (
+          {donationAmount > 0 && (
             <p className="text-xl font-semibold">
-              Amount: {donationDetails.currency === 'inr' ? '₹' : '$'}{(donationDetails.amount).toFixed(2)}
+              Amount: ₹{donationAmount.toLocaleString('en-IN')}
             </p>
-          ) : null}
+          )}
           
           <div className="pt-6">
             <p className="text-muted-foreground mb-6">
-              A receipt has been emailed to you. If you have any questions about your donation, 
-              please contact us.
+              Your purchase has been processed through Google Play. Thank you for supporting our mission!
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -99,7 +77,7 @@ const DonationSuccessPage = () => {
                 <Link to="/">Return to Home</Link>
               </Button>
               <Button variant="outline" asChild>
-                <Link to="/learn">Start Learning</Link>
+                <Link to="/donate">Donate Again</Link>
               </Button>
             </div>
           </div>
