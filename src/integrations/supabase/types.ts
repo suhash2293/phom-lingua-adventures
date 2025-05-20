@@ -148,6 +148,42 @@ export type Database = {
           },
         ]
       }
+      donations: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          google_play_transaction_id: string | null
+          id: string
+          purchase_token: string | null
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          google_play_transaction_id?: string | null
+          id?: string
+          purchase_token?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          google_play_transaction_id?: string | null
+          id?: string
+          purchase_token?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       game_sessions: {
         Row: {
           category_id: string | null

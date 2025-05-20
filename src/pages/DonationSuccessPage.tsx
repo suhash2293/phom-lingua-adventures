@@ -12,6 +12,7 @@ import { useEffect } from 'react';
 interface LocationState {
   amount?: number;
   transactionId?: string;
+  purchaseToken?: string;
 }
 
 const DonationSuccessPage = () => {
@@ -22,8 +23,9 @@ const DonationSuccessPage = () => {
   
   const donationAmount = state?.amount || 0;
   const transactionId = state?.transactionId || 'unknown';
+  const purchaseToken = state?.purchaseToken || 'unknown';
   
-  // Record the donation in Supabase (optional, for tracking purposes)
+  // Record the donation in Supabase
   useEffect(() => {
     const recordDonation = async () => {
       if (donationAmount > 0 && user) {
@@ -35,8 +37,11 @@ const DonationSuccessPage = () => {
             email: user.email,
             user_id: user.id,
             google_play_transaction_id: transactionId,
+            purchase_token: purchaseToken,
             status: 'completed',
           });
+          
+          console.log('Donation recorded successfully');
         } catch (error) {
           console.error('Error recording donation:', error);
           // Non-critical error, don't show to user
@@ -45,7 +50,7 @@ const DonationSuccessPage = () => {
     };
     
     recordDonation();
-  }, [donationAmount, transactionId, user]);
+  }, [donationAmount, transactionId, purchaseToken, user]);
   
   return (
     <div className="container px-4 md:px-6 py-12 max-w-3xl mx-auto">

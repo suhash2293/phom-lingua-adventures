@@ -1,4 +1,3 @@
-
 # Android Implementation Steps for Google Play Billing
 
 After generating the Android project with Capacitor, follow these steps to implement Google Play Billing:

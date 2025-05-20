@@ -2,11 +2,24 @@
 /**
  * Service for handling Google Play Billing operations
  */
+import { Capacitor } from '@capacitor/core';
+
 interface DonationTier {
   id: string;
   amount: number;
   minAmount: number;
   maxAmount: number;
+}
+
+interface PurchaseResult {
+  success: boolean;
+  transactionData?: {
+    orderId: string;
+    productId: string;
+    purchaseTime: number;
+    purchaseToken: string;
+    acknowledged: boolean;
+  };
 }
 
 export class PlayBillingService {
@@ -43,14 +56,24 @@ export class PlayBillingService {
 
   /**
    * Initializes the Google Play Billing connection
-   * Note: This is a placeholder for the actual implementation
-   * which will be integrated with the Android native code
+   * On Android, calls the native plugin
+   * On other platforms, returns a mock success
    */
   static async initialize(): Promise<boolean> {
     console.log('Initializing Google Play Billing');
     
-    // This would be implemented with Capacitor plugins in the real implementation
-    // Here we're just returning a mock success response
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      try {
+        // @ts-ignore - The GooglePlayBilling plugin will be available at runtime
+        const result = await Capacitor.Plugins.GooglePlayBilling.initialize();
+        return result.connected === true;
+      } catch (err) {
+        console.error('Error initializing Google Play Billing:', err);
+        return false;
+      }
+    }
+    
+    // Mock success for web or iOS
     return true;
   }
 
@@ -58,8 +81,18 @@ export class PlayBillingService {
    * Checks if the billing service is available (device supports Google Play Billing)
    */
   static async isBillingAvailable(): Promise<boolean> {
-    // In a real implementation, this would check if Google Play Billing is available
-    // on the device using the Capacitor plugin
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      try {
+        // @ts-ignore - The GooglePlayBilling plugin will be available at runtime
+        const result = await Capacitor.Plugins.GooglePlayBilling.isBillingAvailable();
+        return result.available === true;
+      } catch (err) {
+        console.error('Error checking billing availability:', err);
+        return false;
+      }
+    }
+    
+    // Mock success for web or iOS
     return true;
   }
 
@@ -67,17 +100,31 @@ export class PlayBillingService {
    * Starts the donation purchase flow for a specific product ID
    * @param productId The Google Play product ID to purchase
    */
-  static async purchaseDonation(productId: string): Promise<{success: boolean, transactionData?: any}> {
+  static async purchaseDonation(productId: string): Promise<PurchaseResult> {
     console.log(`Purchasing donation product: ${productId}`);
     
-    // In a real implementation, this would use Capacitor to call the native
-    // Android code that launches the Google Play Billing flow
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      try {
+        // @ts-ignore - The GooglePlayBilling plugin will be available at runtime
+        const result = await Capacitor.Plugins.GooglePlayBilling.purchaseDonation({
+          productId: productId
+        });
+        
+        return {
+          success: result.success,
+          transactionData: result.transactionData
+        };
+      } catch (err) {
+        console.error('Error purchasing donation:', err);
+        return { success: false };
+      }
+    }
     
-    // For demo purposes, simulating a successful purchase
+    // Mock purchase for web or iOS
     return {
       success: true,
       transactionData: {
-        orderId: `gp-${Math.random().toString(36).substring(2, 15)}`,
+        orderId: `mock-${Math.random().toString(36).substring(2, 15)}`,
         productId,
         purchaseTime: Date.now(),
         purchaseToken: `token-${Math.random().toString(36).substring(2, 15)}`,
@@ -93,8 +140,21 @@ export class PlayBillingService {
   static async acknowledgePurchase(purchaseToken: string): Promise<boolean> {
     console.log(`Acknowledging purchase: ${purchaseToken}`);
     
-    // In a real implementation, this would tell Google Play that the purchase
-    // has been consumed (for consumable products like donations)
+    if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android') {
+      try {
+        // @ts-ignore - The GooglePlayBilling plugin will be available at runtime
+        const result = await Capacitor.Plugins.GooglePlayBilling.acknowledgePurchase({
+          purchaseToken: purchaseToken
+        });
+        
+        return result.acknowledged === true;
+      } catch (err) {
+        console.error('Error acknowledging purchase:', err);
+        return false;
+      }
+    }
+    
+    // Mock success for web or iOS
     return true;
   }
 }

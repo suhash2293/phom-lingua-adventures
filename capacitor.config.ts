@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
       keystorePath: 'keystore.jks',
       keystoreAlias: 'phomshah',
     }
+  },
+  plugins: {
+    GooglePlayBilling: {
+      // Plugin configuration options can go here
+    }
   }
 };
 
