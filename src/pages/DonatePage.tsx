@@ -66,7 +66,7 @@ const DonatePage = () => {
       toast({
         variant: 'destructive',
         title: 'Invalid Amount',
-        description: 'Please enter an amount between ₹1 and ₹100,000.',
+        description: 'Please enter an amount of at least ₹1.',
       });
       return;
     }
@@ -96,7 +96,8 @@ const DonatePage = () => {
         navigate('/donation-success', { 
           state: { 
             amount: confirmationTier.amount,
-            transactionId: result.transactionData?.orderId || 'unknown'
+            transactionId: result.transactionData?.orderId || 'unknown',
+            purchaseToken: result.transactionData?.purchaseToken || 'unknown'
           } 
         });
       } else {
@@ -119,8 +120,8 @@ const DonatePage = () => {
     }
   };
   
-  // Predefined donation amounts
-  const predefinedAmounts = [100, 200, 500, 1000, 2000, 5000];
+  // Updated predefined amounts including higher options
+  const predefinedAmounts = [100, 500, 1000, 5000, 10000, 50000];
   
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
@@ -158,7 +159,7 @@ const DonatePage = () => {
                     onClick={() => handleDonateInitiate(amount)}
                     disabled={isLoading || !isBillingAvailable}
                   >
-                    ₹{amount}
+                    ₹{amount.toLocaleString('en-IN')}
                   </Button>
                 ))}
               </div>
@@ -168,7 +169,7 @@ const DonatePage = () => {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2">₹</span>
                   <Input
                     type="text"
-                    placeholder="Enter amount (₹1 to ₹100,000)"
+                    placeholder="Enter amount (minimum ₹1)"
                     value={customAmount}
                     onChange={handleCustomAmountChange}
                     className="pl-7"
@@ -178,7 +179,7 @@ const DonatePage = () => {
                 </div>
                 <Button 
                   onClick={() => handleDonateInitiate(parseInt(customAmount))}
-                  disabled={!customAmount || parseInt(customAmount) < 1 || parseInt(customAmount) > 100000 || isLoading || !isBillingAvailable}
+                  disabled={!customAmount || parseInt(customAmount) < 1 || isLoading || !isBillingAvailable}
                 >
                   {isLoading ? (
                     <>
@@ -254,7 +255,7 @@ const DonatePage = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Donation</AlertDialogTitle>
             <AlertDialogDescription>
-              You'll be donating ₹{confirmationTier?.amount} (nearest available tier).
+              You'll be donating ₹{confirmationTier?.amount?.toLocaleString('en-IN')} (nearest available tier).
               <br />
               Would you like to continue with this donation?
             </AlertDialogDescription>
@@ -268,7 +269,7 @@ const DonatePage = () => {
                   Processing...
                 </div>
               ) : (
-                `Donate ₹${confirmationTier?.amount}`
+                `Donate ₹${confirmationTier?.amount?.toLocaleString('en-IN')}`
               )}
             </AlertDialogAction>
           </AlertDialogFooter>

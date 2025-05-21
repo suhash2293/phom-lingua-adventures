@@ -36,7 +36,17 @@ export class PlayBillingService {
     { id: 'donation_1000', amount: 1000, minAmount: 750, maxAmount: 1499 },
     { id: 'donation_2000', amount: 2000, minAmount: 1500, maxAmount: 2999 },
     { id: 'donation_5000', amount: 5000, minAmount: 3000, maxAmount: 7499 },
-    { id: 'donation_10000', amount: 10000, minAmount: 7500, maxAmount: 100000 },
+    { id: 'donation_10000', amount: 10000, minAmount: 7500, maxAmount: 14999 },
+    // Extended tiers for much larger donations
+    { id: 'donation_20000', amount: 20000, minAmount: 15000, maxAmount: 29999 },
+    { id: 'donation_50000', amount: 50000, minAmount: 30000, maxAmount: 74999 },
+    { id: 'donation_100000', amount: 100000, minAmount: 75000, maxAmount: 149999 },
+    { id: 'donation_200000', amount: 200000, minAmount: 150000, maxAmount: 299999 },
+    { id: 'donation_500000', amount: 500000, minAmount: 300000, maxAmount: 749999 },
+    { id: 'donation_1000000', amount: 1000000, minAmount: 750000, maxAmount: 1499999 },
+    { id: 'donation_2000000', amount: 2000000, minAmount: 1500000, maxAmount: 2999999 },
+    { id: 'donation_5000000', amount: 5000000, minAmount: 3000000, maxAmount: 7499999 },
+    { id: 'donation_10000000', amount: 10000000, minAmount: 7500000, maxAmount: 100000000 },
   ];
 
   /**
@@ -45,13 +55,13 @@ export class PlayBillingService {
    * @returns The matching donation tier
    */
   static mapAmountToDonationTier(amount: number): DonationTier | null {
-    if (amount < 1 || amount > 100000) {
+    if (amount < 1) {
       return null;
     }
 
     return this.DONATION_TIERS.find(
       tier => amount >= tier.minAmount && amount <= tier.maxAmount
-    ) || null;
+    ) || this.DONATION_TIERS[this.DONATION_TIERS.length - 1]; // Return highest tier if above all ranges
   }
 
   /**
