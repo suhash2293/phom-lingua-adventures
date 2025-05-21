@@ -1,3 +1,4 @@
+
 # Android Implementation Steps for Google Play Billing
 
 After generating the Android project with Capacitor, follow these steps to implement Google Play Billing:
@@ -155,6 +156,15 @@ For each donation tier, create a consumable in-app product with the following ID
 - donation_2000
 - donation_5000
 - donation_10000
+- donation_20000
+- donation_50000
+- donation_100000
+- donation_200000
+- donation_500000
+- donation_1000000
+- donation_2000000
+- donation_5000000
+- donation_10000000
 
 4. Add the required billing permission to AndroidManifest.xml:
 
@@ -171,3 +181,4 @@ plugins: {
   }
 }
 ```
+
