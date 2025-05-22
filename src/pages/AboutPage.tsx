@@ -17,11 +17,11 @@ const AboutPage = () => {
             Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come. 
           </p>
         </div>
-        <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-4 border border-gray-200 shadow-sm">
+        <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-6 border border-gray-200 shadow-md">
           <img 
-            src="/lovable-uploads/523f2953-6ed0-4851-854d-f06560a50b06.png" 
+            src="/lovable-uploads/8b18e889-99d4-4d62-8b00-95f1d191e0b8.png" 
             alt="PhomShah Logo" 
-            className="w-full h-auto object-contain max-h-96" 
+            className="w-full h-auto object-contain max-h-[400px]" 
           />
         </div>
       </div>
