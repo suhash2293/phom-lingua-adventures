@@ -1,9 +1,6 @@
-
 import React from 'react';
-
 const PrivacyPage = () => {
-  return (
-    <div className="container px-4 md:px-6 py-8 md:py-12">
+  return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">Privacy Policy</h1>
       
       <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
@@ -205,13 +202,9 @@ const PrivacyPage = () => {
           <p className="mt-2">
             <strong>Email:</strong> moilenlenla@gmail.com
           </p>
-          <p className="mt-2">
-            <strong>Address:</strong> Phom Naga Cultural Society, Longleng, Nagaland, India
-          </p>
+          
         </section>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default PrivacyPage;
