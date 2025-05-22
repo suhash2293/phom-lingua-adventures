@@ -16,8 +16,8 @@ const AboutPage = () => {
             Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come. 
           </p>
         </div>
-        <div className="bg-phom-yellow rounded-lg overflow-hidden">
-          <img src="/lovable-uploads/0d42e53f-67e0-44b9-b835-4ca4918bd0dd.png" alt="Traditional Phom Cultural Element" className="w-full h-full object-cover" />
+        <div className="bg-phom-yellow rounded-lg overflow-hidden flex items-center justify-center p-8">
+          <img src="/lovable-uploads/15102e92-e1a5-4a0f-8e03-f0f94034ace5.png" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
         </div>
       </div>
       
