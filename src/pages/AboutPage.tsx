@@ -18,7 +18,7 @@ const AboutPage = () => {
           </p>
         </div>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-8 border border-gray-200 shadow-sm">
-          <img src="/lovable-uploads/676ce319-8372-4418-9783-58c78962aa1b.png" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
+          <img src="/lovable-uploads/0d42e53f-67e0-44b9-b835-4ca4918bd0dd.png" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
         </div>
       </div>
       
