@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -19,7 +18,7 @@ const AboutPage = () => {
           </p>
         </div>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-8 border border-gray-200 shadow-sm">
-          <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&auto=format&fit=crop" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
+          <img src="/lovable-uploads/676ce319-8372-4418-9783-58c78962aa1b.png" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
         </div>
       </div>
       
