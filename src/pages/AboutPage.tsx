@@ -1,7 +1,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
 const AboutPage = () => {
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
@@ -18,11 +17,7 @@ const AboutPage = () => {
           </p>
         </div>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-6 border border-gray-200 shadow-md">
-          <img 
-            src="/lovable-uploads/8b18e889-99d4-4d62-8b00-95f1d191e0b8.png" 
-            alt="PhomShah Logo" 
-            className="w-full h-auto object-contain max-h-[400px]" 
-          />
+          <img alt="PhomShah Logo" className="w-full h-auto object-contain max-h-[400px]" src="/lovable-uploads/027f11f2-a86f-48c0-b0bf-7d290f00944d.png" />
         </div>
       </div>
       
