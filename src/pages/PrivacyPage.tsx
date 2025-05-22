@@ -41,7 +41,7 @@ const PrivacyPage = () => {
           <h2 className="text-2xl font-bold mb-4">3. How We Use Your Information</h2>
           <p>We use the information we collect to:</p>
           <ul className="list-disc pl-6 mb-4">
-            <li>Provide, maintain, and improve our language learning services</li>
+            <li>Provide, maintain, and improve our dialect learning services</li>
             <li>Create and manage your account</li>
             <li>Track and personalize your learning experience</li>
             <li>Respond to your comments, questions, and requests</li>
