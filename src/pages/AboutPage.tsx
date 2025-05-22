@@ -2,6 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+
 const AboutPage = () => {
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
@@ -17,8 +18,8 @@ const AboutPage = () => {
             Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come. 
           </p>
         </div>
-        <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-8">
-          <img src="/lovable-uploads/15102e92-e1a5-4a0f-8e03-f0f94034ace5.png" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
+        <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-8 border border-gray-200 shadow-sm">
+          <img src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?w=800&auto=format&fit=crop" alt="PhomShah Logo" className="w-full h-auto object-contain max-h-80" />
         </div>
       </div>
       
@@ -26,7 +27,7 @@ const AboutPage = () => {
         <h2 className="text-2xl font-bold mb-6">Why Learn Phom?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div className="bg-muted p-4 rounded-lg">
-            <div className="w-12 h-12 bg-phom-yellow rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 border border-gray-200">
               🏛️
             </div>
             <h3 className="font-bold mb-2">Cultural Heritage</h3>
@@ -36,7 +37,7 @@ const AboutPage = () => {
           </div>
           
           <div className="bg-muted p-4 rounded-lg">
-            <div className="w-12 h-12 bg-phom-yellow rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 border border-gray-200">
               🧠
             </div>
             <h3 className="font-bold mb-2">Cognitive Benefits</h3>
@@ -46,7 +47,7 @@ const AboutPage = () => {
           </div>
           
           <div className="bg-muted p-4 rounded-lg">
-            <div className="w-12 h-12 bg-phom-yellow rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 border border-gray-200">
               🌍
             </div>
             <h3 className="font-bold mb-2">Preservation</h3>
@@ -56,7 +57,7 @@ const AboutPage = () => {
           </div>
           
           <div className="bg-muted p-4 rounded-lg">
-            <div className="w-12 h-12 bg-phom-yellow rounded-full flex items-center justify-center mb-4">
+            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 border border-gray-200">
               🤝
             </div>
             <h3 className="font-bold mb-2">Community</h3>
@@ -108,7 +109,7 @@ const AboutPage = () => {
             </div>
           </div>
           <div className="md:w-1/3 flex justify-center">
-            <div className="w-40 h-40 bg-phom-yellow rounded-full flex items-center justify-center">
+            <div className="w-40 h-40 bg-white rounded-full flex items-center justify-center border border-gray-200">
               <span className="text-6xl">👥</span>
             </div>
           </div>
