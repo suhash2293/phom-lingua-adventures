@@ -81,9 +81,7 @@ const Index = () => {
             <CardHeader className="bg-gradient-to-r from-green-100/30 to-green-50/10 dark:from-green-900/30 dark:to-green-800/10 pb-2 relative">
               <div className="absolute top-0 right-0 w-20 h-20 bg-green-100/30 dark:bg-green-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
               <CardTitle className="text-xl relative z-10">Days</CardTitle>
-              <CardDescription className="relative z-10">
-                Learn days of the week in Phom
-              </CardDescription>
+              <CardDescription className="relative z-10">Learn days of the week in Phom Dialect</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-green-100/50 to-green-50/30 dark:from-green-900/50 dark:to-green-800/30 flex items-center justify-center">
