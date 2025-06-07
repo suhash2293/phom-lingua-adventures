@@ -5,13 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollText, CalendarDays, Calendar, Percent, Gamepad } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-
 const Index = () => {
   const {
     user
   } = useAuth();
   const navigate = useNavigate();
-
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
@@ -41,9 +39,7 @@ const Index = () => {
             <CardHeader className="bg-gradient-to-r from-primary/30 to-primary/10 pb-2 relative">
               <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
               <CardTitle className="text-xl relative z-10">Alphabets</CardTitle>
-              <CardDescription className="relative z-10">
-                Learn Phom alphabet and characters
-              </CardDescription>
+              <CardDescription className="relative z-10">Learn Phom alphabets and characters</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
@@ -132,10 +128,7 @@ const Index = () => {
 
       {/* Games Button Section */}
       <section className="py-8 flex justify-center">
-        <Button 
-          onClick={() => navigate('/games')}
-          className="group bg-phom-yellow hover:bg-amber-500 hover:shadow-lg transition-all duration-300 transform hover:scale-105 px-6 py-3 h-auto"
-        >
+        <Button onClick={() => navigate('/games')} className="group bg-phom-yellow hover:bg-amber-500 hover:shadow-lg transition-all duration-300 transform hover:scale-105 px-6 py-3 h-auto">
           <Gamepad className="mr-2 h-5 w-5 group-hover:animate-pulse" />
           Play Interactive Games
         </Button>
@@ -175,5 +168,4 @@ const Index = () => {
       </section>
     </div>;
 };
-
 export default Index;
