@@ -132,7 +132,7 @@ const Index = () => {
       <section className="py-12 bg-muted rounded-xl p-6 my-12">
         <div className="flex flex-col md:flex-row gap-8 items-center">
           <div className="flex-1">
-            <h2 className="text-3xl font-bold mb-4">Why Learn Phom?</h2>
+            <h2 className="text-3xl font-bold mb-4">Why Learn Phom Dialect?</h2>
             <p className="text-lg mb-4">
               Phom is a rich dialect with a unique cultural heritage. Learning Phom helps preserve linguistic diversity and connects you to a vibrant community.
             </p>
