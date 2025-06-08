@@ -76,9 +76,7 @@ const AboutPage = () => {
           
           <div>
             <h3 className="text-xl font-bold mb-2">Bilingual Focus</h3>
-            <p className="text-muted-foreground">
-              Learn Phom and English simultaneously with our dual-language approach. Perfect for both native Phom speakers learning English and English speakers learning Phom.
-            </p>
+            <p className="text-muted-foreground">Learn Phom Dialect and English simultaneously with our dual-language approach. Perfect for both native Phom speakers learning English and English speakers learning Phom.</p>
           </div>
           
           <div>
