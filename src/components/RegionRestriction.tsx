@@ -6,11 +6,25 @@ import { Button } from '@/components/ui/button';
 import { Globe, AlertTriangle, Mail } from 'lucide-react';
 
 interface RegionRestrictionProps {
-  countryCode: string;
+  countryCode?: string;
   onDismiss?: () => void;
+  children?: React.ReactNode;
 }
 
-const RegionRestriction: React.FC<RegionRestrictionProps> = ({ countryCode, onDismiss }) => {
+const RegionRestriction: React.FC<RegionRestrictionProps> = ({ countryCode, onDismiss, children }) => {
+  // If no countryCode is provided, just render children
+  if (!countryCode) {
+    return <>{children}</>;
+  }
+
+  // List of allowed countries
+  const allowedCountries = ['US', 'CA', 'GB', 'AU', 'NZ', 'IN'];
+  
+  // If country is allowed, just render children
+  if (allowedCountries.includes(countryCode)) {
+    return <>{children}</>;
+  }
+
   const handleContactSupport = () => {
     const subject = 'Region Access Request - PhomShah';
     const body = `Hello PhomShah Support Team,

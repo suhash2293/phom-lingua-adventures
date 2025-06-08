@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import * as OTPAuth from 'otpauth';
 
@@ -80,7 +81,9 @@ export class MFAService {
    * Generate TOTP secret for setup
    */
   static generateTOTPSecret(): string {
-    return OTPAuth.Secret.fromRandom().base32;
+    // Generate a random 32-character base32 secret
+    const secret = new OTPAuth.Secret({ size: 20 });
+    return secret.base32;
   }
 
   /**
@@ -120,27 +123,6 @@ export class MFAService {
       console.error('TOTP verification error:', error);
       return false;
     }
-  }
-
-  /**
-   * Generate TOTP token for a given time step
-   */
-  private static generateTOTPToken(secret: string, timeStep: number): string {
-    // Simplified TOTP generation - in production use proper crypto libraries
-    const hash = this.hmacSHA1(secret, timeStep.toString());
-    const offset = hash.charCodeAt(hash.length - 1) & 0x0f;
-    const truncated = hash.slice(offset, offset + 4);
-    const code = parseInt(truncated, 16) & 0x7fffffff;
-    return (code % 1000000).toString().padStart(6, '0');
-  }
-
-  /**
-   * Simple HMAC-SHA1 implementation (for demo purposes)
-   */
-  private static hmacSHA1(key: string, data: string): string {
-    // This is a simplified implementation
-    // In production, use proper crypto libraries like crypto-js
-    return btoa(key + data).slice(0, 20);
   }
 
   /**
