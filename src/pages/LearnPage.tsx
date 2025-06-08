@@ -58,7 +58,7 @@ const modules = [
   {
     id: 'months',
     title: 'Months',
-    description: 'Learn months and seasons in Phom',
+    description: 'Learn the names of months in Phom dialect',
     emoji: '🗓️',
     progress: 0,
     lessons: [
