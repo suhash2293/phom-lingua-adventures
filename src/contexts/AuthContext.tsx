@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
@@ -32,6 +31,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
+
+  // Helper function to map Supabase auth errors to user-friendly messages
+  const mapAuthError = (error: any): string => {
+    const errorMessage = error?.message || '';
+    
+    // Handle leaked password errors from Supabase
+    if (errorMessage.includes('leaked') || errorMessage.includes('compromised') || errorMessage.includes('pwned')) {
+      return 'This password has been found in data breaches and cannot be used. Please choose a different password.';
+    }
+    
+    // Handle other common auth errors
+    if (errorMessage.includes('Invalid login credentials')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    
+    if (errorMessage.includes('Email already registered') || errorMessage.includes('User already registered')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    
+    if (errorMessage.includes('Password should be at least')) {
+      return 'Password must be at least 6 characters long.';
+    }
+    
+    if (errorMessage.includes('Email not confirmed')) {
+      return 'Please check your email and click the confirmation link before signing in.';
+    }
+    
+    if (errorMessage.includes('Too many requests')) {
+      return 'Too many attempts. Please wait a moment before trying again.';
+    }
+    
+    // Default fallback
+    return errorMessage || 'An unexpected error occurred. Please try again.';
+  };
 
   // Check for existing session on mount and setup auth state listener
   useEffect(() => {
@@ -165,7 +198,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('User signed in:', data);
     } catch (err: any) {
       console.error('Sign in error:', err);
-      setError(err.message || 'Failed to sign in. Please check your credentials.');
+      const friendlyError = mapAuthError(err);
+      setError(friendlyError);
       throw err;
     } finally {
       setLoading(false);
@@ -179,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       console.log('Signing up with:', email);
       
-      // Validate password security before signup
+      // Validate password security before signup (client-side check for immediate feedback)
       const securityResult = await PasswordSecurityService.validatePassword(password);
       
       if (!securityResult.isSecure) {
@@ -208,7 +242,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('User signed up:', data);
     } catch (err: any) {
       console.error('Sign up error:', err);
-      setError(err.message || 'Failed to create account. Please try again.');
+      const friendlyError = mapAuthError(err);
+      setError(friendlyError);
       throw err;
     } finally {
       setLoading(false);

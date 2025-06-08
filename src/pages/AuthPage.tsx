@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Info, Loader2 } from "lucide-react";
+import { AlertCircle, Info, Loader2, Shield } from "lucide-react";
 import SecurePasswordInput from '@/components/auth/SecurePasswordInput';
 import { PasswordSecurityResult } from '@/services/PasswordSecurityService';
 
@@ -66,7 +66,7 @@ const AuthPage = () => {
         // Don't navigate immediately after signup as we want to show the success message
       }
     } catch (err) {
-      // Error is already set in the AuthContext
+      // Error is already set in the AuthContext with user-friendly message
       console.error('Authentication error:', err);
     } finally {
       setIsSubmitting(false);
@@ -86,6 +86,12 @@ const AuthPage = () => {
 
   const canSubmit = isLogin || (passwordSecurity?.isSecure ?? false);
 
+  // Check if the error is related to leaked passwords
+  const isLeakedPasswordError = error?.toLowerCase().includes('breach') || 
+                               error?.toLowerCase().includes('compromised') || 
+                               error?.toLowerCase().includes('leaked') ||
+                               error?.toLowerCase().includes('pwned');
+
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)]">
       <Card className="w-full max-w-md">
@@ -103,8 +109,14 @@ const AuthPage = () => {
         {error && (
           <div className="px-6">
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Error</AlertTitle>
+              {isLeakedPasswordError ? (
+                <Shield className="h-4 w-4" />
+              ) : (
+                <AlertCircle className="h-4 w-4" />
+              )}
+              <AlertTitle>
+                {isLeakedPasswordError ? 'Security Alert' : 'Error'}
+              </AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           </div>
