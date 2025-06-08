@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Trash2, ExternalLink, AlertTriangle, Info } from 'lucide-react';
 
 const AccountDeletionPage = () => {
-  const { user, logout } = useAuth();
+  const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [reason, setReason] = useState('');
@@ -43,7 +43,7 @@ const AccountDeletionPage = () => {
       });
 
       // Sign out the user
-      await logout();
+      await signOut();
       navigate('/');
 
     } catch (error) {
