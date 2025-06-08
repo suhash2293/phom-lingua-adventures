@@ -83,9 +83,7 @@ const AboutPage = () => {
           
           <div>
             <h3 className="text-xl font-bold mb-2">Audio Resources</h3>
-            <p className="text-muted-foreground">
-              Hear authentic pronunciations from native speakers. Our audio recordings help you master the unique sounds and intonations of the Phom language.
-            </p>
+            <p className="text-muted-foreground">Hear authentic pronunciations from native speakers. Our audio recordings help you master the unique sounds and intonations of the Phom dialect.</p>
           </div>
         </div>
       </div>
