@@ -9,6 +9,42 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          created_at: string
+          deletion_method: string
+          deletion_scheduled_at: string
+          id: string
+          reason: string | null
+          requested_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deletion_method: string
+          deletion_scheduled_at?: string
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deletion_method?: string
+          deletion_scheduled_at?: string
+          id?: string
+          reason?: string | null
+          requested_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       achievements: {
         Row: {
           created_at: string
@@ -246,6 +282,33 @@ export type Database = {
         }
         Relationships: []
       }
+      region_restrictions: {
+        Row: {
+          country_code: string
+          created_at: string
+          feature_restrictions: Json | null
+          id: string
+          is_allowed: boolean
+          updated_at: string
+        }
+        Insert: {
+          country_code: string
+          created_at?: string
+          feature_restrictions?: Json | null
+          id?: string
+          is_allowed?: boolean
+          updated_at?: string
+        }
+        Update: {
+          country_code?: string
+          created_at?: string
+          feature_restrictions?: Json | null
+          id?: string
+          is_allowed?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_achievements: {
         Row: {
           achievement_id: string
@@ -321,6 +384,10 @@ export type Database = {
         Returns: {
           table_exists: boolean
         }[]
+      }
+      delete_user_account: {
+        Args: { target_user_id: string }
+        Returns: boolean
       }
       is_admin: {
         Args: { user_id: string }

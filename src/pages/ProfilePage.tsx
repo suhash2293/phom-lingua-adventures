@@ -16,9 +16,11 @@ import {
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GameProgressService, UserProgress, GameSession } from '@/services/GameProgressService';
 import { AchievementService, UserAchievement } from '@/services/AchievementService';
-import { Trophy, Award, Medal, Calendar } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { Trophy, Award, Medal, Calendar, Trash2, AlertTriangle } from 'lucide-react';
 
 const ProfilePage = () => {
   const { user } = useAuth();
@@ -48,6 +50,26 @@ const ProfilePage = () => {
     queryFn: () => GameProgressService.getGameHistory(10),
     enabled: !!user
   });
+
+  // Fetch pending deletion request
+  const { data: deletionRequest } = useQuery({
+    queryKey: ['deletionRequest'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('account_deletion_requests')
+        .select('*')
+        .eq('user_id', user?.id)
+        .eq('status', 'pending')
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        throw error;
+      }
+      
+      return data;
+    },
+    enabled: !!user
+  });
   
   // Check for new achievements on page load
   useEffect(() => {
@@ -68,6 +90,37 @@ const ProfilePage = () => {
       title: "Profile Updated",
       description: "Your profile has been updated successfully.",
     });
+  };
+
+  const handleCancelDeletion = async () => {
+    if (!deletionRequest || !confirm('Are you sure you want to cancel your account deletion request?')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('account_deletion_requests')
+        .update({ status: 'cancelled' })
+        .eq('id', deletionRequest.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Deletion Cancelled",
+        description: "Your account deletion request has been cancelled.",
+      });
+
+      // Refetch the deletion request
+      window.location.reload();
+
+    } catch (error) {
+      console.error('Error cancelling deletion:', error);
+      toast({
+        title: "Error",
+        description: "Failed to cancel deletion request. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   // Calculate progress to next level
@@ -103,6 +156,26 @@ const ProfilePage = () => {
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
       <h1 className="text-3xl font-bold mb-8">Your Profile</h1>
+      
+      {/* Account Deletion Warning */}
+      {deletionRequest && (
+        <Alert className="mb-6 border-orange-200 bg-orange-50">
+          <AlertTriangle className="h-4 w-4 text-orange-600" />
+          <AlertDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <strong>Account Deletion Scheduled</strong>
+                <p className="text-sm mt-1">
+                  Your account will be deleted on {formatDate(deletionRequest.deletion_scheduled_at)}
+                </p>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleCancelDeletion}>
+                Cancel Deletion
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* User Profile Card */}
@@ -162,8 +235,17 @@ const ProfilePage = () => {
               </div>
             </CardContent>
             
-            <CardFooter>
+            <CardFooter className="flex justify-between">
               <Button type="submit">Update Profile</Button>
+              <Button 
+                variant="destructive" 
+                size="sm"
+                onClick={() => navigate('/account-deletion')}
+                className="ml-auto"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Account
+              </Button>
             </CardFooter>
           </form>
         </Card>

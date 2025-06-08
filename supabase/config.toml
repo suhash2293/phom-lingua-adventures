@@ -6,3 +6,6 @@ verify_jwt = false
 
 [functions.create-payment]
 verify_jwt = false
+
+[functions.account-deletion]
+verify_jwt = true
