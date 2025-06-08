@@ -46,7 +46,7 @@ const ContactPage = () => {
     
     try {
       // Since we're using a mailto link as fallback
-      const mailtoLink = `mailto:moilenlenla@gmail.com?subject=${encodeURIComponent(
+      const mailtoLink = `mailto:nyiamlenla@gmail.com?subject=${encodeURIComponent(
         `${data.subject} - Contact Form Submission from ${data.name}`
       )}&body=${encodeURIComponent(
         `Name: ${data.name}\nEmail: ${data.email}\n\n${data.message}`
@@ -89,10 +89,10 @@ const ContactPage = () => {
               <div>
                 <h3 className="font-medium">Email</h3>
                 <a 
-                  href="mailto:moilenlenla@gmail.com" 
+                  href="mailto:nyiamlenla@gmail.com" 
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                 >
-                  moilenlenla@gmail.com
+                  nyiamlenla@gmail.com
                 </a>
               </div>
             </div>
