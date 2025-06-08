@@ -1,33 +1,25 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useEffect } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '@/contexts/AuthContext';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { GameProgressService, UserProgress, GameSession } from '@/services/GameProgressService';
 import { AchievementService, UserAchievement } from '@/services/AchievementService';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, Award, Medal, Calendar, Trash2, AlertTriangle, Shield, Clock, Info, ExternalLink } from 'lucide-react';
+import {
+  ProfileHeader,
+  AccountInformationCard,
+  LearningProgressCard,
+  AchievementsCard,
+  AccountManagementCard,
+  GameHistoryCard
+} from '@/components/profile';
 
 const ProfilePage = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
-  const [name, setName] = useState(user?.name || '');
-  const [email, setEmail] = useState(user?.email || '');
   
   // Fetch user progress data
   const { data: userProgress, isLoading: progressLoading } = useQuery({
@@ -81,15 +73,6 @@ const ProfilePage = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
-  
-  const handleUpdateProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    // This would update the user profile in a real implementation
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully.",
-    });
-  };
 
   const handleCancelDeletion = async () => {
     if (!deletionRequest || !confirm('Are you sure you want to cancel your account deletion request?')) {
@@ -154,367 +137,42 @@ const ProfilePage = () => {
   
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
-      <h1 className="text-3xl font-bold mb-8">Your Profile</h1>
-      
-      {/* Account Deletion Warning */}
-      {deletionRequest && (
-        <Alert className="mb-6 border-orange-200 bg-orange-50">
-          <AlertTriangle className="h-4 w-4 text-orange-600" />
-          <AlertDescription>
-            <div className="flex items-center justify-between">
-              <div>
-                <strong>Account Deletion Scheduled</strong>
-                <p className="text-sm mt-1">
-                  Your account will be deleted on {formatDate(deletionRequest.deletion_scheduled_at)}
-                </p>
-              </div>
-              <Button variant="outline" size="sm" onClick={handleCancelDeletion}>
-                Cancel Deletion
-              </Button>
-            </div>
-          </AlertDescription>
-        </Alert>
-      )}
+      <ProfileHeader
+        deletionRequest={deletionRequest}
+        onCancelDeletion={handleCancelDeletion}
+        formatDate={formatDate}
+      />
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* User Profile Card */}
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Account Information</CardTitle>
-            <CardDescription>Update your personal details</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleUpdateProfile}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter your name"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  disabled
-                />
-                <p className="text-sm text-muted-foreground">
-                  Email address cannot be changed.
-                </p>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="language-preference">Learning Language Preference</Label>
-                <div className="flex gap-4">
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="phom-english"
-                      name="language-preference"
-                      defaultChecked
-                    />
-                    <label htmlFor="phom-english">Phom to English</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="radio"
-                      id="english-phom"
-                      name="language-preference"
-                    />
-                    <label htmlFor="english-phom">English to Phom</label>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-            
-            <CardFooter>
-              <Button type="submit">Update Profile</Button>
-            </CardFooter>
-          </form>
-        </Card>
+        <AccountInformationCard user={user} />
         
         {/* Learning Stats Card */}
         <div className="space-y-6">
           {/* Learning Progress Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Learning Progress</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {progressLoading ? (
-                <p className="text-center text-muted-foreground">Loading progress...</p>
-              ) : userProgress ? (
-                <>
-                  <div className="flex justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="h-5 w-5 text-yellow-500" />
-                      <div>
-                        <p className="text-sm font-medium">Current Level</p>
-                        <p className="text-2xl font-bold">{userProgress.level}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Award className="h-5 w-5 text-blue-500" />
-                      <div>
-                        <p className="text-sm font-medium">Total XP</p>
-                        <p className="text-2xl font-bold">{userProgress.xp}</p>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <p className="text-sm">Level {userProgress.level}</p>
-                      <p className="text-sm">Level {userProgress.level + 1}</p>
-                    </div>
-                    <Progress value={calculateLevelProgress(userProgress)} className="h-2" />
-                    <p className="text-xs text-muted-foreground text-center mt-1">
-                      {calculateLevelProgress(userProgress)}% to next level
-                    </p>
-                  </div>
-                  
-                  <div className="flex justify-between border-t pt-4">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-green-500" />
-                      <div>
-                        <p className="text-sm font-medium">Current Streak</p>
-                        <p className="text-xl font-bold">{userProgress.current_streak} days</p>
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">Best Streak</p>
-                      <p className="text-xl font-bold">{userProgress.max_streak} days</p>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="text-center py-4">
-                  <p className="mb-4 text-muted-foreground">Start playing games to track your progress!</p>
-                  <Button onClick={() => navigate('/games')}>Go to Games</Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          <LearningProgressCard
+            userProgress={userProgress}
+            progressLoading={progressLoading}
+            calculateLevelProgress={calculateLevelProgress}
+          />
           
           {/* Achievements Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Your Achievements</CardTitle>
-              <CardDescription>
-                {userAchievements.length} achievements earned
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {achievementsLoading ? (
-                <p className="text-center text-muted-foreground">Loading achievements...</p>
-              ) : userAchievements.length > 0 ? (
-                <div className="space-y-3">
-                  {userAchievements.map((achievement) => (
-                    <div key={achievement.id} className="flex items-center gap-3">
-                      <div className="bg-primary/10 p-2 rounded-full">
-                        <Medal className="h-4 w-4 text-primary" />
-                      </div>
-                      <div>
-                        <p className="font-medium">{achievement.achievement?.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {achievement.achievement?.description} • +{achievement.achievement?.xp_reward} XP
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-center py-4 text-muted-foreground">
-                  No achievements yet. Start playing games to earn some!
-                </p>
-              )}
-              
-              <div className="mt-4">
-                <Button variant="outline" className="w-full" onClick={() => navigate('/games')}>
-                  Play Games to Earn More
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <AchievementsCard
+            userAchievements={userAchievements}
+            achievementsLoading={achievementsLoading}
+          />
         </div>
         
         {/* Account Management Card - Google Play Policy Compliant */}
-        <Card className="lg:col-span-3 border-orange-200">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-orange-600" />
-              Account Management & Data Control
-            </CardTitle>
-            <CardDescription>
-              Manage your account data and deletion options in compliance with Google Play Store policies
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* User Rights Information */}
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                <strong>Your Data Rights:</strong> You have the right to request deletion of your personal data and account at any time. This process is permanent and cannot be undone.
-              </AlertDescription>
-            </Alert>
-
-            {/* Data Deletion Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                  What Gets Deleted
-                </h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• Your user profile and account information</li>
-                  <li>• Game progress and achievements</li>
-                  <li>• Game session history and scores</li>
-                  <li>• Learning streaks and XP points</li>
-                  <li>• All personal data associated with your account</li>
-                </ul>
-              </div>
-
-              <div className="space-y-4">
-                <h4 className="font-semibold flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-blue-500" />
-                  Deletion Timeline
-                </h4>
-                <ul className="text-sm space-y-1 text-muted-foreground">
-                  <li>• <strong>Immediate:</strong> Account deleted right away</li>
-                  <li>• <strong>Scheduled:</strong> 30-day grace period to cancel</li>
-                  <li>• <strong>Web Portal:</strong> Alternative deletion method</li>
-                  <li>• <strong>Support:</strong> Contact us for assistance</li>
-                </ul>
-              </div>
-            </div>
-
-            {/* Deletion Options */}
-            <div className="space-y-4">
-              <h4 className="font-semibold">Account Deletion Options</h4>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Button 
-                  variant="destructive" 
-                  onClick={() => navigate('/account-deletion')}
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                >
-                  <Trash2 className="h-5 w-5" />
-                  <div className="text-center">
-                    <div className="font-medium">Delete Now</div>
-                    <div className="text-xs opacity-90">Immediate deletion</div>
-                  </div>
-                </Button>
-
-                <Button 
-                  variant="outline" 
-                  onClick={() => navigate('/account-deletion')}
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                >
-                  <Clock className="h-5 w-5" />
-                  <div className="text-center">
-                    <div className="font-medium">Schedule Deletion</div>
-                    <div className="text-xs opacity-70">30-day grace period</div>
-                  </div>
-                </Button>
-
-                <Button 
-                  variant="outline" 
-                  onClick={() => window.open(`${window.location.origin}/account-deletion-web`, '_blank')}
-                  className="h-auto p-4 flex flex-col items-center gap-2"
-                >
-                  <ExternalLink className="h-5 w-5" />
-                  <div className="text-center">
-                    <div className="font-medium">Web Portal</div>
-                    <div className="text-xs opacity-70">Alternative method</div>
-                  </div>
-                </Button>
-              </div>
-            </div>
-
-            {/* Google Play Policy Compliance */}
-            <Alert className="bg-blue-50 border-blue-200">
-              <Shield className="h-4 w-4 text-blue-600" />
-              <AlertDescription>
-                <strong>Policy Compliance:</strong> This account deletion process complies with Google Play Store policies. 
-                You can delete your account and associated data at any time. For questions or support, contact us at{' '}
-                <a href="mailto:nyiamlenla@gmail.com" className="text-blue-600 underline">
-                  nyiamlenla@gmail.com
-                </a>
-              </AlertDescription>
-            </Alert>
-
-            {/* Additional Information */}
-            <div className="text-sm text-muted-foreground space-y-2">
-              <p>
-                <strong>Need Help?</strong> If you're experiencing issues with the app or have concerns, 
-                please contact our support team before deleting your account. We're here to help!
-              </p>
-              <p>
-                <strong>Data Export:</strong> Currently, we don't offer data export functionality. 
-                Once your account is deleted, your data cannot be recovered.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <AccountManagementCard />
         
         {/* Recent Games History */}
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>Recent Game Activity</CardTitle>
-            <CardDescription>
-              Your last {gameHistory.length} games played
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {historyLoading ? (
-              <p className="text-center text-muted-foreground">Loading game history...</p>
-            ) : gameHistory.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr>
-                      <th className="text-left pb-2">Game</th>
-                      <th className="text-left pb-2">Score</th>
-                      <th className="text-left pb-2">XP Earned</th>
-                      <th className="text-left pb-2">Duration</th>
-                      <th className="text-left pb-2">Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {gameHistory.map((game) => (
-                      <tr key={game.id}>
-                        <td className="py-2">{getGameTypeName(game.game_type)}</td>
-                        <td className="py-2">{game.score}</td>
-                        <td className="py-2">+{game.xp_earned} XP</td>
-                        <td className="py-2">{game.duration_seconds}s</td>
-                        <td className="py-2">{formatDate(game.created_at)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="text-center py-4 text-muted-foreground">
-                No games played yet. Start playing to see your history!
-              </p>
-            )}
-            
-            {gameHistory.length > 0 && (
-              <div className="mt-4 text-center">
-                <Button onClick={() => navigate('/games')}>
-                  Play More Games
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+        <GameHistoryCard
+          gameHistory={gameHistory}
+          historyLoading={historyLoading}
+          formatDate={formatDate}
+          getGameTypeName={getGameTypeName}
+        />
       </div>
     </div>
   );
