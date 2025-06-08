@@ -105,13 +105,20 @@ const ProfilePage = () => {
     }
   };
   
-  // Calculate progress to next level
+  // Calculate progress to next level - FIXED
   const calculateLevelProgress = (progress?: UserProgress | null) => {
     if (!progress) return 0;
     
-    const currentLevelXP = GameProgressService.calculateXPForNextLevel(progress.level);
-    // Simple estimate - assume starting from 0 for current level
-    return Math.min(100, Math.floor((progress.xp % currentLevelXP) / currentLevelXP * 100));
+    try {
+      const currentLevelStartXP = GameProgressService.calculateXPForCurrentLevel(progress.level);
+      const nextLevelXP = GameProgressService.calculateXPForNextLevel(progress.level);
+      const xpInCurrentLevel = progress.xp - currentLevelStartXP;
+      
+      return Math.min(100, Math.floor((xpInCurrentLevel / nextLevelXP) * 100));
+    } catch (error) {
+      console.error('Error calculating level progress:', error);
+      return 0;
+    }
   };
   
   // Format date to be more readable
@@ -131,6 +138,7 @@ const ProfilePage = () => {
       case 'audio-challenge': return 'Audio Challenge';
       case 'sentence-builder': return 'Sentence Builder';
       case 'memory-challenge': return 'Memory Challenge';
+      case 'word-scramble': return 'Word Scramble';
       default: return type;
     }
   };

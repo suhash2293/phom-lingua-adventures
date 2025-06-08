@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { GameProgressService } from './GameProgressService';
@@ -59,113 +60,172 @@ export const AchievementService = {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) return [];
     
-    // Get all existing achievements and user achievements
-    const [allAchievements, userAchievements] = await Promise.all([
-      this.getAllAchievements(),
-      this.getUserAchievements()
-    ]);
+    try {
+      // Get all existing achievements and user achievements
+      const [allAchievements, userAchievements] = await Promise.all([
+        this.getAllAchievements(),
+        this.getUserAchievements()
+      ]);
+      
+      // Determine which achievements the user doesn't have yet
+      const earnedAchievementIds = userAchievements.map(ua => ua.achievement_id);
+      const unearnedAchievements = allAchievements.filter(
+        achievement => !earnedAchievementIds.includes(achievement.id)
+      );
+      
+      if (unearnedAchievements.length === 0) {
+        return [];
+      }
+      
+      // Get game history and user progress for checks
+      const [gameSessions, userProgress] = await Promise.all([
+        this.getGameSessions(),
+        GameProgressService.getUserProgress()
+      ]);
+      
+      const newlyEarnedAchievements: UserAchievement[] = [];
+      
+      // Check each unearned achievement
+      for (const achievement of unearnedAchievements) {
+        let shouldAward = false;
+        
+        switch (achievement.name) {
+          case 'First Game':
+            shouldAward = gameSessions.length > 0;
+            break;
+            
+          case 'Language Explorer':
+            const gameTypes = new Set(gameSessions.map(s => s.game_type));
+            shouldAward = gameTypes.size >= 3; // We have 3 game types currently
+            break;
+            
+          case 'Word Master':
+            shouldAward = gameSessions.some(s => 
+              s.game_type === 'word-match' && s.score >= 100
+            );
+            break;
+            
+          case 'Speed Demon':
+            shouldAward = gameSessions.some(s => s.duration_seconds <= 30 && s.score > 0);
+            break;
+            
+          case 'Consistent Learner':
+            shouldAward = userProgress ? userProgress.current_streak >= 7 : false;
+            break;
+            
+          case 'XP Hunter':
+            shouldAward = userProgress ? userProgress.xp >= 500 : false;
+            break;
+            
+          case 'Audio Expert':
+            shouldAward = gameSessions.some(s => 
+              s.game_type === 'audio-challenge' && s.score >= 100
+            );
+            break;
+            
+          case 'Sentence Master':
+            shouldAward = gameSessions.some(s => 
+              s.game_type === 'sentence-builder' && s.score >= 100
+            );
+            break;
+            
+          case 'Perfect Week':
+            const recentGames = gameSessions.filter(s => {
+              const gameDate = new Date(s.created_at);
+              const weekAgo = new Date();
+              weekAgo.setDate(weekAgo.getDate() - 7);
+              return gameDate >= weekAgo;
+            });
+            const highScoreGames = recentGames.filter(s => s.score >= 90);
+            shouldAward = highScoreGames.length >= 7;
+            break;
+        }
+        
+        if (shouldAward) {
+          const awarded = await this.awardAchievement(achievement.id);
+          if (awarded) {
+            newlyEarnedAchievements.push(awarded);
+          }
+        }
+      }
+      
+      return newlyEarnedAchievements;
+    } catch (error) {
+      console.error('Error checking achievements:', error);
+      return [];
+    }
+  },
+  
+  async getGameSessions() {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user.user) return [];
     
-    // Determine which achievements the user doesn't have yet
-    const earnedAchievementIds = userAchievements.map(ua => ua.achievement_id);
-    const unearnedAchievements = allAchievements.filter(
-      achievement => !earnedAchievementIds.includes(achievement.id)
-    );
-    
-    // This would contain logic for checking each achievement's criteria
-    // For now, we'll just check a few basic ones as examples
-    
-    // Get game history for checks
-    const { data: gameSessions } = await supabase
+    const { data, error } = await supabase
       .from('game_sessions')
       .select('*')
-      .eq('user_id', user.user.id);
+      .eq('user_id', user.user.id)
+      .order('created_at', { ascending: false });
     
-    const sessions = gameSessions || [];
-    const newlyEarnedAchievements: UserAchievement[] = [];
-    
-    // Check for 'First Game' achievement
-    if (sessions.length > 0) {
-      const firstGameAchievement = unearnedAchievements.find(a => a.name === 'First Game');
-      if (firstGameAchievement) {
-        const awarded = await this.awardAchievement(firstGameAchievement.id);
-        if (awarded) newlyEarnedAchievements.push(awarded);
-      }
+    if (error) {
+      console.error('Error fetching game sessions for achievements:', error);
+      return [];
     }
     
-    // Check for 'Language Explorer' achievement - try all four game types
-    const gameTypes = new Set(sessions.map(s => s.game_type));
-    if (gameTypes.size >= 4) {
-      const explorerAchievement = unearnedAchievements.find(a => a.name === 'Language Explorer');
-      if (explorerAchievement) {
-        const awarded = await this.awardAchievement(explorerAchievement.id);
-        if (awarded) newlyEarnedAchievements.push(awarded);
-      }
-    }
-    
-    // Check for 'Word Master' achievement - perfect score in Word Match
-    const perfectWordMatch = sessions.some(s => 
-      s.game_type === 'word-match' && s.score === 100
-    );
-    if (perfectWordMatch) {
-      const wordMasterAchievement = unearnedAchievements.find(a => a.name === 'Word Master');
-      if (wordMasterAchievement) {
-        const awarded = await this.awardAchievement(wordMasterAchievement.id);
-        if (awarded) newlyEarnedAchievements.push(awarded);
-      }
-    }
-    
-    // Check for other achievement conditions as needed...
-    
-    return newlyEarnedAchievements;
+    return data || [];
   },
   
   async awardAchievement(achievementId: string): Promise<UserAchievement | null> {
     const { data: user } = await supabase.auth.getUser();
     if (!user.user) return null;
     
-    // First get the achievement details
-    const { data: achievement } = await supabase
-      .from('achievements')
-      .select('*')
-      .eq('id', achievementId)
-      .single();
-    
-    if (!achievement) return null;
-    
-    // Award the achievement to the user
-    const { data, error } = await supabase
-      .from('user_achievements')
-      .insert({
-        user_id: user.user.id,
-        achievement_id: achievementId
-      })
-      .select(`
-        *,
-        achievement:achievement_id(*)
-      `)
-      .single();
-    
-    if (error) {
-      if (error.code === '23505') {
-        // Unique violation - user already has this achievement
-        console.log('User already has this achievement');
+    try {
+      // First get the achievement details
+      const { data: achievement } = await supabase
+        .from('achievements')
+        .select('*')
+        .eq('id', achievementId)
+        .single();
+      
+      if (!achievement) return null;
+      
+      // Award the achievement to the user
+      const { data, error } = await supabase
+        .from('user_achievements')
+        .insert({
+          user_id: user.user.id,
+          achievement_id: achievementId
+        })
+        .select(`
+          *,
+          achievement:achievement_id(*)
+        `)
+        .single();
+      
+      if (error) {
+        if (error.code === '23505') {
+          // Unique violation - user already has this achievement
+          console.log('User already has this achievement');
+          return null;
+        }
+        console.error('Error awarding achievement:', error);
         return null;
       }
+      
+      // Add XP reward
+      if (achievement.xp_reward > 0) {
+        await GameProgressService.addXP(achievement.xp_reward);
+      }
+      
+      // Show achievement notification
+      toast({
+        title: "Achievement Unlocked! 🏆",
+        description: `${achievement.name}: ${achievement.description} (+${achievement.xp_reward} XP)`
+      });
+      
+      return data;
+    } catch (error) {
       console.error('Error awarding achievement:', error);
       return null;
     }
-    
-    // Add XP reward
-    if (achievement.xp_reward > 0) {
-      await GameProgressService.addXP(achievement.xp_reward);
-    }
-    
-    // Show achievement notification
-    toast({
-      title: "Achievement Unlocked!",
-      description: `${achievement.name}: ${achievement.description}`
-    });
-    
-    return data;
   }
 };

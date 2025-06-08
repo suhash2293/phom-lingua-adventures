@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useConfettiStore } from '@/stores/confetti';
@@ -48,7 +49,6 @@ export const GameProgressService = {
     return data;
   },
   
-  // Improved method to create initial user progress if missing
   async createInitialUserProgress(userId: string): Promise<UserProgress | null> {
     console.log('Creating initial user progress for user:', userId);
     
@@ -315,6 +315,10 @@ export const GameProgressService = {
       try {
         await this.addXP(xpEarned);
         await this.updateStreak();
+        
+        // Check for new achievements after recording the game
+        const { AchievementService } = await import('./AchievementService');
+        await AchievementService.checkAndAwardAchievements();
       } catch (progressError) {
         console.error('Error updating progress after game session:', progressError);
         // Game session was still saved, so return it
@@ -382,6 +386,20 @@ export const GameProgressService = {
       xpRequired = Math.floor(xpRequired * 1.2);
     }
     return xpRequired;
+  },
+  
+  calculateXPForCurrentLevel(level: number): number {
+    if (level === 1) return 0;
+    
+    let totalXP = 0;
+    let xpRequired = 100;
+    
+    for (let i = 1; i < level; i++) {
+      totalXP += xpRequired;
+      xpRequired = Math.floor(xpRequired * 1.2);
+    }
+    
+    return totalXP;
   },
   
   daysBetween(date1: Date, date2: Date): number {
