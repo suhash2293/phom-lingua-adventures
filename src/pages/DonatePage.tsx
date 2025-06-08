@@ -198,9 +198,7 @@ const DonatePage = () => {
               </div>
               <div>
                 <h3 className="font-medium mb-1">Community Outreach</h3>
-                <p className="text-sm text-muted-foreground">
-                  Connecting with Phom speakers to preserve the language
-                </p>
+                <p className="text-sm text-muted-foreground">Connecting with Phom speakers to preserve the dialect</p>
               </div>
             </div>
           </div>
