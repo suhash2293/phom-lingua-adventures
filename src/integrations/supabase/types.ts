@@ -261,6 +261,54 @@ export type Database = {
           },
         ]
       }
+      learning_progress: {
+        Row: {
+          action_type: string
+          category_id: string
+          content_item_id: string | null
+          created_at: string
+          id: string
+          progress_value: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          action_type: string
+          category_id: string
+          content_item_id?: string | null
+          created_at?: string
+          id?: string
+          progress_value?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          action_type?: string
+          category_id?: string
+          content_item_id?: string | null
+          created_at?: string
+          id?: string
+          progress_value?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_progress_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_progress_content_item_id_fkey"
+            columns: ["content_item_id"]
+            isOneToOne: false
+            referencedRelation: "content_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -379,6 +427,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_category_progress: {
+        Args: { user_uuid: string; category_uuid: string }
+        Returns: number
+      }
       check_table_exists: {
         Args: { table_name: string }
         Returns: {

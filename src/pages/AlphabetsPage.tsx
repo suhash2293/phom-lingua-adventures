@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Headphones, Volume2, VolumeX } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
+import { LearningProgressService } from '@/services/LearningProgressService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
@@ -27,8 +29,8 @@ const AlphabetsPage = () => {
     progress: audioLoadingProgress,
     isCached
   } = useAudioPreloader({
-    maxConcurrent: 3, // Limit concurrent audio loads
-    maxRetries: 3, // Increased retries
+    maxConcurrent: 3,
+    maxRetries: 3,
     onLoadError: () => {
       toast({
         title: "Audio Loading Notice",
@@ -42,6 +44,15 @@ const AlphabetsPage = () => {
   const { data: alphabets, isLoading, error } = useQuery({
     queryKey: ['alphabets'],
     queryFn: () => ContentService.getContentItemsByCategoryName('Alphabet'),
+  });
+
+  // Get category ID for progress tracking
+  const { data: categoryData } = useQuery({
+    queryKey: ['alphabet-category'],
+    queryFn: async () => {
+      const categories = await ContentService.getCategories();
+      return categories.find(cat => cat.name === 'Alphabet');
+    }
   });
 
   // Initialize audio system on first user interaction with the page
@@ -73,7 +84,7 @@ const AlphabetsPage = () => {
     };
   }, [audioInitialized, initializeAudioContext]);
 
-  // Preload audio files when alphabets data is available (more efficiently now)
+  // Preload audio files when alphabets data is available
   useEffect(() => {
     if (alphabets && alphabets.length > 0 && audioInitialized) {
       // Extract valid audio URLs
@@ -82,14 +93,21 @@ const AlphabetsPage = () => {
         .map(item => item.audio_url as string);
       
       if (audioUrls.length > 0) {
-        // Preload all audio files with progressive loading
         preloadAudioBatch(audioUrls);
       }
     }
   }, [alphabets, preloadAudioBatch, audioInitialized]);
 
-  // Enhanced play audio function
-  const handlePlayAudio = async (url: string | null, itemId: string) => {
+  // Track when user views content
+  useEffect(() => {
+    if (alphabets && alphabets.length > 0 && categoryData) {
+      // Track that user has viewed this category
+      LearningProgressService.trackProgress(categoryData.id, null, 'viewed');
+    }
+  }, [alphabets, categoryData]);
+
+  // Enhanced play audio function with progress tracking
+  const handlePlayAudio = async (url: string | null, itemId: string, item: ContentItem) => {
     if (!url) return;
     
     try {
@@ -102,8 +120,12 @@ const AlphabetsPage = () => {
       setPlayingAudio(itemId);
       await playAudio(url);
       
-      // Reset playing state after a short delay to keep button in "playing" state
-      // for a minimum time for better UX
+      // Track audio played progress
+      if (categoryData) {
+        await LearningProgressService.trackProgress(categoryData.id, item.id, 'audio_played');
+      }
+      
+      // Reset playing state after a short delay
       setTimeout(() => {
         setPlayingAudio(null);
       }, 500);
@@ -192,7 +214,7 @@ const AlphabetsPage = () => {
                 size="sm" 
                 variant={isCached(item.audio_url) ? "outline" : "secondary"}
                 className="flex items-center gap-1"
-                onClick={() => handlePlayAudio(item.audio_url, item.id)}
+                onClick={() => handlePlayAudio(item.audio_url, item.id, item)}
                 disabled={playingAudio !== null && playingAudio !== item.id}
               >
                 {playingAudio === item.id ? (
