@@ -22,7 +22,7 @@ const AboutPage = () => {
       </div>
       
       <div className="border-t border-b py-12 mb-12">
-        <h2 className="text-2xl font-bold mb-6">Why Learn Phom?</h2>
+        <h2 className="text-2xl font-bold mb-6">Why Learn Phom Dialect?</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
           <div className="bg-muted p-4 rounded-lg">
             <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mb-4 border border-gray-200">
