@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Howl } from 'howler';
+import { shuffle } from 'lodash';
 import { ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
 import { useAuth } from '@/contexts/AuthContext';
-import { shuffleArray } from '@/lib/utils';
 import { useConfettiStore } from '@/stores/confetti';
 import { Category, ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -78,7 +78,7 @@ const AudioChallengeGame = () => {
     }
     
     // Shuffle the options
-    newOptions = shuffleArray(newOptions);
+    newOptions = shuffle(newOptions);
     setOptions(newOptions);
     
     // Play audio
@@ -142,7 +142,7 @@ const AudioChallengeGame = () => {
     
     // Re-shuffle items for a new game
     if (contentItems) {
-      const shuffledItems = shuffleArray(contentItems.filter(item => item.audio_url));
+      const shuffledItems = shuffle(contentItems.filter(item => item.audio_url));
       setItems(shuffledItems);
     }
   };
