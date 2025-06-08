@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -20,7 +19,7 @@ const modules = [
   {
     id: 'alphabets',
     title: 'Alphabets',
-    description: 'Learn the Phom alphabet and characters',
+    description: 'Learn the Phom alphabets and characters',
     emoji: '🔤',
     progress: 25,
     lessons: [
