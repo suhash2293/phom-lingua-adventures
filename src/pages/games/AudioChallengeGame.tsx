@@ -36,7 +36,7 @@ const AudioChallengeGame = () => {
     queryKey: ['audioChallengeContent', categoryId],
     queryFn: () => {
       if (categoryId) {
-        return ContentService.getContentItemsByCategory(categoryId);
+        return ContentService.getContentItemsByCategoryId(categoryId);
       } else {
         return ContentService.getAllContentItems();
       }
@@ -142,7 +142,7 @@ const AudioChallengeGame = () => {
     
     // Re-shuffle items for a new game
     if (contentItems) {
-      const shuffledItems = shuffle(contentItems.filter(item => item.audio_url));
+      const shuffledItems = shuffle(contentItems.filter(item => item.audio_url)) as ContentItem[];
       setItems(shuffledItems);
     }
   };
