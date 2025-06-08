@@ -133,9 +133,7 @@ const Index = () => {
         <div className="flex flex-col md:flex-row gap-8 items-center">
           <div className="flex-1">
             <h2 className="text-3xl font-bold mb-4">Why Learn Phom Dialect?</h2>
-            <p className="text-lg mb-4">
-              Phom is a rich dialect with a unique cultural heritage. Learning Phom helps preserve linguistic diversity and connects you to a vibrant community.
-            </p>
+            <p className="text-lg mb-4">It is a rich dialect with a unique cultural heritage. Learning the dialect helps preserve linguistic diversity and connects you to a vibrant community.</p>
             <p className="text-lg">
               Our platform makes it easy to learn at your own pace, with interactive exercises and audio pronunciations.
             </p>
