@@ -441,7 +441,15 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      get_current_user_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      is_current_user: {
         Args: { user_id: string }
         Returns: boolean
       }
