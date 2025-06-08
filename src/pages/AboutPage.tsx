@@ -49,9 +49,7 @@ const AboutPage = () => {
               🌍
             </div>
             <h3 className="font-bold mb-2">Preservation</h3>
-            <p className="text-sm text-muted-foreground">
-              Help preserve a language that might otherwise be lost
-            </p>
+            <p className="text-sm text-muted-foreground">Help preserve a native dialect that might otherwise be lost</p>
           </div>
           
           <div className="bg-muted p-4 rounded-lg">
