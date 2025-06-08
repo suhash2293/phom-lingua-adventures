@@ -32,7 +32,7 @@ const modules = [
   {
     id: 'numbers',
     title: 'Numbers',
-    description: 'Master counting from 1 to 100 in Phom',
+    description: 'Master counting from 1 to 100 in Phom dialect',
     emoji: '🔢',
     progress: 10,
     lessons: [
