@@ -1,3 +1,4 @@
+
 import React from 'react';
 const TermsPage = () => {
   return <div className="container px-4 md:px-6 py-8 md:py-12">
@@ -103,7 +104,7 @@ const TermsPage = () => {
             If you have any questions or concerns about these Terms, please contact us at:
           </p>
           <p className="mt-2">
-            <strong>Email:</strong> moilenlenla@gmail.com
+            <strong>Email:</strong> nyiamlenla@gmail.com
           </p>
         </section>
       </div>
