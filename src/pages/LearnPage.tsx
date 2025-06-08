@@ -45,7 +45,7 @@ const modules = [
   {
     id: 'days',
     title: 'Days',
-    description: 'Learn days of the week in Phom',
+    description: 'Learn the names of days in Phom dialect',
     emoji: '📅',
     progress: 0,
     lessons: [
