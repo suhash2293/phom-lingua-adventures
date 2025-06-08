@@ -309,6 +309,99 @@ export type Database = {
           },
         ]
       }
+      mfa_audit_log: {
+        Row: {
+          action: string
+          created_at: string | null
+          id: string
+          ip_address: unknown | null
+          method: string | null
+          success: boolean | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          method?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string | null
+          id?: string
+          ip_address?: unknown | null
+          method?: string | null
+          success?: boolean | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mfa_recovery_codes: {
+        Row: {
+          code_hash: string
+          created_at: string | null
+          id: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code_hash: string
+          created_at?: string | null
+          id?: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code_hash?: string
+          created_at?: string | null
+          id?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mfa_settings: {
+        Row: {
+          backup_codes: string[] | null
+          created_at: string | null
+          email_enabled: boolean | null
+          id: string
+          sms_enabled: boolean | null
+          totp_enabled: boolean | null
+          updated_at: string | null
+          user_id: string
+          webauthn_enabled: boolean | null
+        }
+        Insert: {
+          backup_codes?: string[] | null
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          sms_enabled?: boolean | null
+          totp_enabled?: boolean | null
+          updated_at?: string | null
+          user_id: string
+          webauthn_enabled?: boolean | null
+        }
+        Update: {
+          backup_codes?: string[] | null
+          created_at?: string | null
+          email_enabled?: boolean | null
+          id?: string
+          sms_enabled?: boolean | null
+          totp_enabled?: boolean | null
+          updated_at?: string | null
+          user_id?: string
+          webauthn_enabled?: boolean | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -354,6 +447,36 @@ export type Database = {
           id?: string
           is_allowed?: boolean
           updated_at?: string
+        }
+        Relationships: []
+      }
+      trusted_devices: {
+        Row: {
+          created_at: string | null
+          device_fingerprint: string
+          device_name: string | null
+          expires_at: string | null
+          id: string
+          last_used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          device_fingerprint: string
+          device_name?: string | null
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          device_fingerprint?: string
+          device_name?: string | null
+          expires_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -441,6 +564,10 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
+      generate_recovery_codes: {
+        Args: { target_user_id: string }
+        Returns: string[]
+      }
       get_current_user_id: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -451,6 +578,10 @@ export type Database = {
       }
       is_current_user: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      verify_recovery_code: {
+        Args: { target_user_id: string; recovery_code: string }
         Returns: boolean
       }
     }

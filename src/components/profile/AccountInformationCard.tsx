@@ -1,10 +1,12 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
+import { Shield } from 'lucide-react';
 
 interface AccountInformationCardProps {
   user: any;
@@ -27,7 +29,7 @@ const AccountInformationCard: React.FC<AccountInformationCardProps> = ({ user })
     <Card className="lg:col-span-2">
       <CardHeader>
         <CardTitle>Account Information</CardTitle>
-        <CardDescription>Update your personal details</CardDescription>
+        <CardDescription>Update your personal details and security settings</CardDescription>
       </CardHeader>
       <form onSubmit={handleUpdateProfile}>
         <CardContent className="space-y-4">
@@ -76,6 +78,24 @@ const AccountInformationCard: React.FC<AccountInformationCardProps> = ({ user })
                 />
                 <label htmlFor="english-phom">English to Phom</label>
               </div>
+            </div>
+          </div>
+
+          {/* Security Settings Link */}
+          <div className="pt-4 border-t">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="font-medium">Account Security</h4>
+                <p className="text-sm text-muted-foreground">
+                  Manage two-factor authentication and trusted devices
+                </p>
+              </div>
+              <Link to="/profile/security">
+                <Button variant="outline" size="sm">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Security Settings
+                </Button>
+              </Link>
             </div>
           </div>
         </CardContent>
