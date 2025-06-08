@@ -9,6 +9,8 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Info, Loader2 } from "lucide-react";
+import SecurePasswordInput from '@/components/auth/SecurePasswordInput';
+import { PasswordSecurityResult } from '@/services/PasswordSecurityService';
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -17,6 +19,7 @@ const AuthPage = () => {
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
+  const [passwordSecurity, setPasswordSecurity] = useState<PasswordSecurityResult | null>(null);
   
   const { user, signIn, signUp, error, clearError } = useAuth();
   const { toast } = useToast();
@@ -26,6 +29,7 @@ const AuthPage = () => {
   useEffect(() => {
     clearError();
     setShowSignupSuccess(false);
+    setPasswordSecurity(null);
   }, [isLogin, clearError]);
 
   // If user is already logged in, redirect to home
@@ -46,6 +50,17 @@ const AuthPage = () => {
         });
         navigate('/');
       } else {
+        // Check password security for signup
+        if (passwordSecurity && !passwordSecurity.isSecure) {
+          toast({
+            title: "Password Security Issue",
+            description: "Please choose a stronger password before creating your account.",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+
         await signUp(email, password, name);
         setShowSignupSuccess(true);
         // Don't navigate immediately after signup as we want to show the success message
@@ -60,12 +75,16 @@ const AuthPage = () => {
 
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
+    setPassword(''); // Clear password when switching modes
+    setPasswordSecurity(null);
     // Error is cleared in the useEffect
   };
 
   const goToSetupAdmin = () => {
     navigate('/setup-admin');
   };
+
+  const canSubmit = isLogin || (passwordSecurity?.isSecure ?? false);
 
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)]">
@@ -77,7 +96,7 @@ const AuthPage = () => {
           <CardDescription>
             {isLogin 
               ? 'Enter your credentials to access your account' 
-              : 'Fill in the information to create your account'}
+              : 'Fill in the information to create your secure account'}
           </CardDescription>
         </CardHeader>
         
@@ -129,26 +148,38 @@ const AuthPage = () => {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-              />
-              <p className="text-xs text-muted-foreground">
-                Password must be at least 6 characters long
-              </p>
+              {isLogin ? (
+                <>
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </>
+              ) : (
+                <SecurePasswordInput
+                  value={password}
+                  onChange={setPassword}
+                  onSecurityCheck={setPasswordSecurity}
+                  required
+                />
+              )}
+              {isLogin && (
+                <p className="text-xs text-muted-foreground">
+                  Password must be at least 6 characters long
+                </p>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting}
+              disabled={isSubmitting || (!isLogin && !canSubmit)}
             >
               {isSubmitting ? (
                 <>

@@ -3,6 +3,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
+import { PasswordSecurityService } from '@/services/PasswordSecurityService';
 
 // Types
 export type User = {
@@ -177,6 +178,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setError(null);
       
       console.log('Signing up with:', email);
+      
+      // Validate password security before signup
+      const securityResult = await PasswordSecurityService.validatePassword(password);
+      
+      if (!securityResult.isSecure) {
+        const errorMessage = securityResult.errors.join(' ');
+        setError(errorMessage);
+        throw new Error(errorMessage);
+      }
       
       const { data, error } = await supabase.auth.signUp({
         email,
