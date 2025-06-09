@@ -65,36 +65,39 @@ const AccountManagementCard: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Button 
               variant="destructive" 
+              size="sm"
               onClick={() => navigate('/account-deletion')}
-              className="h-auto p-4 flex flex-col items-center gap-2"
+              className="flex items-center gap-2 px-3 py-2"
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash2 className="h-4 w-4" />
               <div className="text-center">
-                <div className="font-medium">Delete Now</div>
+                <div className="text-sm font-medium">Delete Now</div>
                 <div className="text-xs opacity-90">Immediate deletion</div>
               </div>
             </Button>
 
             <Button 
               variant="outline" 
+              size="sm"
               onClick={() => navigate('/account-deletion')}
-              className="h-auto p-4 flex flex-col items-center gap-2"
+              className="flex items-center gap-2 px-3 py-2"
             >
-              <Clock className="h-5 w-5" />
+              <Clock className="h-4 w-4" />
               <div className="text-center">
-                <div className="font-medium">Schedule Deletion</div>
+                <div className="text-sm font-medium">Schedule Deletion</div>
                 <div className="text-xs opacity-70">30-day grace period</div>
               </div>
             </Button>
 
             <Button 
               variant="outline" 
+              size="sm"
               onClick={() => window.open(`${window.location.origin}/account-deletion-web`, '_blank')}
-              className="h-auto p-4 flex flex-col items-center gap-2"
+              className="flex items-center gap-2 px-3 py-2"
             >
-              <ExternalLink className="h-5 w-5" />
+              <ExternalLink className="h-4 w-4" />
               <div className="text-center">
-                <div className="font-medium">Web Portal</div>
+                <div className="text-sm font-medium">Web Portal</div>
                 <div className="text-xs opacity-70">Alternative method</div>
               </div>
             </Button>
