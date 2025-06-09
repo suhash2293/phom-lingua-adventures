@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -5,16 +6,16 @@ import { useQuery } from '@tanstack/react-query';
 import LearnLayout from '@/components/layout/LearnLayout';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Headphones, Volume2, VolumeX } from 'lucide-react';
+import { Headphones, Volume2, VolumeX, ArrowLeft, Menu } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ContentService } from '@/services/ContentService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
+
 const MonthsPage = () => {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
@@ -138,9 +139,11 @@ const MonthsPage = () => {
       navigate('/auth');
     }
   }, [user, navigate]);
+  
   if (!user) {
     return null;
   }
+  
   const renderMonthCards = () => {
     if (isLoading) {
       return Array.from({
@@ -199,8 +202,40 @@ const MonthsPage = () => {
         </CardContent>
       </Card>);
   };
-  return <LearnLayout>
+  
+  return (
+    <LearnLayout>
       <div className="container px-4 md:px-6 py-8 md:py-12" onClick={handlePageInteraction}>
+        {/* Mobile header with back button and menu */}
+        <div className="flex items-center justify-between mb-6 md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/learn')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Learning Modules
+          </Button>
+          <SidebarTrigger className="flex items-center gap-2 p-2">
+            <Menu className="h-4 w-4" />
+            <span className="sr-only">Open menu</span>
+          </SidebarTrigger>
+        </div>
+
+        {/* Desktop back button */}
+        <div className="hidden md:block mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/learn')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Learning Modules
+          </Button>
+        </div>
+
         <h1 className="text-3xl font-bold mb-6">Months in Phom</h1>
         <p className="text-lg mb-8">Learn the names of the months of the year in Phom language.</p>
         
@@ -224,6 +259,8 @@ const MonthsPage = () => {
           {renderMonthCards()}
         </div>
       </div>
-    </LearnLayout>;
+    </LearnLayout>
+  );
 };
+
 export default MonthsPage;
