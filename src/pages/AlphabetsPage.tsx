@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -43,7 +42,7 @@ const AlphabetsPage = () => {
   // Fetch alphabets data
   const { data: alphabets, isLoading, error } = useQuery({
     queryKey: ['alphabets'],
-    queryFn: () => ContentService.getContentItemsByCategoryName('Alphabet'),
+    queryFn: () => ContentService.getContentItemsByCategoryName('Alphabets'),
   });
 
   // Get category ID for progress tracking
@@ -51,7 +50,7 @@ const AlphabetsPage = () => {
     queryKey: ['alphabet-category'],
     queryFn: async () => {
       const categories = await ContentService.getCategories();
-      return categories.find(cat => cat.name === 'Alphabet');
+      return categories.find(cat => cat.name === 'Alphabets');
     }
   });
 
