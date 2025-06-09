@@ -20,7 +20,7 @@ import { LearningProgressService } from '@/services/LearningProgressService';
 
 // Module mapping with emojis and descriptions
 const moduleConfig = {
-  'Alphabet': {
+  'Alphabets': {
     emoji: '🔤',
     description: 'Learn the Phom alphabets and characters',
     route: '/learn/alphabets'
