@@ -2,6 +2,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { 
   Sidebar, 
   SidebarContent, 
@@ -200,8 +201,10 @@ const LearnSidebar = () => {
 };
 
 const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
+  const isMobile = useIsMobile();
+  
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full">
         <LearnSidebar />
         <div className="flex-1 bg-gradient-to-br from-yellow-100/30 to-background">

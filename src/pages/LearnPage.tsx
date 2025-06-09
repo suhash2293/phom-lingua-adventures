@@ -14,6 +14,8 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ArrowLeft, Menu } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 import LearnLayout from '@/components/layout/LearnLayout';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { LearningProgressService } from '@/services/LearningProgressService';
@@ -140,6 +142,36 @@ const LearnPage = () => {
   return (
     <LearnLayout>
       <div className="container px-4 md:px-6 py-8 md:py-12">
+        {/* Mobile header with back button and menu */}
+        <div className="flex items-center justify-between mb-6 md:hidden">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+          <SidebarTrigger className="flex items-center gap-2 p-2">
+            <Menu className="h-4 w-4" />
+            <span className="sr-only">Open menu</span>
+          </SidebarTrigger>
+        </div>
+
+        {/* Desktop back button */}
+        <div className="hidden md:block mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </div>
+
         <h1 className="text-3xl font-bold mb-6">Learning Modules</h1>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
