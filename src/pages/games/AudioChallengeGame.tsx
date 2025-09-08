@@ -1,10 +1,10 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Howl } from 'howler';
 import { shuffle } from 'lodash';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -29,6 +29,10 @@ const AudioChallengeGame = () => {
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
   const [audioPlayed, setAudioPlayed] = useState(false);
+  const [audioSupported, setAudioSupported] = useState(true);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [useHtmlAudio, setUseHtmlAudio] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { categoryId } = useParams();
@@ -52,6 +56,29 @@ const AudioChallengeGame = () => {
     queryFn: () => ContentService.getCategories()
   });
   
+  // Check audio support on component mount
+  useEffect(() => {
+    const checkAudioSupport = () => {
+      try {
+        const audio = new Audio();
+        const canPlayMP3 = audio.canPlayType('audio/mpeg') !== '';
+        const canPlayOGG = audio.canPlayType('audio/ogg') !== '';
+        const canPlayWAV = audio.canPlayType('audio/wav') !== '';
+        
+        if (!canPlayMP3 && !canPlayOGG && !canPlayWAV) {
+          setAudioSupported(false);
+          setAudioError('Your browser does not support audio playback.');
+        }
+      } catch (error) {
+        console.error('Error checking audio support:', error);
+        setAudioSupported(false);
+        setAudioError('Audio support check failed.');
+      }
+    };
+    
+    checkAudioSupport();
+  }, []);
+
   useEffect(() => {
     if (contentItems) {
       const filteredItems = contentItems.filter(item => item.audio_url);
@@ -65,8 +92,36 @@ const AudioChallengeGame = () => {
       prepareOptions();
       setAudioPlayed(false);
       setAudioError(null);
+      setIsPlaying(false);
     }
   }, [items, currentItemIndex]);
+
+  // Keyboard support
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.code === 'Space' && !isFinished && items.length > 0) {
+        event.preventDefault();
+        playSound(items[currentItemIndex].audio_url);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentItemIndex, items, isFinished]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => {
+      if (sound) {
+        sound.stop();
+        sound.unload();
+      }
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, [sound]);
   
   const prepareOptions = () => {
     if (!items[currentItemIndex]) return;
@@ -87,38 +142,137 @@ const AudioChallengeGame = () => {
     setOptions(newOptions);
   };
   
-  const playSound = (src: string) => {
+  // Validate audio URL
+  const validateAudioUrl = async (url: string): Promise<boolean> => {
+    try {
+      const response = await fetch(url, { 
+        method: 'HEAD',
+        mode: 'cors'
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Audio URL validation failed:', error);
+      return false;
+    }
+  };
+
+  // HTML5 Audio fallback
+  const playWithHtmlAudio = (src: string) => {
+    try {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+
+      const audio = new Audio();
+      audio.crossOrigin = 'anonymous';
+      audio.preload = 'metadata';
+      
+      audio.onloadstart = () => {
+        setAudioLoading(true);
+        setAudioError(null);
+      };
+      
+      audio.oncanplaythrough = () => {
+        setAudioLoading(false);
+        audio.play().then(() => {
+          setIsPlaying(true);
+          setAudioPlayed(true);
+        }).catch(error => {
+          setAudioError('Failed to play audio. Please try again.');
+          console.error('HTML5 audio play error:', error);
+        });
+      };
+      
+      audio.onended = () => {
+        setIsPlaying(false);
+        setAudioLoading(false);
+      };
+      
+      audio.onerror = () => {
+        setAudioLoading(false);
+        setAudioError('Failed to load audio file.');
+        console.error('HTML5 audio error:', src);
+      };
+      
+      audioRef.current = audio;
+      audio.src = src;
+      audio.load();
+    } catch (error) {
+      setAudioLoading(false);
+      setAudioError('Audio playback not supported.');
+      console.error('HTML5 audio setup error:', error);
+    }
+  };
+
+  const playSound = async (src: string) => {
+    if (!audioSupported) {
+      setAudioError('Audio playback is not supported on this device.');
+      return;
+    }
+
     setAudioLoading(true);
     setAudioError(null);
-    
-    if (sound) {
-      sound.stop();
-      sound.unload();
+    setIsPlaying(false);
+
+    // Validate URL first
+    const isValid = await validateAudioUrl(src);
+    if (!isValid) {
+      setAudioLoading(false);
+      setAudioError('Audio file is not accessible. Please check your connection.');
+      return;
     }
-    
-    const newSound = new Howl({
-      src: [src],
-      html5: true,
-      onload: () => {
-        setAudioLoading(false);
-        newSound.play();
-        setSound(newSound);
-        setAudioPlayed(true);
-      },
-      onend: () => {
-        setAudioLoading(false);
-      },
-      onloaderror: (id, error) => {
-        setAudioLoading(false);
-        setAudioError('Failed to load audio. Please try again.');
-        console.error('Failed to load sound:', src, error);
-      },
-      onplayerror: (id, error) => {
-        setAudioLoading(false);
-        setAudioError('Failed to play audio. Please try again.');
-        console.error('Failed to play sound:', src, error);
+
+    // Try Howler.js first, fallback to HTML5 audio
+    if (useHtmlAudio) {
+      playWithHtmlAudio(src);
+      return;
+    }
+
+    try {
+      if (sound) {
+        sound.stop();
+        sound.unload();
       }
-    });
+      
+      const newSound = new Howl({
+        src: [src],
+        html5: true,
+        preload: false,
+        format: ['mp3', 'ogg', 'wav'],
+        onload: () => {
+          setAudioLoading(false);
+          newSound.play();
+          setSound(newSound);
+          setAudioPlayed(true);
+          setIsPlaying(true);
+        },
+        onplay: () => {
+          setIsPlaying(true);
+        },
+        onend: () => {
+          setAudioLoading(false);
+          setIsPlaying(false);
+        },
+        onstop: () => {
+          setIsPlaying(false);
+        },
+        onloaderror: (id, error) => {
+          console.error('Howler load error, trying HTML5 audio:', src, error);
+          setUseHtmlAudio(true);
+          playWithHtmlAudio(src);
+        },
+        onplayerror: (id, error) => {
+          console.error('Howler play error, trying HTML5 audio:', src, error);
+          setUseHtmlAudio(true);
+          playWithHtmlAudio(src);
+        }
+      });
+    } catch (error) {
+      console.error('Howler.js error, falling back to HTML5:', error);
+      setUseHtmlAudio(true);
+      playWithHtmlAudio(src);
+    }
   };
   
   const handleOptionSelect = (itemId: string) => {
@@ -155,6 +309,8 @@ const AudioChallengeGame = () => {
     setSelectedOption(null);
     setAudioPlayed(false);
     setAudioError(null);
+    setIsPlaying(false);
+    setUseHtmlAudio(false);
     
     // Re-shuffle items for a new game
     if (contentItems) {
@@ -255,21 +411,64 @@ const AudioChallengeGame = () => {
             <p className="text-center mb-4">
               {!audioPlayed ? "Click 'Play Audio' to hear the word, then select the correct answer below:" : "Select the correct word:"}
             </p>
+            <p className="text-center text-sm text-muted-foreground mb-4">
+              💡 Tip: Press <kbd className="px-2 py-1 bg-muted rounded text-xs">Space</kbd> to play audio
+            </p>
             
             <div className="flex justify-center mb-4">
               <Button 
                 onClick={() => playSound(items[currentItemIndex].audio_url)}
-                disabled={audioLoading}
+                disabled={audioLoading || !audioSupported}
                 size="lg"
-                className="min-w-[140px]"
+                className="min-w-[140px] gap-2"
               >
-                {audioLoading ? "Loading..." : audioPlayed ? "Play Again" : "Play Audio"}
+                {audioLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading...
+                  </>
+                ) : isPlaying ? (
+                  <>
+                    <Volume2 className="h-4 w-4" />
+                    Playing...
+                  </>
+                ) : audioPlayed ? (
+                  <>
+                    <Volume2 className="h-4 w-4" />
+                    Play Again
+                  </>
+                ) : (
+                  <>
+                    <Volume2 className="h-4 w-4" />
+                    Play Audio
+                  </>
+                )}
               </Button>
             </div>
             
             {audioError && (
-              <div className="text-center text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
-                {audioError}
+              <div className="text-center text-red-500 mb-4 p-3 bg-red-50 dark:bg-red-950 rounded-lg border border-red-200 dark:border-red-800">
+                <div className="flex items-center justify-center gap-2">
+                  <VolumeX className="h-4 w-4" />
+                  {audioError}
+                </div>
+                {!audioSupported && (
+                  <div className="mt-2 text-sm">
+                    Try using a different browser or enable audio permissions.
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {!audioSupported && (
+              <div className="text-center text-orange-600 mb-4 p-3 bg-orange-50 dark:bg-orange-950 rounded-lg border border-orange-200 dark:border-orange-800">
+                <div className="flex items-center justify-center gap-2">
+                  <VolumeX className="h-4 w-4" />
+                  Audio playback may not be supported on this device
+                </div>
+                <div className="mt-2 text-sm">
+                  You can still play the game by reading the text options
+                </div>
               </div>
             )}
           </div>
