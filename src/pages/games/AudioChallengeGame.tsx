@@ -26,6 +26,9 @@ const AudioChallengeGame = () => {
   const [gameStartTime, setGameStartTime] = useState<Date | null>(null);
   const [gameEndTime, setGameEndTime] = useState<Date | null>(null);
   const [sound, setSound] = useState<Howl | null>(null);
+  const [audioLoading, setAudioLoading] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [audioPlayed, setAudioPlayed] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
   const { categoryId } = useParams();
@@ -60,6 +63,8 @@ const AudioChallengeGame = () => {
     if (items.length > 0) {
       setGameStartTime(new Date());
       prepareOptions();
+      setAudioPlayed(false);
+      setAudioError(null);
     }
   }, [items, currentItemIndex]);
   
@@ -80,12 +85,12 @@ const AudioChallengeGame = () => {
     // Shuffle the options
     newOptions = shuffle(newOptions);
     setOptions(newOptions);
-    
-    // Play audio
-    playSound(correctItem.audio_url);
   };
   
   const playSound = (src: string) => {
+    setAudioLoading(true);
+    setAudioError(null);
+    
     if (sound) {
       sound.stop();
       sound.unload();
@@ -93,16 +98,25 @@ const AudioChallengeGame = () => {
     
     const newSound = new Howl({
       src: [src],
-      html5: true, // Required for mobile browsers
+      html5: true,
       onload: () => {
+        setAudioLoading(false);
         newSound.play();
         setSound(newSound);
+        setAudioPlayed(true);
       },
       onend: () => {
-        // console.log('Finished playing sound!');
+        setAudioLoading(false);
       },
-      onloaderror: () => {
-        console.error('Failed to load sound:', src);
+      onloaderror: (id, error) => {
+        setAudioLoading(false);
+        setAudioError('Failed to load audio. Please try again.');
+        console.error('Failed to load sound:', src, error);
+      },
+      onplayerror: (id, error) => {
+        setAudioLoading(false);
+        setAudioError('Failed to play audio. Please try again.');
+        console.error('Failed to play sound:', src, error);
       }
     });
   };
@@ -139,6 +153,8 @@ const AudioChallengeGame = () => {
     setGameStartTime(new Date());
     setGameEndTime(null);
     setSelectedOption(null);
+    setAudioPlayed(false);
+    setAudioError(null);
     
     // Re-shuffle items for a new game
     if (contentItems) {
@@ -235,11 +251,32 @@ const AudioChallengeGame = () => {
         </div>
       ) : !isFinished ? (
         <>
-          <p className="mb-4">Listen to the audio and select the correct word.</p>
+          <div className="mb-4">
+            <p className="text-center mb-4">
+              {!audioPlayed ? "Click 'Play Audio' to hear the word, then select the correct answer below:" : "Select the correct word:"}
+            </p>
+            
+            <div className="flex justify-center mb-4">
+              <Button 
+                onClick={() => playSound(items[currentItemIndex].audio_url)}
+                disabled={audioLoading}
+                size="lg"
+                className="min-w-[140px]"
+              >
+                {audioLoading ? "Loading..." : audioPlayed ? "Play Again" : "Play Audio"}
+              </Button>
+            </div>
+            
+            {audioError && (
+              <div className="text-center text-red-500 mb-4 p-3 bg-red-50 rounded-lg border border-red-200">
+                {audioError}
+              </div>
+            )}
+          </div>
           
           <Card className="mb-4">
             <CardContent className="p-4">
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-4">
                 <div>
                   Question {currentItemIndex + 1} / {items.length}
                 </div>
@@ -269,10 +306,6 @@ const AudioChallengeGame = () => {
               )}
             </CardContent>
           </Card>
-          
-          <Button variant="secondary" onClick={() => playSound(items[currentItemIndex].audio_url)}>
-            Replay Audio
-          </Button>
         </>
       ) : (
         <div className="text-center">
