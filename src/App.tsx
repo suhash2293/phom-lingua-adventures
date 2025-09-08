@@ -81,11 +81,11 @@ function App() {
                   <Route path="/learn/months" element={<MonthsPage />} />
                   <Route path="/learn/:categoryId" element={<ModuleDetailPage />} />
                   <Route path="/games" element={<GamesPage />} />
-                  <Route path="/games/word-match" element={<WordMatchGame />} />
-                  <Route path="/games/audio-challenge" element={<AudioChallengeGame />} />
+                  <Route path="/games/word-match/:categoryId?" element={<WordMatchGame />} />
+                  <Route path="/games/audio-challenge/:categoryId?" element={<AudioChallengeGame />} />
                   <Route path="/games/sentence-builder" element={<SentenceBuilderGame />} />
                   <Route path="/games/memory-challenge" element={<MemoryChallengeGame />} />
-                  <Route path="/games/word-scramble" element={<WordScrambleGame />} />
+                  <Route path="/games/word-scramble/:categoryId?" element={<WordScrambleGame />} />
                   <Route path="/about" element={<AboutPage />} />
                   <Route path="/donate" element={<DonatePage />} />
                   <Route path="/donation-success" element={<DonationSuccessPage />} />
