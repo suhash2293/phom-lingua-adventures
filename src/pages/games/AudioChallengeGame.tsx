@@ -142,19 +142,6 @@ const AudioChallengeGame = () => {
     setOptions(newOptions);
   };
   
-  // Validate audio URL
-  const validateAudioUrl = async (url: string): Promise<boolean> => {
-    try {
-      const response = await fetch(url, { 
-        method: 'HEAD',
-        mode: 'cors'
-      });
-      return response.ok;
-    } catch (error) {
-      console.error('Audio URL validation failed:', error);
-      return false;
-    }
-  };
 
   // HTML5 Audio fallback
   const playWithHtmlAudio = (src: string) => {
@@ -215,14 +202,6 @@ const AudioChallengeGame = () => {
     setAudioError(null);
     setIsPlaying(false);
 
-    // Validate URL first
-    const isValid = await validateAudioUrl(src);
-    if (!isValid) {
-      setAudioLoading(false);
-      setAudioError('Audio file is not accessible. Please check your connection.');
-      return;
-    }
-
     // Try Howler.js first, fallback to HTML5 audio
     if (useHtmlAudio) {
       playWithHtmlAudio(src);
@@ -238,8 +217,14 @@ const AudioChallengeGame = () => {
       const newSound = new Howl({
         src: [src],
         html5: true,
-        preload: false,
+        preload: true,
         format: ['mp3', 'ogg', 'wav'],
+        xhr: {
+          method: 'GET',
+          headers: {
+            'Cache-Control': 'no-cache'
+          }
+        },
         onload: () => {
           setAudioLoading(false);
           newSound.play();
@@ -259,17 +244,29 @@ const AudioChallengeGame = () => {
         },
         onloaderror: (id, error) => {
           console.error('Howler load error, trying HTML5 audio:', src, error);
+          setAudioLoading(false);
           setUseHtmlAudio(true);
           playWithHtmlAudio(src);
         },
         onplayerror: (id, error) => {
           console.error('Howler play error, trying HTML5 audio:', src, error);
+          setAudioLoading(false);
           setUseHtmlAudio(true);
           playWithHtmlAudio(src);
         }
       });
+      
+      // Set a timeout to prevent infinite loading
+      setTimeout(() => {
+        if (audioLoading && !isPlaying) {
+          setAudioLoading(false);
+          setAudioError('Audio loading timed out. Please try again.');
+        }
+      }, 10000);
+      
     } catch (error) {
       console.error('Howler.js error, falling back to HTML5:', error);
+      setAudioLoading(false);
       setUseHtmlAudio(true);
       playWithHtmlAudio(src);
     }
