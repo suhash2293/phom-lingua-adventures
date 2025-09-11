@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Input } from '@/components/ui/input';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
 import { PlayBillingService } from '@/services/PlayBillingService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
@@ -111,6 +111,16 @@ const DonatePage = () => {
   const predefinedAmounts = [100, 500, 1000, 5000, 10000, 50000];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       <div className="max-w-3xl mx-auto">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+        
         <h1 className="text-3xl font-bold mb-4">Support Our Mission</h1>
         <p className="text-lg mb-8">Your donation helps us preserve the Phom dialect and create more learning resources. As a non-profit initiative, we rely on community support to continue our work.</p>
         

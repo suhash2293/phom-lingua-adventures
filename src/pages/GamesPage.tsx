@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { ChevronRight, Award, Clock, Trophy } from 'lucide-react';
+import { ChevronRight, Award, Clock, Trophy, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -174,6 +174,16 @@ const GamesPage = () => {
     }
   };
   return <div className="container px-4 md:px-6 py-8 md:py-12">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate("/")}
+        className="mb-6"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Home
+      </Button>
+      
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-bold">Games</h1>

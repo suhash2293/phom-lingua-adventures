@@ -1,8 +1,21 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 const AboutPage = () => {
+  const navigate = useNavigate();
+  
   return <div className="container px-4 md:px-6 py-8 md:py-12">
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => navigate("/")}
+        className="mb-6"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to Home
+      </Button>
+      
       <h1 className="text-4xl font-bold mb-8">About PhomShah</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-12">
