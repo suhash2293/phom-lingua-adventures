@@ -111,15 +111,17 @@ const DonatePage = () => {
   const predefinedAmounts = [100, 500, 1000, 5000, 10000, 50000];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       <div className="max-w-3xl mx-auto">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigate("/")}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Home
-        </Button>
+        <div className="mb-6">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Home
+          </Button>
+        </div>
         
         <h1 className="text-3xl font-bold mb-4">Support Our Mission</h1>
         <p className="text-lg mb-8">Your donation helps us preserve the Phom dialect and create more learning resources. As a non-profit initiative, we rely on community support to continue our work.</p>

@@ -174,15 +174,17 @@ const GamesPage = () => {
     }
   };
   return <div className="container px-4 md:px-6 py-8 md:py-12">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => navigate("/")}
-        className="mb-6"
-      >
-        <ArrowLeft className="h-4 w-4 mr-2" />
-        Back to Home
-      </Button>
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate("/")}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
       
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
