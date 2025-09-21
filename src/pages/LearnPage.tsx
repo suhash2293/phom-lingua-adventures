@@ -39,7 +39,7 @@ const moduleConfig = {
   },
   'Months': {
     emoji: '🗓️',
-    description: 'Learn the names of months in Phom dialect',
+    description: 'Learn the names of the months in Phom dialect.',
     route: '/learn/months'
   }
 };
