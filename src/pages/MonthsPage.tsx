@@ -237,7 +237,7 @@ const MonthsPage = () => {
         </div>
 
         <h1 className="text-3xl font-bold mb-6">Months in Phom</h1>
-        <p className="text-lg mb-8">Learn the names of the months of the year in Phom language.</p>
+        <p className="text-lg mb-8">Learn the names of the months in Phom dialect</p>
         
         {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-center">👆 Click anywhere or interact with the page to enable audio playback</p>
