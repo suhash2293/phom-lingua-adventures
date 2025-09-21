@@ -102,7 +102,7 @@ const Index = () => {
             <CardHeader className="bg-gradient-to-r from-amber-100/30 to-amber-50/10 dark:from-amber-900/30 dark:to-amber-800/10 pb-2 relative">
               <div className="absolute top-0 right-0 w-20 h-20 bg-amber-100/30 dark:bg-amber-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
               <CardTitle className="text-xl relative z-10">Months</CardTitle>
-              <CardDescription className="relative z-10">Learn the names of months in Phom Dialect</CardDescription>
+              <CardDescription className="relative z-10">Learn the names of the months in Phom Dialect</CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-amber-100/50 to-amber-50/30 dark:from-amber-900/50 dark:to-amber-800/30 flex items-center justify-center">
