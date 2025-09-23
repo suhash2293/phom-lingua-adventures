@@ -18,10 +18,8 @@ const AboutPage = () => {
         <div>
           <h2 className="text-2xl font-bold mb-4">Our Mission</h2>
           <p className="mb-4">Our app places the novices at the centre  of offering an immersive journey into the Phom Naga dialect, an essential voice of the indigenous Phom Naga Community in Nagaland. </p>
-          <p className="mb-4">Instead of simply building vocabulary lists, we guide you towards learning the foundational basics of the indigenous dialect and invite you to connect with your cultural roots. With intuitive, accessible tools and engaging lessons, we strive to safeguard the rich traditions of the Phom Naga dialect and encourage further initiatives to the dialect mastery while championing the living heritage of it's people</p>
-          <p>
-            Through our bilingual platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come. 
-          </p>
+          <p className="mb-4">Instead of simply building vocabulary lists, we guide you towards learning the foundational basics of the indigenous dialect and invite you to connect with your cultural roots. With intuitive, accessible tools and engaging lessons, we strive to safeguard the rich traditions of the Phom Naga dialect and encourage further initiatives to the dialect mastery while championing the living heritage of it's people.</p>
+          <p>Through our beginner's centred learning platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come.</p>
         </div>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-6 border border-gray-200 shadow-md">
           <img alt="PhomShah Logo" className="w-full h-auto object-contain max-h-[400px]" src="/lovable-uploads/027f11f2-a86f-48c0-b0bf-7d290f00944d.png" />
