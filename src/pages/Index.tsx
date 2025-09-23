@@ -17,7 +17,7 @@ const Index = () => {
           <span className="text-phom-yellow">Welcome to PhomShah
         </span>
         </h1>
-        <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A learner's centred dialect learning platform</h2>
+        <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A beginner's manuel to learning Phom dialect</h2>
         <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom Dialect and English through interactive lessons and gamified exercises.</p>
         
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
