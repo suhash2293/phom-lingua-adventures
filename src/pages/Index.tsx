@@ -18,7 +18,7 @@ const Index = () => {
         </span>
         </h1>
         <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A beginner's manuel to learning Phom dialect</h2>
-        <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom vocabularies and dialect basic through through interactive lessons and gamified exercises.</p>
+        <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom vocabularies and dialect basics through through interactive lessons and gamified exercises.</p>
         
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           {!user ? <Button size="lg" onClick={() => navigate('/auth')}>
