@@ -35,35 +35,68 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Helper function to map Supabase auth errors to user-friendly messages
   const mapAuthError = (error: any): string => {
     const errorMessage = error?.message || '';
+    const errorCode = error?.error_code || error?.code || '';
+    
+    // Log the actual error for debugging
+    console.log('Auth error details:', { message: errorMessage, code: errorCode, error });
     
     // Handle leaked password errors from Supabase
     if (errorMessage.includes('leaked') || errorMessage.includes('compromised') || errorMessage.includes('pwned')) {
       return 'This password has been found in data breaches and cannot be used. Please choose a different password.';
     }
     
-    // Handle other common auth errors
-    if (errorMessage.includes('Invalid login credentials')) {
-      return 'Invalid email or password. Please check your credentials and try again.';
+    // Handle authentication failures - multiple patterns
+    if (errorMessage.includes('Invalid login credentials') || 
+        errorMessage.includes('invalid_grant') ||
+        errorMessage.includes('invalid_credentials') ||
+        errorMessage.includes('Invalid email or password') ||
+        errorMessage.includes('Wrong email or password') ||
+        errorCode === 'invalid_grant' ||
+        errorCode === 'invalid_credentials') {
+      return 'Incorrect email or password. Please check your credentials and try again.';
     }
     
-    if (errorMessage.includes('Email already registered') || errorMessage.includes('User already registered')) {
-      return 'An account with this email already exists. Please sign in instead.';
-    }
-    
-    if (errorMessage.includes('Password should be at least')) {
-      return 'Password must be at least 6 characters long.';
-    }
-    
-    if (errorMessage.includes('Email not confirmed')) {
+    // Handle email verification issues
+    if (errorMessage.includes('Email not confirmed') || 
+        errorMessage.includes('email_not_confirmed') ||
+        errorCode === 'email_not_confirmed') {
       return 'Please check your email and click the confirmation link before signing in.';
     }
     
-    if (errorMessage.includes('Too many requests')) {
+    // Handle existing user registration
+    if (errorMessage.includes('Email already registered') || 
+        errorMessage.includes('User already registered') ||
+        errorMessage.includes('already_registered') ||
+        errorCode === 'user_already_exists') {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    
+    // Handle password requirements
+    if (errorMessage.includes('Password should be at least') ||
+        errorMessage.includes('password_too_short') ||
+        errorCode === 'weak_password') {
+      return 'Password must be at least 6 characters long.';
+    }
+    
+    // Handle rate limiting
+    if (errorMessage.includes('Too many requests') ||
+        errorMessage.includes('rate_limit') ||
+        errorMessage.includes('too_many_requests') ||
+        errorCode === 'too_many_requests') {
       return 'Too many attempts. Please wait a moment before trying again.';
     }
     
-    // Default fallback
-    return errorMessage || 'An unexpected error occurred. Please try again.';
+    // Handle network issues
+    if (errorMessage.includes('Network') || errorMessage.includes('fetch')) {
+      return 'Network error. Please check your connection and try again.';
+    }
+    
+    // Default fallback with more helpful message
+    if (errorMessage) {
+      return `Authentication failed: ${errorMessage}`;
+    }
+    
+    return 'An unexpected error occurred. Please try again.';
   };
 
   // Check for existing session on mount and setup auth state listener
