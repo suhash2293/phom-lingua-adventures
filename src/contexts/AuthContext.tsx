@@ -17,6 +17,8 @@ type AuthContextType = {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  sendVerificationPin: (email: string) => Promise<void>;
+  verifyPin: (email: string, pin: string) => Promise<void>;
   loading: boolean;
   error: string | null;
   clearError: () => void;
@@ -255,11 +257,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(errorMessage);
       }
       
+      // Disable email confirmation for PIN-based verification
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: 'https://b2672e52-09ed-497a-8921-f141ef27b76c.lovableproject.com/',
+          emailRedirectTo: undefined, // Disable built-in email confirmation
           data: {
             name
           }
@@ -268,16 +271,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) throw error;
       
-      toast({
-        title: "Account created!",
-        description: "Please check your email for a confirmation link.",
-      });
+      // Don't show the email confirmation toast since we're using PIN verification
       
       console.log('User signed up:', data);
     } catch (err: any) {
       console.error('Sign up error:', err);
       const friendlyError = mapAuthError(err);
       setError(friendlyError);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const sendVerificationPin = async (email: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Sending verification PIN to:', email);
+      
+      const { data, error } = await supabase.functions.invoke('send-verification-pin', {
+        body: { email }
+      });
+      
+      if (error) throw error;
+      
+      console.log('PIN sent successfully:', data);
+      
+      toast({
+        title: "Verification PIN sent!",
+        description: "Please check your email for the 4-digit PIN.",
+      });
+    } catch (err: any) {
+      console.error('Send PIN error:', err);
+      const errorMessage = err?.message || 'Failed to send verification PIN';
+      setError(errorMessage);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const verifyPin = async (email: string, pin: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log('Verifying PIN for:', email);
+      
+      const { data, error } = await supabase.functions.invoke('verify-pin', {
+        body: { email, pin }
+      });
+      
+      if (error) throw error;
+      
+      console.log('PIN verified successfully:', data);
+      
+      toast({
+        title: "Email verified!",
+        description: "Your account has been verified successfully.",
+      });
+    } catch (err: any) {
+      console.error('Verify PIN error:', err);
+      const errorMessage = err?.message || 'Failed to verify PIN';
+      setError(errorMessage);
       throw err;
     } finally {
       setLoading(false);
@@ -307,6 +365,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signIn,
     signUp,
     signOut,
+    sendVerificationPin,
+    verifyPin,
     loading,
     error,
     clearError

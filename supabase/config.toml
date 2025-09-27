@@ -9,3 +9,9 @@ verify_jwt = false
 
 [functions.account-deletion]
 verify_jwt = true
+
+[functions.send-verification-pin]
+verify_jwt = false
+
+[functions.verify-pin]
+verify_jwt = false

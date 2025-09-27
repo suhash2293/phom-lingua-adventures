@@ -11,6 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, Info, Loader2, Shield } from "lucide-react";
 import SecurePasswordInput from '@/components/auth/SecurePasswordInput';
 import { PasswordSecurityResult } from '@/services/PasswordSecurityService';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
 const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -20,8 +21,11 @@ const AuthPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
   const [passwordSecurity, setPasswordSecurity] = useState<PasswordSecurityResult | null>(null);
+  const [showPinVerification, setShowPinVerification] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [pin, setPin] = useState('');
   
-  const { user, signIn, signUp, error, clearError } = useAuth();
+  const { user, signIn, signUp, sendVerificationPin, verifyPin, error, clearError } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -30,6 +34,8 @@ const AuthPage = () => {
     clearError();
     setShowSignupSuccess(false);
     setPasswordSecurity(null);
+    setShowPinVerification(false);
+    setPin('');
   }, [isLogin, clearError]);
 
   // If user is already logged in, redirect to home
@@ -62,8 +68,10 @@ const AuthPage = () => {
         }
 
         await signUp(email, password, name);
-        setShowSignupSuccess(true);
-        // Don't navigate immediately after signup as we want to show the success message
+        setVerificationEmail(email);
+        setShowPinVerification(true);
+        // Send verification PIN immediately after signup
+        await sendVerificationPin(email);
       }
     } catch (err) {
       // Error is already set in the AuthContext with user-friendly message
@@ -73,10 +81,44 @@ const AuthPage = () => {
     }
   };
 
+  const handlePinVerification = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    
+    try {
+      await verifyPin(verificationEmail, pin);
+      toast({
+        title: "Email verified!",
+        description: "You can now sign in with your account.",
+      });
+      
+      // Reset to login mode after successful verification
+      setShowPinVerification(false);
+      setIsLogin(true);
+      setEmail(verificationEmail);
+      setPassword('');
+      setPin('');
+    } catch (err) {
+      console.error('PIN verification error:', err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleResendPin = async () => {
+    try {
+      await sendVerificationPin(verificationEmail);
+    } catch (err) {
+      console.error('Resend PIN error:', err);
+    }
+  };
+
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
     setPassword(''); // Clear password when switching modes
     setPasswordSecurity(null);
+    setShowPinVerification(false);
+    setPin('');
     // Error is cleared in the useEffect
   };
 
@@ -90,7 +132,92 @@ const AuthPage = () => {
   const isLeakedPasswordError = error?.toLowerCase().includes('breach') || 
                                error?.toLowerCase().includes('compromised') || 
                                error?.toLowerCase().includes('leaked') ||
-                               error?.toLowerCase().includes('pwned');
+                                error?.toLowerCase().includes('pwned');
+
+  // Show PIN verification form if needed
+  if (showPinVerification) {
+    return (
+      <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)]">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1">
+            <CardTitle className="text-2xl font-bold">
+              Verify Your Email
+            </CardTitle>
+            <CardDescription>
+              We've sent a 4-digit PIN to {verificationEmail}. Enter it below to verify your account.
+            </CardDescription>
+          </CardHeader>
+          
+          {error && (
+            <div className="px-6">
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            </div>
+          )}
+          
+          <form onSubmit={handlePinVerification}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="pin">Verification PIN</Label>
+                <div className="flex justify-center">
+                  <InputOTP
+                    value={pin}
+                    onChange={setPin}
+                    maxLength={4}
+                  >
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                      <InputOTPSlot index={3} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+                <p className="text-xs text-muted-foreground text-center">
+                  Enter the 4-digit PIN sent to your email
+                </p>
+              </div>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button 
+                type="submit" 
+                className="w-full" 
+                disabled={isSubmitting || pin.length !== 4}
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Verifying...
+                  </>
+                ) : 'Verify PIN'}
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="link" 
+                onClick={handleResendPin}
+                className="w-full"
+              >
+                Didn't receive the PIN? Resend
+              </Button>
+              
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowPinVerification(false)}
+                className="w-full"
+              >
+                Back to Sign Up
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-8rem)]">
@@ -122,17 +249,6 @@ const AuthPage = () => {
           </div>
         )}
         
-        {showSignupSuccess && !isLogin && (
-          <div className="px-6">
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertTitle>Account Created!</AlertTitle>
-              <AlertDescription>
-                Please check your email for a confirmation link. If you don't receive it, you can try signing in anyway.
-              </AlertDescription>
-            </Alert>
-          </div>
-        )}
         
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
