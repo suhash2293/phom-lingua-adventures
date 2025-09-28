@@ -95,24 +95,37 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send PIN via email
-    const emailResponse = await resend.emails.send({
-      from: "Phom Learning <onboarding@resend.dev>",
-      to: [email],
-      subject: "Your verification PIN",
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">Email Verification</h2>
-          <p style="color: #666; font-size: 16px;">Your verification PIN is:</p>
-          <div style="background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
-            <span style="font-size: 32px; font-weight: bold; color: #333; letter-spacing: 8px;">${pin}</span>
+    let emailResponse;
+    try {
+      emailResponse = await resend.emails.send({
+        from: "Learning App <noreply@learningapp.com>",
+        to: [email],
+        subject: "Your verification PIN",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #333; text-align: center;">Email Verification</h2>
+            <p style="color: #666; font-size: 16px;">Your verification PIN is:</p>
+            <div style="background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+              <span style="font-size: 32px; font-weight: bold; color: #333; letter-spacing: 8px;">${pin}</span>
+            </div>
+            <p style="color: #666; font-size: 14px;">This PIN will expire in 15 minutes.</p>
+            <p style="color: #666; font-size: 14px;">If you didn't request this verification, please ignore this email.</p>
           </div>
-          <p style="color: #666; font-size: 14px;">This PIN will expire in 15 minutes.</p>
-          <p style="color: #666; font-size: 14px;">If you didn't request this verification, please ignore this email.</p>
-        </div>
-      `,
-    });
-
-    console.log("Email sent successfully:", emailResponse);
+        `,
+      });
+      console.log("Email sent successfully:", emailResponse);
+    } catch (emailError) {
+      console.error("Failed to send email:", emailError);
+      return new Response(
+        JSON.stringify({ 
+          error: "Failed to send verification email. Please try again." 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
 
     return new Response(
       JSON.stringify({ 

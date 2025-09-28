@@ -14,11 +14,11 @@ export type User = {
 
 type AuthContextType = {
   user: User;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name?: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signUp: (email: string, password: string, name?: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
-  sendVerificationPin: (email: string) => Promise<void>;
-  verifyPin: (email: string, pin: string) => Promise<void>;
+  sendVerificationPin: (email: string) => Promise<{ error?: string }>;
+  verifyPin: (email: string, pin: string) => Promise<{ error?: string }>;
   loading: boolean;
   error: string | null;
   clearError: () => void;
@@ -227,15 +227,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         password
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Sign in error:', error);
+        const friendlyError = mapAuthError(error);
+        setError(friendlyError);
+        return { error: friendlyError };
+      }
       
       // User is set by the onAuthStateChange listener
       console.log('User signed in:', data);
+      return { error: undefined };
     } catch (err: any) {
-      console.error('Sign in error:', err);
+      console.error('Sign in exception:', err);
       const friendlyError = mapAuthError(err);
       setError(friendlyError);
-      throw err;
+      return { error: friendlyError };
     } finally {
       setLoading(false);
     }
@@ -254,7 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!securityResult.isSecure) {
         const errorMessage = securityResult.errors.join(' ');
         setError(errorMessage);
-        throw new Error(errorMessage);
+        return { error: errorMessage };
       }
       
       // Disable email confirmation for PIN-based verification
@@ -269,16 +275,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       });
       
-      if (error) throw error;
+      if (error) {
+        const friendlyError = mapAuthError(error);
+        setError(friendlyError);
+        return { error: friendlyError };
+      }
       
       // Don't show the email confirmation toast since we're using PIN verification
       
       console.log('User signed up:', data);
+      return { error: undefined };
     } catch (err: any) {
       console.error('Sign up error:', err);
       const friendlyError = mapAuthError(err);
       setError(friendlyError);
-      throw err;
+      return { error: friendlyError };
     } finally {
       setLoading(false);
     }
@@ -295,7 +306,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: { email }
       });
       
-      if (error) throw error;
+      if (error) {
+        const errorMessage = error?.message || 'Failed to send verification PIN';
+        setError(errorMessage);
+        return { error: errorMessage };
+      }
       
       console.log('PIN sent successfully:', data);
       
@@ -303,11 +318,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Verification PIN sent!",
         description: "Please check your email for the 4-digit PIN.",
       });
+      return { error: undefined };
     } catch (err: any) {
       console.error('Send PIN error:', err);
       const errorMessage = err?.message || 'Failed to send verification PIN';
       setError(errorMessage);
-      throw err;
+      return { error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -324,7 +340,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: { email, pin }
       });
       
-      if (error) throw error;
+      if (error) {
+        const errorMessage = error?.message || 'Failed to verify PIN';
+        setError(errorMessage);
+        return { error: errorMessage };
+      }
       
       console.log('PIN verified successfully:', data);
       
@@ -332,11 +352,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         title: "Email verified!",
         description: "Your account has been verified successfully.",
       });
+      return { error: undefined };
     } catch (err: any) {
       console.error('Verify PIN error:', err);
       const errorMessage = err?.message || 'Failed to verify PIN';
       setError(errorMessage);
-      throw err;
+      return { error: errorMessage };
     } finally {
       setLoading(false);
     }

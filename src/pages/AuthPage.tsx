@@ -76,6 +76,20 @@ const AuthPage = () => {
     } catch (err) {
       // Error is already set in the AuthContext with user-friendly message
       console.error('Authentication error:', err);
+      // Show toast for additional feedback
+      if (isLogin) {
+        toast({
+          title: "Sign In Failed",
+          description: error || "Please check your email and password.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sign Up Failed", 
+          description: error || "Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +121,14 @@ const AuthPage = () => {
 
   const handleResendPin = async () => {
     try {
-      await sendVerificationPin(verificationEmail);
+      const result = await sendVerificationPin(verificationEmail);
+      if (result.error) {
+        toast({
+          title: "Resend Failed",
+          description: result.error,
+          variant: "destructive",
+        });
+      }
     } catch (err) {
       console.error('Resend PIN error:', err);
     }
@@ -234,17 +255,17 @@ const AuthPage = () => {
         </CardHeader>
         
         {error && (
-          <div className="px-6">
-            <Alert variant="destructive">
+          <div className="px-6 mb-4">
+            <Alert variant="destructive" className="border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive">
               {isLeakedPasswordError ? (
                 <Shield className="h-4 w-4" />
               ) : (
                 <AlertCircle className="h-4 w-4" />
               )}
-              <AlertTitle>
-                {isLeakedPasswordError ? 'Security Alert' : 'Error'}
+              <AlertTitle className="font-semibold">
+                {isLeakedPasswordError ? 'Security Alert' : 'Authentication Error'}
               </AlertTitle>
-              <AlertDescription>{error}</AlertDescription>
+              <AlertDescription className="mt-1 text-sm">{error}</AlertDescription>
             </Alert>
           </div>
         )}
