@@ -270,7 +270,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         options: {
           emailRedirectTo: undefined, // Disable built-in email confirmation
           data: {
-            name
+            name,
+            email_confirm: false // Explicitly disable Supabase's email confirmation
           }
         }
       });
@@ -306,13 +307,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: { email }
       });
       
+      console.log('Edge function response:', { data, error });
+      
       if (error) {
+        console.error('Edge function error:', error);
         const errorMessage = error?.message || 'Failed to send verification PIN';
         setError(errorMessage);
         return { error: errorMessage };
       }
       
-      console.log('PIN sent successfully:', data);
+      if (data?.error) {
+        console.error('Server error:', data.error);
+        setError(data.error);
+        return { error: data.error };
+      }
+      
+      console.log('PIN sent successfully');
       
       toast({
         title: "Verification PIN sent!",
@@ -340,13 +350,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         body: { email, pin }
       });
       
+      console.log('Verify PIN response:', { data, error });
+      
       if (error) {
+        console.error('Edge function error:', error);
         const errorMessage = error?.message || 'Failed to verify PIN';
         setError(errorMessage);
         return { error: errorMessage };
       }
       
-      console.log('PIN verified successfully:', data);
+      if (data?.error) {
+        console.error('Server verification error:', data.error);
+        setError(data.error);
+        return { error: data.error };
+      }
+      
+      if (!data?.success) {
+        const errorMessage = 'PIN verification failed';
+        setError(errorMessage);
+        return { error: errorMessage };
+      }
+      
+      console.log('PIN verified successfully, refreshing session...');
+      
+      // Refresh the session to get the updated email_verified status
+      const { data: { session }, error: sessionError } = await supabase.auth.refreshSession();
+      if (sessionError) {
+        console.error('Session refresh error:', sessionError);
+      } else {
+        console.log('Session refreshed successfully');
+      }
       
       toast({
         title: "Email verified!",

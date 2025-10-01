@@ -15,18 +15,35 @@ interface SendPinRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("=== Send Verification PIN Handler Started ===");
+  console.log("Request method:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
+    const resendKey = Deno.env.get("RESEND_API_KEY");
+    
+    console.log("Environment check:", {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasSupabaseKey: !!supabaseKey,
+      hasResendKey: !!resendKey
+    });
+
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      supabaseUrl ?? "",
+      supabaseKey ?? ""
     );
 
-    const { email }: SendPinRequest = await req.json();
+    const requestBody = await req.json();
+    console.log("Request body received:", { email: requestBody.email });
+    
+    const { email }: SendPinRequest = requestBody;
 
     if (!email || !email.includes("@")) {
       console.log("Invalid email provided:", email);
@@ -95,15 +112,17 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // Send PIN via email
+    console.log("Attempting to send email to:", email);
     let emailResponse;
     try {
       emailResponse = await resend.emails.send({
-        from: "Learning App <noreply@learningapp.com>",
+        from: "Phom Learning App <onboarding@resend.dev>",
         to: [email],
-        subject: "Your verification PIN",
+        subject: "Your Verification PIN Code",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #333; text-align: center;">Email Verification</h2>
+            <p style="color: #666; font-size: 16px;">Welcome to Phom Learning App!</p>
             <p style="color: #666; font-size: 16px;">Your verification PIN is:</p>
             <div style="background: #f5f5f5; border: 2px solid #e0e0e0; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
               <span style="font-size: 32px; font-weight: bold; color: #333; letter-spacing: 8px;">${pin}</span>
@@ -113,12 +132,18 @@ const handler = async (req: Request): Promise<Response> => {
           </div>
         `,
       });
-      console.log("Email sent successfully:", emailResponse);
-    } catch (emailError) {
-      console.error("Failed to send email:", emailError);
+      console.log("Email sent successfully. Response:", JSON.stringify(emailResponse));
+    } catch (emailError: any) {
+      console.error("Failed to send email. Error:", emailError);
+      console.error("Error details:", {
+        message: emailError.message,
+        name: emailError.name,
+        stack: emailError.stack
+      });
       return new Response(
         JSON.stringify({ 
-          error: "Failed to send verification email. Please try again." 
+          error: "Failed to send verification email. Please try again.",
+          details: emailError.message
         }),
         {
           status: 500,
@@ -127,6 +152,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    console.log("=== Send Verification PIN Success ===");
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -141,9 +167,18 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in send-verification-pin function:", error);
+    console.error("=== Send Verification PIN Error ===");
+    console.error("Error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ 
+        error: "Internal server error",
+        details: error.message 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

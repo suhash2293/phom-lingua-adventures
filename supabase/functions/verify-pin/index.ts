@@ -13,18 +13,33 @@ interface VerifyPinRequest {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("=== Verify PIN Handler Started ===");
+  console.log("Request method:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling CORS preflight");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    const supabaseUrl = Deno.env.get("SUPABASE_URL");
+    const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
+    
+    console.log("Environment check:", {
+      hasSupabaseUrl: !!supabaseUrl,
+      hasSupabaseKey: !!supabaseKey
+    });
+
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL") ?? "",
-      Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+      supabaseUrl ?? "",
+      supabaseKey ?? ""
     );
 
-    const { email, pin }: VerifyPinRequest = await req.json();
+    const requestBody = await req.json();
+    console.log("Request body received:", { email: requestBody.email, hasPin: !!requestBody.pin });
+    
+    const { email, pin }: VerifyPinRequest = requestBody;
 
     if (!email || !pin) {
       console.log("Missing email or PIN:", { email: !!email, pin: !!pin });
@@ -147,7 +162,8 @@ const handler = async (req: Request): Promise<Response> => {
       // Don't fail the request if profile update fails
     }
 
-    console.log("PIN verification successful for email:", email);
+    console.log("=== PIN Verification Successful ===");
+    console.log("Email verified:", email);
 
     return new Response(
       JSON.stringify({ 
@@ -163,9 +179,18 @@ const handler = async (req: Request): Promise<Response> => {
       }
     );
   } catch (error: any) {
-    console.error("Error in verify-pin function:", error);
+    console.error("=== Verify PIN Error ===");
+    console.error("Error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ 
+        error: "Internal server error",
+        details: error.message 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
