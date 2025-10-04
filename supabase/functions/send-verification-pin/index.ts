@@ -24,6 +24,18 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // Enforce POST only
+  if (req.method !== "POST") {
+    console.log("Invalid method:", req.method);
+    return new Response(
+      JSON.stringify({ error: "Method not allowed. Use POST." }),
+      {
+        status: 405,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      }
+    );
+  }
+
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
@@ -78,9 +90,11 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    // Generate secure 4-digit PIN
-    const pin = Math.floor(1000 + Math.random() * 9000).toString();
-    console.log("Generated PIN for email:", email);
+    // Generate secure 6-digit PIN using crypto
+    const randomValues = new Uint32Array(1);
+    crypto.getRandomValues(randomValues);
+    const pin = (100000 + (randomValues[0] % 900000)).toString();
+    console.log("Generated 6-digit PIN for email:", email);
 
     // Hash the PIN for storage
     const encoder = new TextEncoder();
@@ -113,12 +127,14 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send PIN via email
     console.log("Attempting to send email to:", email);
+    const resendFrom = Deno.env.get("RESEND_FROM") || "Phom Learning App <onboarding@resend.dev>";
+    
     let emailResponse;
     try {
       emailResponse = await resend.emails.send({
-        from: "Phom Learning App <onboarding@resend.dev>",
+        from: resendFrom,
         to: [email],
-        subject: "Your Verification PIN Code",
+        subject: "Your Verification PIN",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
             <h2 style="color: #333; text-align: center;">Email Verification</h2>

@@ -180,7 +180,7 @@ const AuthPage = () => {
               Verify Your Email
             </CardTitle>
             <CardDescription>
-              We've sent a 4-digit PIN to {verificationEmail}. Enter it below to verify your account.
+              We've sent a PIN to {verificationEmail}. Enter it below to verify your account.
             </CardDescription>
           </CardHeader>
           
@@ -202,18 +202,20 @@ const AuthPage = () => {
                   <InputOTP
                     value={pin}
                     onChange={setPin}
-                    maxLength={4}
+                    maxLength={6}
                   >
                     <InputOTPGroup>
                       <InputOTPSlot index={0} />
                       <InputOTPSlot index={1} />
                       <InputOTPSlot index={2} />
                       <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  Enter the 4-digit PIN sent to your email
+                  Enter the PIN sent to your email
                 </p>
               </div>
             </CardContent>
@@ -221,7 +223,7 @@ const AuthPage = () => {
               <Button 
                 type="submit" 
                 className="w-full" 
-                disabled={isSubmitting || pin.length !== 4}
+                disabled={isSubmitting || (pin.length !== 4 && pin.length !== 6)}
               >
                 {isSubmitting ? (
                   <>

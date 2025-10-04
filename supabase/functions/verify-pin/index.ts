@@ -52,6 +52,18 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Validate PIN format: must be 4 or 6 digits
+    if (!/^[0-9]{4}$|^[0-9]{6}$/.test(pin)) {
+      console.log("Invalid PIN format:", pin.length);
+      return new Response(
+        JSON.stringify({ error: "PIN must be 4 or 6 digits" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
     // Hash the provided PIN for comparison
     const encoder = new TextEncoder();
     const data = encoder.encode(pin);
