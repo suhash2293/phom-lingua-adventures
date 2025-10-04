@@ -311,15 +311,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (error) {
         console.error('Edge function error:', error);
-        const errorMessage = error?.message || 'Failed to send verification PIN';
+        const errorMessage = error?.message || 'Failed to send verification PIN. Please try again.';
         setError(errorMessage);
+        toast({
+          title: "Failed to send PIN",
+          description: errorMessage,
+          variant: "destructive",
+        });
         return { error: errorMessage };
       }
       
       if (data?.error) {
         console.error('Server error:', data.error);
-        setError(data.error);
-        return { error: data.error };
+        const errorMessage = data.error;
+        setError(errorMessage);
+        toast({
+          title: "Failed to send PIN",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        return { error: errorMessage };
       }
       
       console.log('PIN sent successfully');
@@ -331,8 +342,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { error: undefined };
     } catch (err: any) {
       console.error('Send PIN error:', err);
-      const errorMessage = err?.message || 'Failed to send verification PIN';
+      const errorMessage = err?.message || 'Failed to send verification PIN. Please try again.';
       setError(errorMessage);
+      toast({
+        title: "Failed to send PIN",
+        description: errorMessage,
+        variant: "destructive",
+      });
       return { error: errorMessage };
     } finally {
       setLoading(false);

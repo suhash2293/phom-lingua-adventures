@@ -133,6 +133,21 @@ const handler = async (req: Request): Promise<Response> => {
         `,
       });
       console.log("Email sent successfully. Response:", JSON.stringify(emailResponse));
+      
+      // Check if Resend returned an error in the response (e.g., sandbox restrictions)
+      if (emailResponse.error) {
+        console.error("Resend API returned error:", emailResponse.error);
+        return new Response(
+          JSON.stringify({ 
+            error: "Failed to send verification email. Please verify your email domain with Resend or ensure you're sending to an authorized test email.",
+            details: emailResponse.error
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json", ...corsHeaders },
+          }
+        );
+      }
     } catch (emailError: any) {
       console.error("Failed to send email. Error:", emailError);
       console.error("Error details:", {

@@ -49,7 +49,19 @@ const AuthPage = () => {
     
     try {
       if (isLogin) {
-        await signIn(email, password);
+        const result = await signIn(email, password);
+        
+        // Don't navigate if login failed
+        if (result.error) {
+          toast({
+            title: "Sign In Failed",
+            description: result.error,
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
         toast({
           title: "Welcome back!",
           description: "You've successfully signed in.",
@@ -67,29 +79,32 @@ const AuthPage = () => {
           return;
         }
 
-        await signUp(email, password, name);
+        const signUpResult = await signUp(email, password, name);
+        
+        if (signUpResult.error) {
+          toast({
+            title: "Sign Up Failed", 
+            description: signUpResult.error,
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
         setVerificationEmail(email);
         setShowPinVerification(true);
+        
         // Send verification PIN immediately after signup
-        await sendVerificationPin(email);
+        const pinResult = await sendVerificationPin(email);
+        
+        // If PIN sending fails, stay on verification screen with error
+        if (pinResult.error) {
+          // Error toast is already shown by sendVerificationPin
+          // User can still try to resend
+        }
       }
     } catch (err) {
-      // Error is already set in the AuthContext with user-friendly message
       console.error('Authentication error:', err);
-      // Show toast for additional feedback
-      if (isLogin) {
-        toast({
-          title: "Sign In Failed",
-          description: error || "Please check your email and password.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Sign Up Failed", 
-          description: error || "Please try again.",
-          variant: "destructive",
-        });
-      }
     } finally {
       setIsSubmitting(false);
     }
