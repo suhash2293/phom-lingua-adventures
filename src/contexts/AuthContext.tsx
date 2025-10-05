@@ -62,7 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (errorMessage.includes('Email not confirmed') || 
         errorMessage.includes('email_not_confirmed') ||
         errorCode === 'email_not_confirmed') {
-      return 'Please check your email and click the confirmation link before signing in.';
+      return "Your email isn't verified yet. Please enter the PIN we sent to your email to verify your account.";
     }
     
     // Handle existing user registration
@@ -263,16 +263,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { error: errorMessage };
       }
       
-      // Disable email confirmation for PIN-based verification
+      // Standard sign up; PIN verification handled via edge function
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: undefined, // Disable built-in email confirmation
-          data: {
-            name,
-            email_confirm: false // Explicitly disable Supabase's email confirmation
-          }
+          emailRedirectTo: `${window.location.origin}/`,
+          data: { name }
         }
       });
       
@@ -337,7 +334,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       toast({
         title: "Verification PIN sent!",
-        description: "Please check your email for the 4-digit PIN.",
+        description: "Please check your email for the PIN.",
       });
       return { error: undefined };
     } catch (err: any) {
