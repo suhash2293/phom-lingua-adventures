@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import phomshahLogo from '@/assets/phomshah-logo.png';
 const AboutPage = () => {
   const navigate = useNavigate();
   return <div className="container px-4 md:px-6 py-8 md:py-12">
@@ -22,7 +23,7 @@ const AboutPage = () => {
           <p>Through our beginner's centred learning platform, we aim to bridge cultural gaps and ensure that this unique dialect continues to thrive for generations to come.</p>
         </div>
         <div className="bg-white rounded-lg overflow-hidden flex items-center justify-center p-6 border border-gray-200 shadow-md">
-          <img alt="PhomShah Logo" className="w-full h-auto object-contain max-h-[400px]" src="/lovable-uploads/027f11f2-a86f-48c0-b0bf-7d290f00944d.png" />
+          <img alt="PhomShah Logo" className="w-full h-auto object-contain max-h-[400px]" src={phomshahLogo} />
         </div>
       </div>
       

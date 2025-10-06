@@ -6,6 +6,7 @@ import { Menu, User, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import phomshahLogo from '@/assets/phomshah-logo.png';
 export default function Header() {
   const isMobile = useIsMobile();
   const {
@@ -16,7 +17,7 @@ export default function Header() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center space-x-2">
-            <img alt="PhomShah Logo" width={40} height={40} className="rounded" src="/lovable-uploads/8f7dc440-79c6-4e72-a780-a51bbbb0d92b.png" />
+            <img alt="PhomShah Logo" width={40} height={40} className="rounded" src={phomshahLogo} />
             <span className="font-bold text-xl text-phom-yellow">PhomShah</span>
           </Link>
         </div>
