@@ -19,6 +19,7 @@ type AuthContextType = {
   signOut: () => Promise<void>;
   sendVerificationPin: (email: string) => Promise<{ error?: string }>;
   verifyPin: (email: string, pin: string) => Promise<{ error?: string }>;
+  signInWithGoogle: () => Promise<void>;
   loading: boolean;
   error: string | null;
   clearError: () => void;
@@ -427,6 +428,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setError(null);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      const friendlyError = mapAuthError(error);
+      setError(friendlyError);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     signIn,
@@ -434,6 +452,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     signOut,
     sendVerificationPin,
     verifyPin,
+    signInWithGoogle,
     loading,
     error,
     clearError
