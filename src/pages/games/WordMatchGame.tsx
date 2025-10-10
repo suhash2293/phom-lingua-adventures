@@ -333,7 +333,7 @@ const WordMatchGame = () => {
                     key={`phom-${i}`}
                     variant={selectedPhomWord === word ? "default" : "outline"}
                     className={`w-full justify-start ${
-                      isMatched ? "opacity-50 pointer-events-none" : ""
+                      isMatched ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300 pointer-events-none" : ""
                     } ${
                       incorrectPhomWord === word ? "bg-red-500 text-white hover:bg-red-600 border-red-500" : ""
                     }`}
@@ -360,7 +360,7 @@ const WordMatchGame = () => {
                     key={`english-${i}`}
                     variant={selectedEnglishWord === word ? "default" : "outline"}
                     className={`w-full justify-start ${
-                      isMatched ? "opacity-50 pointer-events-none" : ""
+                      isMatched ? "bg-green-100 dark:bg-green-900/30 border-green-500 text-green-700 dark:text-green-300 pointer-events-none" : ""
                     } ${
                       incorrectEnglishWord === word ? "bg-red-500 text-white hover:bg-red-600 border-red-500" : ""
                     }`}

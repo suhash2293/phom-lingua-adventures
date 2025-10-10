@@ -6,7 +6,7 @@ import { ArrowLeft, Clock } from 'lucide-react';
 
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
-import { useAuth } from '@/contexts/AuthContext';
+
 import { ContentItem } from '@/types/content';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -27,7 +27,7 @@ type MemoryCard = {
 
 const MemoryChallengeGame = () => {
   const { categoryId } = useParams();
-  const { user } = useAuth();
+  
   const navigate = useNavigate();
   
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'completed'>('intro');
@@ -224,21 +224,14 @@ const MemoryChallengeGame = () => {
     
     const xpEarned = Math.floor((matchRatio * 50 + timeBonus) * (0.5 + 0.5 * movePenalty));
     
-    // Record game session if user is logged in
-    if (user) {
-      await GameProgressService.recordGameSession(
-        'memory-challenge',
-        finalScore,
-        timeTaken,
-        xpEarned,
-        categoryId
-      );
-    } else {
-      toast({
-        title: "Game completed!",
-        description: "Sign in to save your progress and earn XP.",
-      });
-    }
+    // Record game session
+    await GameProgressService.recordGameSession(
+      'memory-challenge',
+      finalScore,
+      timeTaken,
+      xpEarned,
+      categoryId
+    );
   };
   
   // Reset the game
