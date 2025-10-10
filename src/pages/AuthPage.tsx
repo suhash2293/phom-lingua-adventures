@@ -8,9 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, Info, Loader2, Shield } from "lucide-react";
-import SecurePasswordInput from '@/components/auth/SecurePasswordInput';
-import { PasswordSecurityResult } from '@/services/PasswordSecurityService';
+import { AlertCircle, Info, Loader2, Shield, Eye, EyeOff } from "lucide-react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Separator } from '@/components/ui/separator';
 
@@ -18,10 +16,10 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSignupSuccess, setShowSignupSuccess] = useState(false);
-  const [passwordSecurity, setPasswordSecurity] = useState<PasswordSecurityResult | null>(null);
   const [showPinVerification, setShowPinVerification] = useState(false);
   const [verificationEmail, setVerificationEmail] = useState('');
   const [pin, setPin] = useState('');
@@ -34,7 +32,6 @@ const AuthPage = () => {
   useEffect(() => {
     clearError();
     setShowSignupSuccess(false);
-    setPasswordSecurity(null);
     setShowPinVerification(false);
     setPin('');
   }, [isLogin, clearError]);
@@ -69,17 +66,6 @@ const AuthPage = () => {
         });
         navigate('/');
       } else {
-        // Check password security for signup
-        if (passwordSecurity && !passwordSecurity.isSecure) {
-          toast({
-            title: "Password Security Issue",
-            description: "Please choose a stronger password before creating your account.",
-            variant: "destructive"
-          });
-          setIsSubmitting(false);
-          return;
-        }
-
         const signUpResult = await signUp(email, password, name);
         
         if (signUpResult.error) {
@@ -153,7 +139,6 @@ const AuthPage = () => {
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
     setPassword(''); // Clear password when switching modes
-    setPasswordSecurity(null);
     setShowPinVerification(false);
     setPin('');
     // Error is cleared in the useEffect
@@ -174,8 +159,6 @@ const AuthPage = () => {
   const goToSetupAdmin = () => {
     navigate('/setup-admin');
   };
-
-  const canSubmit = isLogin || (passwordSecurity?.isSecure ?? false);
 
   // Check if the error is related to leaked passwords
   const isLeakedPasswordError = error?.toLowerCase().includes('breach') || 
@@ -327,38 +310,41 @@ const AuthPage = () => {
               />
             </div>
             <div className="space-y-2">
-              {isLogin ? (
-                <>
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </>
-              ) : (
-                <SecurePasswordInput
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
                   value={password}
-                  onChange={setPassword}
-                  onSecurityCheck={setPasswordSecurity}
+                  onChange={(e) => setPassword(e.target.value)}
                   required
+                  className="pr-10"
                 />
-              )}
-              {isLogin && (
-                <p className="text-xs text-muted-foreground">
-                  Password must be at least 6 characters long
-                </p>
-              )}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Password must be at least 8 characters
+              </p>
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button 
               type="submit" 
               className="w-full" 
-              disabled={isSubmitting || (!isLogin && !canSubmit)}
+              disabled={isSubmitting}
             >
               {isSubmitting ? (
                 <>

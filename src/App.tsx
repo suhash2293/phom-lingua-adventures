@@ -16,8 +16,6 @@ import GamesPage from "./pages/GamesPage";
 import AboutPage from "./pages/AboutPage";
 import DonatePage from "./pages/DonatePage";
 import AuthPage from "./pages/AuthPage";
-import ProfilePage from "./pages/ProfilePage";
-import SecuritySettingsPage from "./pages/SecuritySettingsPage";
 import AdminPage from "./pages/AdminPage";
 import SetupAdminPage from "./pages/SetupAdminPage";
 import NotFound from "./pages/NotFound";
@@ -29,8 +27,6 @@ import ModuleDetailPage from "./pages/ModuleDetailPage";
 import ContactPage from "./pages/ContactPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
-import AccountDeletionPage from "./pages/AccountDeletionPage";
-import AccountDeletionWebPage from "./pages/AccountDeletionWebPage";
 import DonationSuccessPage from "./pages/DonationSuccessPage";
 
 // Game pages
@@ -90,15 +86,11 @@ function App() {
                   <Route path="/donate" element={<DonatePage />} />
                   <Route path="/donation-success" element={<DonationSuccessPage />} />
                   <Route path="/auth" element={<AuthPage />} />
-                  <Route path="/profile" element={<ProfilePage />} />
-                  <Route path="/profile/security" element={<SecuritySettingsPage />} />
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="/setup-admin" element={<SetupAdminPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/terms" element={<TermsPage />} />
-                  <Route path="/account-deletion" element={<AccountDeletionPage />} />
-                  <Route path="/account-deletion-web" element={<AccountDeletionWebPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </ConditionalLayout>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Menu, User, ChevronDown } from 'lucide-react';
@@ -7,13 +7,19 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import phomshahLogo from '@/assets/phomshah-logo.png';
+
 export default function Header() {
   const isMobile = useIsMobile();
-  const {
-    user,
-    signOut
-  } = useAuth();
-  return <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  return (
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-2">
           <Link to="/" className="flex items-center space-x-2">
@@ -22,7 +28,8 @@ export default function Header() {
           </Link>
         </div>
 
-        {!isMobile ? <nav className="flex items-center gap-6">
+        {!isMobile ? (
+          <nav className="flex items-center gap-6">
             <Link to="/learn" className="text-sm font-medium hover:text-primary transition-colors">
               Learn
             </Link>
@@ -35,30 +42,29 @@ export default function Header() {
             <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
             </Link>
-            {user ? <DropdownMenu>
+            {user && (
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    <span>{user.name || user.email.split('@')[0]}</span>
+                    <span>Admin</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="cursor-pointer w-full">Profile</Link>
+                    <Link to="/admin" className="cursor-pointer w-full">Admin Dashboard</Link>
                   </DropdownMenuItem>
-                  {user.isAdmin && <DropdownMenuItem asChild>
-                      <Link to="/admin" className="cursor-pointer w-full">Admin Dashboard</Link>
-                    </DropdownMenuItem>}
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={signOut} className="cursor-pointer">
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                     Sign Out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
-              </DropdownMenu> : <Link to="/auth">
-                <Button variant="default">Sign In</Button>
-              </Link>}
-          </nav> : <Sheet>
+              </DropdownMenu>
+            )}
+          </nav>
+        ) : (
+          <Sheet>
             <SheetTrigger asChild>
               <Button variant="outline" size="icon">
                 <Menu className="h-5 w-5" />
@@ -82,20 +88,19 @@ export default function Header() {
                 <Link to="/about" className="text-lg font-semibold hover:text-primary transition-colors">
                   About
                 </Link>
-                {user ? <>
-                    <Link to="/profile" className="text-lg font-semibold hover:text-primary transition-colors">
-                      Profile
+                {user && (
+                  <>
+                    <Link to="/admin" className="text-lg font-semibold hover:text-primary transition-colors">
+                      Admin Dashboard
                     </Link>
-                    {user.isAdmin && <Link to="/admin" className="text-lg font-semibold hover:text-primary transition-colors">
-                        Admin Dashboard
-                      </Link>}
-                    <Button variant="outline" onClick={signOut}>Sign Out</Button>
-                  </> : <Link to="/auth">
-                    <Button variant="default" className="w-full">Sign In</Button>
-                  </Link>}
+                    <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+                  </>
+                )}
               </div>
             </SheetContent>
-          </Sheet>}
+          </Sheet>
+        )}
       </div>
-    </header>;
+    </header>
+  );
 }

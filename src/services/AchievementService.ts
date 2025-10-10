@@ -1,7 +1,7 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { GameProgressService } from './GameProgressService';
+import { LocalStorageService } from './LocalStorageService';
 
 export type Achievement = {
   id: string;
@@ -15,7 +15,7 @@ export type Achievement = {
 
 export type UserAchievement = {
   id: string;
-  user_id: string;
+  user_id?: string;
   achievement_id: string;
   earned_at: string;
   achievement?: Achievement;
@@ -24,8 +24,21 @@ export type UserAchievement = {
 export const AchievementService = {
   async getUserAchievements(): Promise<UserAchievement[]> {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return [];
     
+    // If no user, use localStorage
+    if (!user.user) {
+      const localAchievements = LocalStorageService.getAchievements();
+      const allAchievements = await this.getAllAchievements();
+      
+      return localAchievements.map(la => ({
+        id: la.achievementId,
+        achievement_id: la.achievementId,
+        earned_at: la.earnedAt,
+        achievement: allAchievements.find(a => a.id === la.achievementId)
+      }));
+    }
+    
+    // Otherwise use Supabase for admin
     const { data, error } = await supabase
       .from('user_achievements')
       .select(`
@@ -58,7 +71,6 @@ export const AchievementService = {
   
   async checkAndAwardAchievements(): Promise<UserAchievement[]> {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return [];
     
     try {
       // Get all existing achievements and user achievements
@@ -158,8 +170,13 @@ export const AchievementService = {
   
   async getGameSessions() {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return [];
     
+    // If no user, use localStorage
+    if (!user.user) {
+      return LocalStorageService.getGameHistory(100);
+    }
+    
+    // Otherwise use Supabase for admin
     const { data, error } = await supabase
       .from('game_sessions')
       .select('*')
@@ -176,8 +193,34 @@ export const AchievementService = {
   
   async awardAchievement(achievementId: string): Promise<UserAchievement | null> {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return null;
     
+    // If no user, use localStorage
+    if (!user.user) {
+      LocalStorageService.earnAchievement(achievementId);
+      
+      // Get achievement details to show toast
+      const { data: achievement } = await supabase
+        .from('achievements')
+        .select('*')
+        .eq('id', achievementId)
+        .single();
+      
+      if (achievement) {
+        toast({
+          title: "Achievement Unlocked! 🏆",
+          description: `${achievement.name}: ${achievement.description} (+${achievement.xp_reward} XP)`
+        });
+      }
+      
+      return {
+        id: achievementId,
+        achievement_id: achievementId,
+        earned_at: new Date().toISOString(),
+        achievement
+      };
+    }
+    
+    // Otherwise use Supabase for admin
     try {
       // First get the achievement details
       const { data: achievement } = await supabase

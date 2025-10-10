@@ -1,11 +1,11 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { useConfettiStore } from '@/stores/confetti';
+import { LocalStorageService } from './LocalStorageService';
 
 export type UserProgress = {
-  id: string;
-  user_id: string;
+  id?: string;
+  user_id?: string;
   xp: number;
   level: number;
   current_streak: number;
@@ -15,7 +15,7 @@ export type UserProgress = {
 
 export type GameSession = {
   id: string;
-  user_id: string;
+  user_id?: string;
   game_type: string;
   score: number;
   duration_seconds: number;
@@ -27,8 +27,13 @@ export type GameSession = {
 export const GameProgressService = {
   async getUserProgress(): Promise<UserProgress | null> {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return null;
     
+    // If no user, use localStorage
+    if (!user.user) {
+      return LocalStorageService.getUserProgress();
+    }
+    
+    // Otherwise use Supabase for admin
     const { data, error } = await supabase
       .from('user_progress')
       .select('*')
@@ -136,11 +141,17 @@ export const GameProgressService = {
   
   async updateUserProgress(updates: Partial<UserProgress>): Promise<UserProgress | null> {
     const { data: user } = await supabase.auth.getUser();
-    if (!user.user) return null;
     
+    // If no user, use localStorage
+    if (!user.user) {
+      LocalStorageService.updateUserProgress(updates);
+      return { ...LocalStorageService.getUserProgress(), ...updates };
+    }
+    
+    // Otherwise use Supabase for admin
     // First ensure user progress record exists
     const currentProgress = await this.getUserProgress();
-    if (!currentProgress) {
+    if (!currentProgress || !currentProgress.id) {
       console.log('No progress record found when trying to update, creating one first');
       const newProgress = await this.createInitialUserProgress(user.user.id);
       if (!newProgress) return null;
@@ -169,6 +180,32 @@ export const GameProgressService = {
   
   async addXP(amount: number): Promise<UserProgress | null> {
     try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      // If no user, use localStorage
+      if (!user.user) {
+        const currentProgress = LocalStorageService.getUserProgress();
+        const oldLevel = currentProgress.level;
+        LocalStorageService.addXP(amount);
+        const newProgress = LocalStorageService.getUserProgress();
+        const wasLevelUp = newProgress.level > oldLevel;
+        
+        if (wasLevelUp) {
+          toast({
+            title: "Level Up!",
+            description: `Congratulations! You've reached level ${newProgress.level}!`,
+          });
+          useConfettiStore.getState().fire();
+        } else if (amount > 0) {
+          toast({
+            description: `+${amount} XP earned!`
+          });
+        }
+        
+        return newProgress;
+      }
+      
+      // Otherwise use Supabase for admin
       const userProgress = await this.getUserProgress();
       if (!userProgress) {
         console.log('No user progress found when adding XP');
@@ -215,6 +252,24 @@ export const GameProgressService = {
   
   async updateStreak(): Promise<UserProgress | null> {
     try {
+      const { data: user } = await supabase.auth.getUser();
+      
+      // If no user, use localStorage
+      if (!user.user) {
+        LocalStorageService.updateStreak();
+        const newProgress = LocalStorageService.getUserProgress();
+        
+        if (newProgress.current_streak > 1) {
+          toast({
+            title: `${newProgress.current_streak}-Day Streak!`,
+            description: "Keep up the good work! Daily practice makes perfect.",
+          });
+        }
+        
+        return newProgress;
+      }
+      
+      // Otherwise use Supabase for admin
       const userProgress = await this.getUserProgress();
       if (!userProgress) {
         console.log('No user progress found when updating streak');
@@ -286,11 +341,29 @@ export const GameProgressService = {
     categoryId?: string
   ): Promise<GameSession | null> {
     const { data: user } = await supabase.auth.getUser();
+    
+    // If no user, use localStorage
     if (!user.user) {
-      console.log('No user found when recording game session');
-      return null;
+      LocalStorageService.saveGameSession(gameType, score, durationSeconds, xpEarned, categoryId || null);
+      await this.addXP(xpEarned);
+      await this.updateStreak();
+      
+      // Check for achievements
+      const { AchievementService } = await import('./AchievementService');
+      await AchievementService.checkAndAwardAchievements();
+      
+      return {
+        id: crypto.randomUUID(),
+        game_type: gameType,
+        score,
+        duration_seconds: durationSeconds,
+        xp_earned: xpEarned,
+        category_id: categoryId || null,
+        created_at: new Date().toISOString()
+      };
     }
     
+    // Otherwise use Supabase for admin
     try {
       // First record the game session
       const { data, error } = await supabase
@@ -339,8 +412,13 @@ export const GameProgressService = {
   async getGameHistory(limit = 10): Promise<GameSession[]> {
     try {
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return [];
       
+      // If no user, use localStorage
+      if (!user.user) {
+        return LocalStorageService.getGameHistory(limit);
+      }
+      
+      // Otherwise use Supabase for admin
       const { data, error } = await supabase
         .from('game_sessions')
         .select('*')
