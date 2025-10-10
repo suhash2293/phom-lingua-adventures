@@ -36,6 +36,9 @@ export default function Header() {
             <Link to="/games" className="text-sm font-medium hover:text-primary transition-colors">
               Games
             </Link>
+            <Link to="/profile" className="text-sm font-medium hover:text-primary transition-colors">
+              Profile
+            </Link>
             <Link to="/donate" className="text-sm font-medium hover:text-primary transition-colors">
               Donate
             </Link>
@@ -82,6 +85,9 @@ export default function Header() {
                 <Link to="/games" className="text-lg font-semibold hover:text-primary transition-colors">
                   Games
                 </Link>
+                <Link to="/profile" className="text-lg font-semibold hover:text-primary transition-colors">
+                  Profile
+                </Link>
                 <Link to="/donate" className="text-lg font-semibold hover:text-primary transition-colors">
                   Donate
                 </Link>
@@ -93,7 +99,7 @@ export default function Header() {
                     <Link to="/admin" className="text-lg font-semibold hover:text-primary transition-colors">
                       Admin Dashboard
                     </Link>
-                    <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+                    <Button variant="outline" onClick={handleSignOut}>Sign Out (Admin)</Button>
                   </>
                 )}
               </div>

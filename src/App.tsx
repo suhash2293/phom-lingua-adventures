@@ -28,6 +28,7 @@ import ContactPage from "./pages/ContactPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import DonationSuccessPage from "./pages/DonationSuccessPage";
+import ProfilePage from "./pages/ProfilePage";
 
 // Game pages
 import WordMatchGame from "./pages/games/WordMatchGame";
@@ -83,6 +84,7 @@ function App() {
                   <Route path="/games/memory-challenge" element={<MemoryChallengeGame />} />
                   <Route path="/games/word-scramble/:categoryId?" element={<WordScrambleGame />} />
                   <Route path="/about" element={<AboutPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                   <Route path="/donate" element={<DonatePage />} />
                   <Route path="/donation-success" element={<DonationSuccessPage />} />
                   <Route path="/auth" element={<AuthPage />} />

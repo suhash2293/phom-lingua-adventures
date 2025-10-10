@@ -78,9 +78,6 @@ const GameCard = ({
     </Card>;
 };
 const GamesPage = () => {
-  const {
-    user
-  } = useAuth();
   const navigate = useNavigate();
 
   // Use the improved audio preloader hook
@@ -90,13 +87,15 @@ const GamesPage = () => {
     maxRetries: 1 // Lower retry count for background loading
   });
 
-  // Fetch user progress
+  // Fetch user progress from localStorage
   const {
     data: progress
   } = useQuery({
     queryKey: ['userProgress'],
-    queryFn: () => GameProgressService.getUserProgress(),
-    enabled: !!user
+    queryFn: async () => {
+      const { LocalStorageService } = await import('@/services/LocalStorageService');
+      return LocalStorageService.getUserProgress();
+    }
   });
 
   // Fetch categories for game selection
@@ -110,18 +109,6 @@ const GamesPage = () => {
   // Define the alphabets category ID to exclude from some games
   const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
 
-  // Enhanced effect for checking achievements and user progress
-  useEffect(() => {
-    if (user) {
-      // Check for achievements
-      AchievementService.checkAndAwardAchievements();
-
-      // Make sure user progress exists
-      GameProgressService.getUserProgress().catch(error => {
-        console.error("Error fetching user progress:", error);
-      });
-    }
-  }, [user]);
 
   // Memoized audio preloading function to avoid recreation on renders
   const preloadCommonAudio = useCallback(async () => {
@@ -161,13 +148,12 @@ const GamesPage = () => {
   }, [preloadCommonAudio]);
 
   // Enhanced level progress calculation with error handling
-  const calculateLevelProgress = (progress?: UserProgress | null) => {
+  const calculateLevelProgress = (progress?: any) => {
     if (!progress) return 0;
     try {
-      const currentLevelXP = GameProgressService.calculateXPForNextLevel(progress.level);
-      // Calculate XP progress within current level
-      const levelXP = progress.xp % currentLevelXP;
-      return Math.min(100, Math.floor(levelXP / currentLevelXP * 100));
+      const xpForNextLevel = 100 * progress.level;
+      const levelXP = progress.xp % xpForNextLevel;
+      return Math.min(100, Math.floor((levelXP / xpForNextLevel) * 100));
     } catch (error) {
       console.error("Error calculating level progress:", error);
       return 0;
@@ -192,38 +178,36 @@ const GamesPage = () => {
           <p className="text-muted-foreground">Practice your Phom dialect skills with fun interactive games</p>
         </div>
         
-        {user ? <Card className="w-full md:w-auto">
-            <CardContent className="p-4 flex flex-col md:flex-row gap-6">
-              <div className="flex items-center gap-3">
-                <Trophy className="h-5 w-5 text-yellow-500" />
-                <div>
-                  <p className="text-sm font-medium">Level</p>
-                  <p className="text-2xl font-bold">{progress?.level || 1}</p>
-                </div>
+        <Card className="w-full md:w-auto">
+          <CardContent className="p-4 flex flex-col md:flex-row gap-6">
+            <div className="flex items-center gap-3">
+              <Trophy className="h-5 w-5 text-yellow-500" />
+              <div>
+                <p className="text-sm font-medium">Level</p>
+                <p className="text-2xl font-bold">{progress?.level || 1}</p>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Award className="h-5 w-5 text-blue-500" />
-                <div>
-                  <p className="text-sm font-medium">XP</p>
-                  <p className="text-2xl font-bold">{progress?.xp || 0}</p>
-                </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Award className="h-5 w-5 text-blue-500" />
+              <div>
+                <p className="text-sm font-medium">XP</p>
+                <p className="text-2xl font-bold">{progress?.xp || 0}</p>
               </div>
-              
-              <div className="flex items-center gap-3">
-                <Clock className="h-5 w-5 text-green-500" />
-                <div>
-                  <p className="text-sm font-medium">Streak</p>
-                  <p className="text-2xl font-bold">{progress?.current_streak || 0} days</p>
-                </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Clock className="h-5 w-5 text-green-500" />
+              <div>
+                <p className="text-sm font-medium">Streak</p>
+                <p className="text-2xl font-bold">{progress?.current_streak || 0} days</p>
               </div>
-            </CardContent>
-          </Card> : <Button onClick={() => navigate("/auth")}>
-            Sign in to track progress
-          </Button>}
+            </div>
+          </CardContent>
+        </Card>
       </div>
       
-      {user && progress && <div className="mb-8">
+      {progress && <div className="mb-8">
           <div className="flex justify-between items-center mb-2">
             <p className="text-sm font-medium">Progress to Level {progress.level + 1}</p>
             <p className="text-sm">{calculateLevelProgress(progress)}%</p>
@@ -239,15 +223,6 @@ const GamesPage = () => {
         <GameCard title="Word Scramble" description="Unscramble the letters to form the correct Phom words" icon={<ChevronRight className="h-6 w-6" />} path="/games/word-scramble" categories={categories} excludeCategories={[ALPHABETS_CATEGORY_ID]} />
       </div>
       
-      {!user && <Card className="mb-8">
-          <CardContent className="p-6">
-            <h3 className="text-lg font-bold mb-2">Sign in to track your progress</h3>
-            <p className="mb-4">Create an account to earn XP, track your learning streak, and unlock achievements.</p>
-            <Button asChild>
-              <Link to="/auth">Sign In or Create Account</Link>
-            </Button>
-          </CardContent>
-        </Card>}
     </div>;
 };
 export default GamesPage;

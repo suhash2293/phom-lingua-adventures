@@ -103,16 +103,6 @@ const learnCategories = [
 
 const LearnSidebar = () => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      navigate('/');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   return (
     <Sidebar className="border-r border-border">
@@ -124,37 +114,7 @@ const LearnSidebar = () => {
           >
             PhomShah
           </button>
-          <div className="flex items-center gap-2">
-            {user ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8">
-                    <User className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  <DropdownMenuItem onClick={() => navigate('/profile')}>
-                    <User className="h-4 w-4 mr-2" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : (
-              <Button 
-                variant="ghost" 
-                size="sm"
-                onClick={() => navigate('/auth')}
-              >
-                Sign In
-              </Button>
-            )}
-            <SidebarTrigger className="md:hidden" />
-          </div>
+          <SidebarTrigger className="md:hidden" />
         </div>
       </SidebarHeader>
       
@@ -174,6 +134,15 @@ const LearnSidebar = () => {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  onClick={() => navigate('/profile')}
+                  tooltip="View your profile"
+                >
+                  <User className="text-primary" />
+                  <span>Profile</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
@@ -199,23 +168,12 @@ const LearnSidebar = () => {
       </SidebarContent>
       
       <SidebarFooter className="border-t p-4">
-        {user ? (
-          <Button 
-            variant="outline" 
-            className="w-full border-yellow-500 hover:bg-yellow-500/10" 
-            onClick={() => navigate('/profile')}
-          >
-            View Profile
-          </Button>
-        ) : (
-          <Button 
-            variant="default" 
-            className="w-full" 
-            onClick={() => navigate('/auth')}
-          >
-            Sign In to Sync
-          </Button>
-        )}
+        <Alert>
+          <Info className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            Your progress is saved on this device only.
+          </AlertDescription>
+        </Alert>
       </SidebarFooter>
     </Sidebar>
   );
@@ -223,8 +181,6 @@ const LearnSidebar = () => {
 
 const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  const navigate = useNavigate();
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
@@ -232,14 +188,6 @@ const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
         <LearnSidebar />
         <main className="flex-1 bg-gradient-to-br from-yellow-100/30 to-background">
           <SidebarTrigger />
-          {!user && (
-            <Alert className="m-4">
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                Your progress is saved locally. <button onClick={() => navigate('/auth')} className="underline font-medium">Sign in</button> to sync across devices.
-              </AlertDescription>
-            </Alert>
-          )}
           {children}
         </main>
       </div>
