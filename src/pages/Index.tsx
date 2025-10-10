@@ -1,14 +1,10 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollText, CalendarDays, Calendar, Percent, Gamepad } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 const Index = () => {
-  const {
-    user
-  } = useAuth();
   const navigate = useNavigate();
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
@@ -21,9 +17,6 @@ const Index = () => {
         <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.</p>
         
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
-          {!user ? <Button size="lg" onClick={() => navigate('/auth')}>
-              Get Started
-            </Button> : null}
           <Button variant="outline" size="lg" onClick={() => navigate('/about')}>
             Learn More
           </Button>
@@ -150,9 +143,6 @@ const Index = () => {
       <section className="py-12 text-center">
         <h2 className="text-3xl font-bold mb-6">Ready to start your journey?</h2>
         <div className="flex flex-col sm:flex-row justify-center gap-4">
-          {!user ? <Button size="lg" onClick={() => navigate('/auth')}>
-              Create Free Account
-            </Button> : null}
           <Button variant="outline" size="lg" onClick={() => navigate('/donate')}>
             Support Our Mission
           </Button>
