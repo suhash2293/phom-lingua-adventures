@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Headphones, Volume2, VolumeX, ArrowLeft, Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { ContentService } from '@/services/ContentService';
-import { LearningProgressService } from '@/services/LearningProgressService';
+import { HybridProgressService } from '@/services/HybridProgressService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
@@ -102,7 +102,7 @@ const AlphabetsPage = () => {
   useEffect(() => {
     if (alphabets && alphabets.length > 0 && categoryData) {
       // Track that user has viewed this category
-      LearningProgressService.trackProgress(categoryData.id, null, 'viewed');
+      HybridProgressService.trackProgress(categoryData.id, null, 'viewed');
     }
   }, [alphabets, categoryData]);
 
@@ -122,7 +122,7 @@ const AlphabetsPage = () => {
       
       // Track audio played progress
       if (categoryData) {
-        await LearningProgressService.trackProgress(categoryData.id, item.id, 'audio_played');
+        await HybridProgressService.trackProgress(categoryData.id, item.id, 'audio_played');
       }
       
       // Reset playing state after a short delay
@@ -140,16 +140,7 @@ const AlphabetsPage = () => {
     }
   };
 
-  // Redirect to login if no user
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-
-  if (!user) {
-    return null;
-  }
+  // Learning is fully public - no authentication required
 
   const renderAlphabetCards = () => {
     if (isLoading) {

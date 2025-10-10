@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser } from '@supabase/supabase-js';
 import { toast } from '@/components/ui/use-toast';
 import { PasswordSecurityService } from '@/services/PasswordSecurityService';
+import { HybridProgressService } from '@/services/HybridProgressService';
 
 // Types
 export type User = {
@@ -116,6 +117,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: session.user.user_metadata.name,
             isAdmin: false // Default value until we fetch the profile
           });
+          
+          // Migrate local data to Supabase when user signs in
+          if (event === 'SIGNED_IN') {
+            setTimeout(() => {
+              HybridProgressService.migrateLocalToSupabase(session.user.id).then(() => {
+                toast({
+                  title: "Progress Synced",
+                  description: "Your local progress has been synced to your account!",
+                });
+              }).catch(error => {
+                console.error('Migration error:', error);
+              });
+            }, 0);
+          }
           
           // Fetch profile in a separate call
           setTimeout(async () => {

@@ -18,7 +18,7 @@ import { ArrowLeft, Menu } from 'lucide-react';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import LearnLayout from '@/components/layout/LearnLayout';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
-import { LearningProgressService } from '@/services/LearningProgressService';
+import { HybridProgressService } from '@/services/HybridProgressService';
 
 // Module mapping with emojis and descriptions
 const moduleConfig = {
@@ -51,17 +51,11 @@ const LearnPage = () => {
 
   // Fetch real module progress data
   const { data: moduleProgress = [], isLoading } = useQuery({
-    queryKey: ['moduleProgress'],
-    queryFn: () => LearningProgressService.getModuleProgress(),
-    enabled: !!user
+    queryKey: ['moduleProgress', user?.id],
+    queryFn: () => HybridProgressService.getModuleProgress()
   });
 
-  // Redirect to login if no user
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
+  // No authentication required - learning is fully public
 
   // Handle module click - initialize audio context and navigate
   const handleModuleClick = (route: string) => {
@@ -71,9 +65,7 @@ const LearnPage = () => {
     navigate(route);
   };
 
-  if (!user) {
-    return null;
-  }
+  // Learning is now public - removed user check
 
   const renderModuleCards = () => {
     if (isLoading) {

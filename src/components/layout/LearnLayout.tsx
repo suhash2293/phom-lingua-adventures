@@ -3,6 +3,8 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Info } from 'lucide-react';
 import { 
   Sidebar, 
   SidebarContent, 
@@ -24,7 +26,7 @@ import {
   ListOrdered,
   Home,
   Gamepad2,
-  Info,
+  Info as InfoIcon,
   Heart,
   User,
   LogOut
@@ -37,6 +39,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 type LearnLayoutProps = {
   children: React.ReactNode;
@@ -59,7 +62,7 @@ const mainNavItems = [
   {
     title: "About",
     url: "/about",
-    icon: Info,
+    icon: InfoIcon,
     description: "Learn about PhomShah"
   },
   {
@@ -102,8 +105,6 @@ const LearnSidebar = () => {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   
-  if (!user) return null;
-  
   const handleSignOut = async () => {
     try {
       await signOut();
@@ -124,24 +125,34 @@ const LearnSidebar = () => {
             PhomShah
           </button>
           <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <User className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem onClick={() => navigate('/profile')}>
-                  <User className="h-4 w-4 mr-2" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
-                  <LogOut className="h-4 w-4 mr-2" />
-                  Sign out
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <User className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={() => navigate('/profile')}>
+                    <User className="h-4 w-4 mr-2" />
+                    Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => navigate('/auth')}
+              >
+                Sign In
+              </Button>
+            )}
             <SidebarTrigger className="md:hidden" />
           </div>
         </div>
@@ -188,13 +199,23 @@ const LearnSidebar = () => {
       </SidebarContent>
       
       <SidebarFooter className="border-t p-4">
-        <Button 
-          variant="outline" 
-          className="w-full border-yellow-500 hover:bg-yellow-500/10" 
-          onClick={() => navigate('/profile')}
-        >
-          View Profile
-        </Button>
+        {user ? (
+          <Button 
+            variant="outline" 
+            className="w-full border-yellow-500 hover:bg-yellow-500/10" 
+            onClick={() => navigate('/profile')}
+          >
+            View Profile
+          </Button>
+        ) : (
+          <Button 
+            variant="default" 
+            className="w-full" 
+            onClick={() => navigate('/auth')}
+          >
+            Sign In to Sync
+          </Button>
+        )}
       </SidebarFooter>
     </Sidebar>
   );
@@ -202,14 +223,25 @@ const LearnSidebar = () => {
 
 const LearnLayout: React.FC<LearnLayoutProps> = ({ children }) => {
   const isMobile = useIsMobile();
+  const { user } = useAuth();
+  const navigate = useNavigate();
   
   return (
     <SidebarProvider defaultOpen={!isMobile}>
       <div className="flex min-h-screen w-full">
         <LearnSidebar />
-        <div className="flex-1 bg-gradient-to-br from-yellow-100/30 to-background">
+        <main className="flex-1 bg-gradient-to-br from-yellow-100/30 to-background">
+          <SidebarTrigger />
+          {!user && (
+            <Alert className="m-4">
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Your progress is saved locally. <button onClick={() => navigate('/auth')} className="underline font-medium">Sign in</button> to sync across devices.
+              </AlertDescription>
+            </Alert>
+          )}
           {children}
-        </div>
+        </main>
       </div>
     </SidebarProvider>
   );

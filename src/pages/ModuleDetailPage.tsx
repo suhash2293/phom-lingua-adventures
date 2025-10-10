@@ -15,7 +15,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/components/ui/use-toast';
 import { ContentService } from '@/services/ContentService';
-import { LearningProgressService } from '@/services/LearningProgressService';
+import { HybridProgressService } from '@/services/HybridProgressService';
 
 const ModuleDetailPage = () => {
   const { moduleId } = useParams();
@@ -54,17 +54,12 @@ const ModuleDetailPage = () => {
 
   // Fetch user's progress for this category
   const { data: categoryProgress = 0 } = useQuery({
-    queryKey: ['category-progress', categoryData?.id],
-    queryFn: () => LearningProgressService.getCategoryProgress(categoryData!.id),
-    enabled: !!categoryData && !!user
+    queryKey: ['category-progress', categoryData?.id, user?.id],
+    queryFn: () => HybridProgressService.getCategoryProgress(categoryData!.id),
+    enabled: !!categoryData
   });
 
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
-    
     if (!moduleId || !['alphabets', 'numbers', 'days', 'months'].includes(moduleId)) {
       navigate('/learn');
       return;
@@ -74,9 +69,9 @@ const ModuleDetailPage = () => {
     setCurrentStep(0);
     setUserAnswers({});
     
-  }, [moduleId, user, navigate]);
+  }, [moduleId, navigate]);
 
-  if (!user || !categoryData) {
+  if (!categoryData) {
     return null;
   }
 
@@ -113,7 +108,7 @@ const ModuleDetailPage = () => {
     
     // Track lesson started
     if (categoryData) {
-      await LearningProgressService.trackProgress(categoryData.id, null, 'lesson_completed');
+      await HybridProgressService.trackProgress(categoryData.id, null, 'lesson_completed');
     }
   };
   
