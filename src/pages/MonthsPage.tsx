@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LearnLayout from '@/components/layout/LearnLayout';
@@ -15,10 +14,11 @@ import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 
 const MonthsPage = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
+  
+  // Learning is fully public - no authentication required
 
   // Use our enhanced audio preloader hook with improved options
   const {
@@ -133,17 +133,6 @@ const MonthsPage = () => {
     return '';
   };
 
-  // Redirect to login if no user
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-  
-  if (!user) {
-    return null;
-  }
-  
   const renderMonthCards = () => {
     if (isLoading) {
       return Array.from({

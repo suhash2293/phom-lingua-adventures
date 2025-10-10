@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import LearnLayout from '@/components/layout/LearnLayout';
@@ -17,11 +16,12 @@ import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const NumbersPage = () => {
-  const { user } = useAuth();
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const isMobile = useIsMobile();
+  
+  // Learning is fully public - no authentication required
   
   // Use our enhanced audio preloader hook with improved options
   const { 
@@ -146,17 +146,6 @@ const NumbersPage = () => {
       });
     }
   };
-
-  // Redirect to login if no user
-  useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-    }
-  }, [user, navigate]);
-
-  if (!user) {
-    return null;
-  }
 
   // Loading state
   if (isLoading) {
