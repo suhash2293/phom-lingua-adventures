@@ -45,6 +45,8 @@ const WordMatchGame = () => {
   const [pairsForRound, setPairsForRound] = useState<MatchPair[]>([]);
   const [questionsPerGame, setQuestionsPerGame] = useState(DEFAULT_QUESTIONS_PER_GAME);
   const [categoryName, setCategoryName] = useState<string>("");
+  const [incorrectPhomWord, setIncorrectPhomWord] = useState<string | null>(null);
+  const [incorrectEnglishWord, setIncorrectEnglishWord] = useState<string | null>(null);
   
   // Fetch content items based on category
   const { data: fetchedItems, isLoading } = useQuery({
@@ -179,18 +181,28 @@ const WordMatchGame = () => {
         setScore(prevScore => prevScore + 10);
         setMatchedPairs(prev => [...prev, matchingPair.id]);
         
+        // Reset selections immediately for correct matches
+        setSelectedPhomWord(null);
+        setSelectedEnglishWord(null);
+        
         // Update progress if all pairs are matched
         if (matchedPairs.length + 1 >= questionsPerGame) {
           endGame();
         }
       } else {
-        // Incorrect match
+        // Incorrect match - show red highlighting
         setScore(prevScore => Math.max(0, prevScore - 2));
+        setIncorrectPhomWord(phom!);
+        setIncorrectEnglishWord(english!);
+        
+        // Reset selections and clear incorrect highlighting after 800ms
+        setTimeout(() => {
+          setSelectedPhomWord(null);
+          setSelectedEnglishWord(null);
+          setIncorrectPhomWord(null);
+          setIncorrectEnglishWord(null);
+        }, 800);
       }
-      
-      // Reset selections
-      setSelectedPhomWord(null);
-      setSelectedEnglishWord(null);
     }
   };
   
@@ -235,6 +247,8 @@ const WordMatchGame = () => {
     setTimeRemaining(SECONDS_PER_GAME);
     setGameStartTime(null);
     setMatchedPairs([]);
+    setIncorrectPhomWord(null);
+    setIncorrectEnglishWord(null);
   };
   
   // Function to record game results
@@ -327,12 +341,17 @@ const WordMatchGame = () => {
                   <Button
                     key={`phom-${i}`}
                     variant={selectedPhomWord === word ? "default" : "outline"}
-                    className={`w-full justify-start ${isMatched ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`w-full justify-start ${
+                      isMatched ? "opacity-50 pointer-events-none" : ""
+                    } ${
+                      incorrectPhomWord === word ? "bg-red-500 text-white hover:bg-red-600 border-red-500" : ""
+                    }`}
                     onClick={() => !isMatched && handleWordSelect(word, true)}
-                    disabled={isMatched}
+                    disabled={isMatched || incorrectPhomWord !== null}
                   >
                     {word}
                     {isMatched && <Check className="h-4 w-4 ml-auto text-green-500" />}
+                    {incorrectPhomWord === word && <X className="h-4 w-4 ml-auto" />}
                   </Button>
                 );
               })}
@@ -349,12 +368,17 @@ const WordMatchGame = () => {
                   <Button
                     key={`english-${i}`}
                     variant={selectedEnglishWord === word ? "default" : "outline"}
-                    className={`w-full justify-start ${isMatched ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`w-full justify-start ${
+                      isMatched ? "opacity-50 pointer-events-none" : ""
+                    } ${
+                      incorrectEnglishWord === word ? "bg-red-500 text-white hover:bg-red-600 border-red-500" : ""
+                    }`}
                     onClick={() => !isMatched && handleWordSelect(word, false)}
-                    disabled={isMatched}
+                    disabled={isMatched || incorrectEnglishWord !== null}
                   >
                     {word}
                     {isMatched && <Check className="h-4 w-4 ml-auto text-green-500" />}
+                    {incorrectEnglishWord === word && <X className="h-4 w-4 ml-auto" />}
                   </Button>
                 );
               })}
