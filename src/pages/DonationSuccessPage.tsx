@@ -28,14 +28,14 @@ const DonationSuccessPage = () => {
   // Record the donation in Supabase
   useEffect(() => {
     const recordDonation = async () => {
-      if (donationAmount > 0 && user) {
+      if (donationAmount > 0) {
         try {
           // Record the donation in our database
           await supabase.from('donations').insert({
             amount: donationAmount,
             currency: 'inr',
-            email: user.email,
-            user_id: user.id,
+            email: user?.email || null,
+            user_id: user?.id || null,
             google_play_transaction_id: transactionId,
             purchase_token: purchaseToken,
             status: 'completed',

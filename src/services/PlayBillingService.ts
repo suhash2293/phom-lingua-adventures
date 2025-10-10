@@ -83,8 +83,9 @@ export class PlayBillingService {
       }
     }
     
-    // Mock success for web or iOS
-    return true;
+    // Not available on non-Android platforms
+    console.log('Google Play Billing not available on this platform');
+    return false;
   }
 
   /**
@@ -102,8 +103,9 @@ export class PlayBillingService {
       }
     }
     
-    // Mock success for web or iOS
-    return true;
+    // Not available on non-Android platforms
+    console.log('Billing not available on this platform');
+    return false;
   }
 
   /**
@@ -130,17 +132,9 @@ export class PlayBillingService {
       }
     }
     
-    // Mock purchase for web or iOS
-    return {
-      success: true,
-      transactionData: {
-        orderId: `mock-${Math.random().toString(36).substring(2, 15)}`,
-        productId,
-        purchaseTime: Date.now(),
-        purchaseToken: `token-${Math.random().toString(36).substring(2, 15)}`,
-        acknowledged: false
-      }
-    };
+    // Not available on non-Android platforms
+    console.log('Purchase not available on this platform');
+    return { success: false };
   }
 
   /**
@@ -164,7 +158,8 @@ export class PlayBillingService {
       }
     }
     
-    // Mock success for web or iOS
-    return true;
+    // Not available on non-Android platforms
+    console.log('Acknowledgment not available on this platform');
+    return false;
   }
 }

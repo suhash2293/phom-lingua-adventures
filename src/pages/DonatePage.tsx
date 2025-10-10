@@ -7,11 +7,13 @@ import { Loader2, ArrowLeft } from 'lucide-react';
 import { PlayBillingService } from '@/services/PlayBillingService';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
 const DonatePage = () => {
   const {
     toast
   } = useToast();
   const navigate = useNavigate();
+  const isAndroid = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isBillingAvailable, setIsBillingAvailable] = useState<boolean>(false);
@@ -126,10 +128,28 @@ const DonatePage = () => {
         <h1 className="text-3xl font-bold mb-4">Support Our Mission</h1>
         <p className="text-lg mb-8">Your donation helps us preserve the Phom dialect and create more learning resources. As a non-profit initiative, we rely on community support to continue our work.</p>
         
-        {!isBillingAvailable && <Card className="mb-6 border-red-300 bg-red-50">
+        {!isAndroid && <Card className="mb-6 border-orange-300 bg-orange-50">
+            <CardContent className="pt-6">
+              <p className="text-orange-800 font-semibold mb-2">
+                Android App Required
+              </p>
+              <p className="text-orange-700 mb-4">
+                Donations are only available through our Android app via Google Play. 
+                Please download the app to make a donation.
+              </p>
+              <Button variant="outline" asChild>
+                <a href="https://play.google.com/store/apps/details?id=app.lovable.b2672e5209ed497a8921f141ef27b76c" target="_blank" rel="noopener noreferrer">
+                  Download Android App
+                </a>
+              </Button>
+            </CardContent>
+          </Card>}
+        
+        {isAndroid && !isBillingAvailable && <Card className="mb-6 border-red-300 bg-red-50">
             <CardContent className="pt-6">
               <p className="text-red-600">
-                Google Play Billing is not available on your device. Donation features are disabled.
+                Google Play Billing is not available. Please ensure you're signed in to Google Play 
+                and have a valid payment method configured.
               </p>
             </CardContent>
           </Card>}
@@ -144,7 +164,7 @@ const DonatePage = () => {
           <CardContent>
             <div className="flex flex-col space-y-4">
               <div className="flex flex-wrap gap-4 mb-4">
-                {predefinedAmounts.map(amount => <Button key={amount} variant="outline" onClick={() => handleDonateInitiate(amount)} disabled={isLoading || !isBillingAvailable}>
+                {predefinedAmounts.map(amount => <Button key={amount} variant="outline" onClick={() => handleDonateInitiate(amount)} disabled={!isAndroid || isLoading || !isBillingAvailable}>
                     ₹{amount.toLocaleString('en-IN')}
                   </Button>)}
               </div>
@@ -154,7 +174,7 @@ const DonatePage = () => {
                   <span className="absolute left-3 top-1/2 -translate-y-1/2">₹</span>
                   <Input type="text" placeholder="Enter amount (minimum ₹1)" value={customAmount} onChange={handleCustomAmountChange} className="pl-7" min={1} disabled={isLoading || !isBillingAvailable} />
                 </div>
-                <Button onClick={() => handleDonateInitiate(parseInt(customAmount))} disabled={!customAmount || parseInt(customAmount) < 1 || isLoading || !isBillingAvailable}>
+                <Button onClick={() => handleDonateInitiate(parseInt(customAmount))} disabled={!isAndroid || !customAmount || parseInt(customAmount) < 1 || isLoading || !isBillingAvailable}>
                   {isLoading ? <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Processing...
