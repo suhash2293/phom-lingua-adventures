@@ -162,7 +162,7 @@ const DonatePage = () => {
               <div className="flex gap-2 items-center">
                 <div className="relative flex-grow">
                   <span className="absolute left-3 top-1/2 -translate-y-1/2">₹</span>
-                  <Input type="text" placeholder="Enter amount (minimum ₹1)" value={customAmount} onChange={handleCustomAmountChange} className="pl-7" min={1} disabled={isLoading || !isBillingAvailable} />
+                  <Input type="text" placeholder="Enter amount (minimum ₹1)" value={customAmount} onChange={handleCustomAmountChange} className="pl-7" min={1} disabled={isLoading} />
                 </div>
                 <Button onClick={() => handleDonateInitiate(parseInt(customAmount))} disabled={!customAmount || parseInt(customAmount) < 1 || isLoading}>
                   {isLoading ? <>
