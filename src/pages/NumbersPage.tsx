@@ -152,14 +152,86 @@ const NumbersPage = () => {
     return (
       <LearnLayout>
         <div className="container px-4 md:px-6 py-8 md:py-12">
+          {/* Mobile header skeleton */}
+          <div className="flex items-center justify-between mb-6 md:hidden">
+            <Skeleton className="h-9 w-48" />
+            <Skeleton className="h-9 w-9" />
+          </div>
+
+          {/* Desktop back button skeleton */}
+          <div className="hidden md:block mb-6">
+            <Skeleton className="h-9 w-48" />
+          </div>
+
           <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
-          <Skeleton className="h-10 w-full mb-8" />
-          <div className="grid grid-cols-2 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 w-full" />
-            ))}
+          
+          {/* Loading indicator */}
+          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
+            <p className="text-center text-muted-foreground">Loading numbers...</p>
           </div>
+          
+          {isMobile ? (
+            // Mobile loading: 2-column grid
+            <div className="space-y-8">
+              {/* First 50 numbers skeleton */}
+              <div>
+                <Skeleton className="h-5 w-32 mb-3" />
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.from({ length: 50 }).map((_, i) => (
+                    <Skeleton key={`first-${i}`} className="h-32 w-full" />
+                  ))}
+                </div>
+              </div>
+              
+              {/* Second 50 numbers skeleton */}
+              <div className="mt-8">
+                <Skeleton className="h-5 w-32 mb-3" />
+                <div className="grid grid-cols-2 gap-4">
+                  {Array.from({ length: 50 }).map((_, i) => (
+                    <Skeleton key={`second-${i}`} className="h-32 w-full" />
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            // Desktop loading: horizontal scroll
+            <div className="space-y-6">
+              {/* First row skeleton */}
+              <div>
+                <Skeleton className="h-5 w-48 mb-2" />
+                <ScrollArea className="w-full pb-4">
+                  <div className="flex gap-2 pb-1 min-w-max">
+                    {Array.from({ length: 50 }).map((_, i) => (
+                      <Skeleton 
+                        key={`first-${i}`} 
+                        className="flex-shrink-0" 
+                        style={{ width: '70px', height: '90px' }}
+                      />
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" className="mt-2" />
+                </ScrollArea>
+              </div>
+              
+              {/* Second row skeleton */}
+              <div>
+                <Skeleton className="h-5 w-48 mb-2" />
+                <ScrollArea className="w-full pb-4">
+                  <div className="flex gap-2 pb-1 min-w-max">
+                    {Array.from({ length: 50 }).map((_, i) => (
+                      <Skeleton 
+                        key={`second-${i}`} 
+                        className="flex-shrink-0" 
+                        style={{ width: '70px', height: '90px' }}
+                      />
+                    ))}
+                  </div>
+                  <ScrollBar orientation="horizontal" className="mt-2" />
+                </ScrollArea>
+              </div>
+            </div>
+          )}
         </div>
       </LearnLayout>
     );
@@ -189,13 +261,17 @@ const NumbersPage = () => {
     );
   }
 
-  const renderNumberCard = (item: ContentItem) => (
+  const renderNumberCard = (item: ContentItem, index: number) => (
     <Card 
       key={item.id} 
-      className={`border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0 ${
+      className={`border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0 animate-in fade-in slide-in-from-bottom-4 ${
         isMobile ? "w-full h-32" : ""
       }`}
-      style={!isMobile ? { width: '70px', height: '90px' } : undefined}
+      style={{
+        ...(isMobile ? {} : { width: '70px', height: '90px' }),
+        animationDelay: `${index * 10}ms`,
+        animationFillMode: 'both'
+      }}
     >
       <CardContent className="flex flex-col p-3 h-full justify-center items-center">
         <div className="flex flex-col items-center justify-center mb-1">
@@ -236,7 +312,10 @@ const NumbersPage = () => {
   // Render the numbers in different layouts based on device type
   return (
     <LearnLayout>
-      <div className="container px-4 md:px-6 py-8 md:py-12" onClick={handlePageInteraction}>
+      <div 
+        className="container px-4 md:px-6 py-8 md:py-12 animate-in fade-in duration-500" 
+        onClick={handlePageInteraction}
+      >
         {/* Mobile header with back button and menu */}
         <div className="flex items-center justify-between mb-6 md:hidden">
           <Button
@@ -271,8 +350,8 @@ const NumbersPage = () => {
         <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
         
         {!audioInitialized && (
-          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
-            <p className="text-center">👆 Click anywhere or interact with the page to enable audio playback</p>
+          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg transition-all duration-300">
+            <p className="text-center text-sm">👆 Click anywhere to enable audio playback</p>
           </div>
         )}
         
@@ -301,7 +380,7 @@ const NumbersPage = () => {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {firstRow.map(renderNumberCard)}
+                {firstRow.map((item, index) => renderNumberCard(item, index))}
               </div>
             </div>
             
@@ -312,7 +391,7 @@ const NumbersPage = () => {
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                {secondRow.map(renderNumberCard)}
+                {secondRow.map((item, index) => renderNumberCard(item, index))}
               </div>
             </div>
           </div>
@@ -328,7 +407,7 @@ const NumbersPage = () => {
               </div>
               <ScrollArea className="w-full pb-4">
                 <div className="flex gap-2 pb-1 min-w-max">
-                  {firstRow.map(renderNumberCard)}
+                  {firstRow.map((item, index) => renderNumberCard(item, index))}
                 </div>
                 <ScrollBar orientation="horizontal" className="mt-2" />
               </ScrollArea>
@@ -343,7 +422,7 @@ const NumbersPage = () => {
               </div>
               <ScrollArea className="w-full pb-4">
                 <div className="flex gap-2 pb-1 min-w-max">
-                  {secondRow.map(renderNumberCard)}
+                  {secondRow.map((item, index) => renderNumberCard(item, index))}
                 </div>
                 <ScrollBar orientation="horizontal" className="mt-2" />
               </ScrollArea>
