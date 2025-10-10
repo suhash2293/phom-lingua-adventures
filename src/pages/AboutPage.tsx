@@ -96,12 +96,9 @@ const AboutPage = () => {
         <div className="flex flex-col md:flex-row items-center gap-8">
           <div className="md:w-2/3">
             <h2 className="text-2xl font-bold mb-4">Join Our Community</h2>
-            <p className="mb-6">Whether you're a native Phom speaker looking to improve your native dialect, or you are interested in learning it, our community welcomes you. Start your language journey today.</p>
+            <p className="mb-6">Whether you're a native Phom speaker looking to improve your native dialect, or you are interested in learning it, our community welcomes you. Start learning immediately - no account required!</p>
             <div className="flex flex-wrap gap-4">
               <Button asChild>
-                <Link to="/auth">Create Free Account</Link>
-              </Button>
-              <Button variant="outline" asChild>
                 <Link to="/learn">Explore Lessons</Link>
               </Button>
             </div>
