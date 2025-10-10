@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { LocalStorageService } from '@/services/LocalStorageService';
+import { AchievementService } from '@/services/AchievementService';
 import { format } from 'date-fns';
 
 const ProfilePage = () => {
@@ -24,9 +25,9 @@ const ProfilePage = () => {
     queryFn: () => LocalStorageService.getGameHistory(10),
   });
 
-  const { data: achievements } = useQuery({
-    queryKey: ['localAchievements'],
-    queryFn: () => LocalStorageService.getAchievements(),
+  const { data: achievements, isLoading: achievementsLoading } = useQuery({
+    queryKey: ['userAchievements'],
+    queryFn: () => AchievementService.getUserAchievements(),
   });
 
   const { data: learningProgress } = useQuery({
@@ -181,21 +182,33 @@ const ProfilePage = () => {
           <CardDescription>Your earned achievements</CardDescription>
         </CardHeader>
         <CardContent>
-          {achievements && achievements.length > 0 ? (
+          {achievementsLoading ? (
+            <p className="text-center text-muted-foreground py-8">
+              Loading achievements...
+            </p>
+          ) : achievements && achievements.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {achievements.map((achievement) => (
                 <div
-                  key={achievement.achievementId}
+                  key={achievement.id}
                   className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
                 >
                   <Award className="h-8 w-8 text-yellow-500" />
-                  <div>
-                    <p className="font-medium capitalize">
-                      {achievement.achievementId.replace(/_/g, ' ')}
+                  <div className="flex-1">
+                    <p className="font-medium">
+                      {achievement.achievement?.name || 'Unknown Achievement'}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      Earned {format(new Date(achievement.earnedAt), 'MMM dd, yyyy')}
+                      {achievement.achievement?.description}
                     </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant="secondary" className="text-xs">
+                        +{achievement.achievement?.xp_reward || 0} XP
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        • Earned {format(new Date(achievement.earned_at), 'MMM dd, yyyy')}
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
