@@ -10,7 +10,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
-import { useAuth } from '@/contexts/AuthContext';
 import { useConfettiStore } from '@/stores/confetti';
 import { Category, ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -33,7 +32,6 @@ const AudioChallengeGame = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [useHtmlAudio, setUseHtmlAudio] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const { user } = useAuth();
   const navigate = useNavigate();
   const { categoryId } = useParams();
   const { fire } = useConfettiStore();
@@ -351,11 +349,11 @@ const AudioChallengeGame = () => {
   };
   
   useEffect(() => {
-    if (isFinished && user && gameStartTime && gameEndTime) {
+    if (isFinished && gameStartTime && gameEndTime) {
       const duration = calculateGameDuration();
       recordGameResults(score, duration, categoryId);
     }
-  }, [isFinished, user, score, gameStartTime, gameEndTime, categoryId]);
+  }, [isFinished, score, gameStartTime, gameEndTime, categoryId]);
   
   if (isLoading) {
     return (
@@ -388,12 +386,6 @@ const AudioChallengeGame = () => {
       ) : (
         <div className="mb-4">
           Category: Random Mix
-        </div>
-      )}
-      
-      {!user && (
-        <div className="mb-4 text-red-500">
-          You must be signed in to earn XP and track your progress.
         </div>
       )}
       

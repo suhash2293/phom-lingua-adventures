@@ -7,7 +7,6 @@ import { ArrowLeft, Clock, ArrowRight, Check, X } from 'lucide-react';
 
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
-import { useAuth } from '@/contexts/AuthContext';
 import { ContentItem } from '@/types/content';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -31,7 +30,6 @@ type GameQuestion = {
 
 const SentenceBuilderGame = () => {
   const { categoryId } = useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'completed'>('intro');
@@ -238,21 +236,14 @@ const SentenceBuilderGame = () => {
     const timeBonus = Math.max(0, (SECONDS_PER_GAME - timeTaken) / 8);
     const xpEarned = Math.floor((scoreRatio * 100) + timeBonus);
     
-    // Record game session if user is logged in
-    if (user) {
-      await GameProgressService.recordGameSession(
-        'sentence-builder',
-        finalScore,
-        timeTaken,
-        xpEarned,
-        categoryId
-      );
-    } else {
-      toast({
-        title: "Game completed!",
-        description: "Sign in to save your progress and earn XP.",
-      });
-    }
+    // Record game session
+    await GameProgressService.recordGameSession(
+      'sentence-builder',
+      finalScore,
+      timeTaken,
+      xpEarned,
+      categoryId
+    );
   };
   
   // Reset the game
