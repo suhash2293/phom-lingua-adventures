@@ -7,7 +7,6 @@ import { Check, X, ArrowLeft, Clock } from 'lucide-react';
 
 import { ContentService } from '@/services/ContentService';
 import { GameProgressService } from '@/services/GameProgressService';
-import { useAuth } from '@/contexts/AuthContext';
 import { ContentItem } from '@/types/content';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -28,7 +27,6 @@ const SECONDS_PER_GAME = 120; // 2 minutes
 
 const WordMatchGame = () => {
   const { categoryId } = useParams();
-  const { user } = useAuth();
   const navigate = useNavigate();
   
   const [gameState, setGameState] = useState<'intro' | 'playing' | 'completed'>('intro');
@@ -220,21 +218,14 @@ const WordMatchGame = () => {
     const timeBonus = Math.max(0, (SECONDS_PER_GAME - timeTaken) / 10);
     const xpEarned = Math.floor((scoreRatio * 50) + timeBonus);
     
-    // Record game session if user is logged in
-    if (user) {
-      await GameProgressService.recordGameSession(
-        'word-match',
-        finalScore,
-        timeTaken,
-        xpEarned,
-        categoryId
-      );
-    } else {
-      toast({
-        title: "Game completed!",
-        description: "Sign in to save your progress and earn XP.",
-      });
-    }
+    // Record game session
+    await GameProgressService.recordGameSession(
+      'word-match',
+      finalScore,
+      timeTaken,
+      xpEarned,
+      categoryId
+    );
   };
   
   // Reset the game
