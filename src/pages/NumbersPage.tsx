@@ -171,67 +171,65 @@ const NumbersPage = () => {
             <p className="text-center text-muted-foreground">Loading numbers...</p>
           </div>
           
-          {isMobile ? (
-            // Mobile loading: 2-column grid
-            <div className="space-y-8">
-              {/* First 50 numbers skeleton */}
-              <div>
-                <Skeleton className="h-5 w-32 mb-3" />
-                <div className="grid grid-cols-2 gap-4">
-                  {Array.from({ length: 50 }).map((_, i) => (
-                    <Skeleton key={`first-${i}`} className="h-32 w-full" />
-                  ))}
-                </div>
-              </div>
-              
-              {/* Second 50 numbers skeleton */}
-              <div className="mt-8">
-                <Skeleton className="h-5 w-32 mb-3" />
-                <div className="grid grid-cols-2 gap-4">
-                  {Array.from({ length: 50 }).map((_, i) => (
-                    <Skeleton key={`second-${i}`} className="h-32 w-full" />
-                  ))}
-                </div>
+          {/* Mobile loading: 2-column grid */}
+          <div className="space-y-8 md:hidden">
+            {/* First 50 numbers skeleton */}
+            <div>
+              <Skeleton className="h-5 w-32 mb-3" />
+              <div className="grid grid-cols-2 gap-4">
+                {Array.from({ length: 50 }).map((_, i) => (
+                  <Skeleton key={`mobile-first-${i}`} className="h-32 w-full" />
+                ))}
               </div>
             </div>
-          ) : (
-            // Desktop loading: horizontal scroll
-            <div className="space-y-6">
-              {/* First row skeleton */}
-              <div>
-                <Skeleton className="h-5 w-48 mb-2" />
-                <ScrollArea className="w-full pb-4">
-                  <div className="flex gap-2 pb-1 min-w-max">
-                    {Array.from({ length: 50 }).map((_, i) => (
-                      <Skeleton 
-                        key={`first-${i}`} 
-                        className="flex-shrink-0" 
-                        style={{ width: '70px', height: '90px' }}
-                      />
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" className="mt-2" />
-                </ScrollArea>
-              </div>
-              
-              {/* Second row skeleton */}
-              <div>
-                <Skeleton className="h-5 w-48 mb-2" />
-                <ScrollArea className="w-full pb-4">
-                  <div className="flex gap-2 pb-1 min-w-max">
-                    {Array.from({ length: 50 }).map((_, i) => (
-                      <Skeleton 
-                        key={`second-${i}`} 
-                        className="flex-shrink-0" 
-                        style={{ width: '70px', height: '90px' }}
-                      />
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" className="mt-2" />
-                </ScrollArea>
+            
+            {/* Second 50 numbers skeleton */}
+            <div className="mt-8">
+              <Skeleton className="h-5 w-32 mb-3" />
+              <div className="grid grid-cols-2 gap-4">
+                {Array.from({ length: 50 }).map((_, i) => (
+                  <Skeleton key={`mobile-second-${i}`} className="h-32 w-full" />
+                ))}
               </div>
             </div>
-          )}
+          </div>
+
+          {/* Desktop loading: horizontal scroll */}
+          <div className="space-y-6 hidden md:block">
+            {/* First row skeleton */}
+            <div>
+              <Skeleton className="h-5 w-48 mb-2" />
+              <ScrollArea className="w-full pb-4">
+                <div className="flex gap-2 pb-1 min-w-max">
+                  {Array.from({ length: 50 }).map((_, i) => (
+                    <Skeleton 
+                      key={`desktop-first-${i}`} 
+                      className="flex-shrink-0" 
+                      style={{ width: '70px', height: '90px' }}
+                    />
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" className="mt-2" />
+              </ScrollArea>
+            </div>
+            
+            {/* Second row skeleton */}
+            <div>
+              <Skeleton className="h-5 w-48 mb-2" />
+              <ScrollArea className="w-full pb-4">
+                <div className="flex gap-2 pb-1 min-w-max">
+                  {Array.from({ length: 50 }).map((_, i) => (
+                    <Skeleton 
+                      key={`desktop-second-${i}`} 
+                      className="flex-shrink-0" 
+                      style={{ width: '70px', height: '90px' }}
+                    />
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" className="mt-2" />
+              </ScrollArea>
+            </div>
+          </div>
         </div>
       </LearnLayout>
     );
@@ -261,25 +259,25 @@ const NumbersPage = () => {
     );
   }
 
-  const renderNumberCard = (item: ContentItem, index: number) => (
+  const renderNumberCard = (item: ContentItem, index: number, isMobileView: boolean) => (
     <Card 
       key={item.id} 
       className={`border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0 animate-in fade-in slide-in-from-bottom-4 ${
-        isMobile ? "w-full h-32" : ""
+        isMobileView ? "w-full h-32" : ""
       }`}
       style={{
-        ...(isMobile ? {} : { width: '70px', height: '90px' }),
+        ...(isMobileView ? {} : { width: '70px', height: '90px' }),
         animationDelay: `${index * 10}ms`,
         animationFillMode: 'both'
       }}
     >
       <CardContent className="flex flex-col p-3 h-full justify-center items-center">
         <div className="flex flex-col items-center justify-center mb-1">
-          <span className={`font-bold ${isMobile ? "text-2xl" : "text-lg"}`}>
+          <span className={`font-bold ${isMobileView ? "text-2xl" : "text-lg"}`}>
             {item.english_translation}
           </span>
           <span 
-            className={`text-black mt-1 text-center ${isMobile ? "text-base" : "text-xs truncate w-full"}`}
+            className={`text-black mt-1 text-center ${isMobileView ? "text-base" : "text-xs truncate w-full"}`}
             title={item.phom_word}
           >
             {item.phom_word}
@@ -290,18 +288,18 @@ const NumbersPage = () => {
             size="sm" 
             variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
             className={`flex items-center justify-center mt-2 p-0 ${
-              isMobile ? "h-8 w-8 min-h-[32px]" : "h-6 w-6 min-h-[24px]"
+              isMobileView ? "h-8 w-8 min-h-[32px]" : "h-6 w-6 min-h-[24px]"
             }`}
             onClick={() => handlePlayAudio(item.audio_url, item.id)}
             disabled={playingAudio !== null && playingAudio !== item.id}
             title="Play audio"
           >
             {playingAudio === item.id ? (
-              <Volume2 className={isMobile ? "h-4 w-4" : "h-3 w-3"} />
+              <Volume2 className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />
             ) : !isCached(item.audio_url) || !audioInitialized ? (
-              <VolumeX className={isMobile ? "h-4 w-4" : "h-3 w-3"} />
+              <VolumeX className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />
             ) : (
-              <Headphones className={isMobile ? "h-4 w-4" : "h-3 w-3"} />
+              <Headphones className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />
             )}
           </Button>
         )}
@@ -370,65 +368,63 @@ const NumbersPage = () => {
           </div>
         )}
         
-        {isMobile ? (
-          // Mobile layout - vertical grid with 2 columns
-          <div className="space-y-8">
-            <div>
-              <div className="flex justify-between mb-3">
-                <span className="text-sm text-muted-foreground">
-                  Numbers 1-50
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {firstRow.map((item, index) => renderNumberCard(item, index))}
-              </div>
+        {/* Mobile layout - vertical grid with 2 columns */}
+        <div className="space-y-8 md:hidden">
+          <div>
+            <div className="flex justify-between mb-3">
+              <span className="text-sm text-muted-foreground">
+                Numbers 1-50
+              </span>
             </div>
-            
-            <div className="mt-8">
-              <div className="flex justify-between mb-3">
-                <span className="text-sm text-muted-foreground">
-                  Numbers 51-100
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                {secondRow.map((item, index) => renderNumberCard(item, index))}
-              </div>
+            <div className="grid grid-cols-2 gap-4">
+              {firstRow.map((item, index) => renderNumberCard(item, index, true))}
             </div>
           </div>
-        ) : (
-          // Desktop layout - horizontal scroll
-          <div className="space-y-6">
-            {/* First row of numbers (1-50) */}
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm text-muted-foreground">
-                  Numbers 1-50 (swipe to see all)
-                </span>
-              </div>
-              <ScrollArea className="w-full pb-4">
-                <div className="flex gap-2 pb-1 min-w-max">
-                  {firstRow.map((item, index) => renderNumberCard(item, index))}
-                </div>
-                <ScrollBar orientation="horizontal" className="mt-2" />
-              </ScrollArea>
+          
+          <div className="mt-8">
+            <div className="flex justify-between mb-3">
+              <span className="text-sm text-muted-foreground">
+                Numbers 51-100
+              </span>
             </div>
-            
-            {/* Second row of numbers (51-100) */}
-            <div>
-              <div className="flex justify-between mb-2">
-                <span className="text-sm text-muted-foreground">
-                  Numbers 51-100 (swipe to see all)
-                </span>
-              </div>
-              <ScrollArea className="w-full pb-4">
-                <div className="flex gap-2 pb-1 min-w-max">
-                  {secondRow.map((item, index) => renderNumberCard(item, index))}
-                </div>
-                <ScrollBar orientation="horizontal" className="mt-2" />
-              </ScrollArea>
+            <div className="grid grid-cols-2 gap-4">
+              {secondRow.map((item, index) => renderNumberCard(item, index, true))}
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Desktop layout - horizontal scroll */}
+        <div className="space-y-6 hidden md:block">
+          {/* First row of numbers (1-50) */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <span className="text-sm text-muted-foreground">
+                Numbers 1-50 (swipe to see all)
+              </span>
+            </div>
+            <ScrollArea className="w-full pb-4">
+              <div className="flex gap-2 pb-1 min-w-max">
+                {firstRow.map((item, index) => renderNumberCard(item, index, false))}
+              </div>
+              <ScrollBar orientation="horizontal" className="mt-2" />
+            </ScrollArea>
+          </div>
+          
+          {/* Second row of numbers (51-100) */}
+          <div>
+            <div className="flex justify-between mb-2">
+              <span className="text-sm text-muted-foreground">
+                Numbers 51-100 (swipe to see all)
+              </span>
+            </div>
+            <ScrollArea className="w-full pb-4">
+              <div className="flex gap-2 pb-1 min-w-max">
+                {secondRow.map((item, index) => renderNumberCard(item, index, false))}
+              </div>
+              <ScrollBar orientation="horizontal" className="mt-2" />
+            </ScrollArea>
+          </div>
+        </div>
       </div>
     </LearnLayout>
   );
