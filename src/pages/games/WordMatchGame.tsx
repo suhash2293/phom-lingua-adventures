@@ -63,12 +63,14 @@ const WordMatchGame = () => {
         }
         return ContentService.getContentItemsByCategory(categoryId);
       } else {
-        // Get all categories and select random items from each
+        // Get all categories and select random items from each (excluding alphabets)
+        const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
         const categories = await ContentService.getCategories();
+        const filteredCategories = categories.filter(cat => cat.id !== ALPHABETS_CATEGORY_ID);
         let allItems: ContentItem[] = [];
         
-        // Get some items from each category
-        for (const category of categories) {
+        // Get some items from each category (excluding alphabets)
+        for (const category of filteredCategories) {
           const categoryItems = await ContentService.getContentItemsByCategory(category.id);
           allItems = [...allItems, ...categoryItems];
         }

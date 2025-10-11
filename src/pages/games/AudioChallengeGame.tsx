@@ -39,11 +39,22 @@ const AudioChallengeGame = () => {
   // Fetch content items for the selected category or a random mix
   const { data: contentItems, isLoading } = useQuery({
     queryKey: ['audioChallengeContent', categoryId],
-    queryFn: () => {
+    queryFn: async () => {
       if (categoryId) {
         return ContentService.getContentItemsByCategoryId(categoryId);
       } else {
-        return ContentService.getAllContentItems();
+        // Get all content items except alphabets for random mix
+        const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
+        const categories = await ContentService.getCategories();
+        const filteredCategories = categories.filter(cat => cat.id !== ALPHABETS_CATEGORY_ID);
+        
+        let allItems: ContentItem[] = [];
+        for (const category of filteredCategories) {
+          const categoryItems = await ContentService.getContentItemsByCategoryId(category.id);
+          allItems = [...allItems, ...categoryItems];
+        }
+        
+        return allItems;
       }
     }
   });

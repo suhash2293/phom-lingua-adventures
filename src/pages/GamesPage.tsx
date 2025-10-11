@@ -218,7 +218,7 @@ const GamesPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <GameCard title="Word Match" description="Match Phom words with their English translations" icon={<ChevronRight className="h-6 w-6" />} path="/games/word-match" categories={categories} excludeCategories={[ALPHABETS_CATEGORY_ID]} />
         
-        <GameCard title="Audio Challenge" description="Listen to audio and select the correct written word" icon={<ChevronRight className="h-6 w-6" />} path="/games/audio-challenge" categories={categories} />
+        <GameCard title="Audio Challenge" description="Listen to audio and select the correct written word" icon={<ChevronRight className="h-6 w-6" />} path="/games/audio-challenge" categories={categories} excludeCategories={[ALPHABETS_CATEGORY_ID]} />
         
         <GameCard title="Word Scramble" description="Unscramble the letters to form the correct Phom words" icon={<ChevronRight className="h-6 w-6" />} path="/games/word-scramble" categories={categories} excludeCategories={[ALPHABETS_CATEGORY_ID]} />
       </div>
