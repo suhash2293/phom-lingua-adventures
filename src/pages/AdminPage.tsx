@@ -62,9 +62,9 @@ const AdminPage = () => {
     fetchCategories();
   }, [toast]);
   
-  // If not logged in or not admin, redirect to auth
+  // If not logged in or not admin, redirect
   if (!user) {
-    return <Navigate to="/auth" replace />;
+    return <Navigate to="/admin-signin" replace />;
   }
   
   if (!user.isAdmin) {

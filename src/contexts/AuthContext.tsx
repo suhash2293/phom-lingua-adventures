@@ -121,80 +121,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           // Fetch profile in a separate call to avoid auth deadlock
           setTimeout(async () => {
+            if (!session?.user) return;
+
             try {
-              // Step 1: Try to fetch profile by ID
-              const { data: profileById, error: profileByIdError } = await supabase
+              // Check if user has admin role in user_roles table
+              const { data: adminRole } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .eq('role', 'admin')
+                .maybeSingle();
+
+              const isAdmin = !!adminRole;
+
+              // Ensure profile exists
+              const { data: profile } = await supabase
                 .from('profiles')
-                .select('id, email, is_admin')
+                .select('id')
                 .eq('id', session.user.id)
-                .single();
-                
-              if (profileById) {
-                console.log('Profile found by ID:', profileById);
-                setUser(prev => ({
-                  ...prev!,
-                  isAdmin: profileById.is_admin || false
-                }));
-                return;
-              }
-              
-              // Step 2: Profile not found by ID, check by email
-              const { data: profileByEmail, error: profileByEmailError } = await supabase
-                .from('profiles')
-                .select('id, email, is_admin')
-                .eq('email', session.user.email)
-                .single();
-              
-              // Step 3: If profile exists by email and either ID mismatch or is admin, reconcile using edge function
-              if (profileByEmail && (profileByEmail.id !== session.user.id || profileByEmail.is_admin)) {
-                console.log('Profile found by email with mismatch or admin status, reconciling...', profileByEmail);
-                
-                // Use setup-admin edge function to reconcile profile with service role
-                const { error: reconcileError } = await supabase.functions.invoke('setup-admin', {
-                  body: { email: session.user.email }
+                .maybeSingle();
+
+              if (!profile) {
+                // Create profile if it doesn't exist
+                await supabase.from('profiles').insert({
+                  id: session.user.id,
+                  email: session.user.email
                 });
-                
-                if (reconcileError) {
-                  console.error('Error reconciling admin profile:', reconcileError);
-                } else {
-                  console.log('Profile reconciled successfully');
-                }
-                
-                // Re-fetch by ID to get updated admin status
-                const { data: reconciledProfile } = await supabase
-                  .from('profiles')
-                  .select('is_admin')
-                  .eq('id', session.user.id)
-                  .single();
-                  
-                setUser(prev => ({
-                  ...prev!,
-                  isAdmin: reconciledProfile?.is_admin || false
-                }));
-                return;
-              }
-              
-              // Step 4: No profile exists at all, create a new one
-              console.log('No profile found, creating new profile');
-              const { error: insertError } = await supabase
-                .from('profiles')
-                .insert({ 
-                  id: session.user.id, 
-                  email: session.user.email,
-                  is_admin: false 
+
+                // Create user role entry
+                await supabase.from('user_roles').insert({
+                  user_id: session.user.id,
+                  role: 'user'
                 });
-                
-              if (insertError) {
-                console.error('Error creating new profile:', insertError);
-              } else {
-                console.log('New profile created');
-                setUser(prev => ({
-                  ...prev!,
-                  isAdmin: false
-                }));
               }
-            } catch (err) {
-              console.error('Error processing user profile:', err);
+
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                isAdmin
+              });
+            } catch (error) {
+              console.error('Error fetching user roles:', error);
+              setUser({
+                id: session.user.id,
+                email: session.user.email || '',
+                isAdmin: false
+              });
             }
           }, 0);
         } else {

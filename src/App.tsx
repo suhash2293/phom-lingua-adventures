@@ -17,6 +17,7 @@ import DonatePage from "./pages/DonatePage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
 import SetupAdminPage from "./pages/SetupAdminPage";
+import AdminSignInPage from "./pages/AdminSignInPage";
 import NotFound from "./pages/NotFound";
 import AlphabetsPage from "./pages/AlphabetsPage";
 import NumbersPage from "./pages/NumbersPage";
@@ -81,6 +82,7 @@ function App() {
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/admin" element={<AdminPage />} />
                   <Route path="/setup-admin" element={<SetupAdminPage />} />
+                  <Route path="/admin-signin" element={<AdminSignInPage />} />
                   <Route path="/contact" element={<ContactPage />} />
                   <Route path="/privacy" element={<PrivacyPage />} />
                   <Route path="/terms" element={<TermsPage />} />

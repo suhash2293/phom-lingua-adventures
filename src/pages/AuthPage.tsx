@@ -399,17 +399,6 @@ const AuthPage = () => {
                 ? "Don't have an account? Sign Up" 
                 : "Already have an account? Sign In"}
             </Button>
-            
-            {isLogin && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={goToSetupAdmin}
-                className="w-full mt-2"
-              >
-                Setup Admin Account
-              </Button>
-            )}
           </CardFooter>
         </form>
       </Card>
