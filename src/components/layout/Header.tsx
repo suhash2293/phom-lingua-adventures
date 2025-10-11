@@ -42,7 +42,7 @@ export default function Header() {
             <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
             </Link>
-            {user && (
+            {user && user.isAdmin && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function Header() {
                 <Link to="/about" className="text-lg font-semibold hover:text-primary transition-colors">
                   About
                 </Link>
-                {user && (
+                {user && user.isAdmin && (
                   <>
                     <Link to="/admin" className="text-lg font-semibold hover:text-primary transition-colors">
                       Admin Dashboard
