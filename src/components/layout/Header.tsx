@@ -30,9 +30,6 @@ export default function Header() {
 
         {!isMobile ? (
           <nav className="flex items-center gap-6">
-            <Link to="/learn" className="text-sm font-medium hover:text-primary transition-colors">
-              Learn
-            </Link>
             <Link to="/games" className="text-sm font-medium hover:text-primary transition-colors">
               Games
             </Link>
@@ -78,9 +75,6 @@ export default function Header() {
               <div className="flex flex-col gap-4 py-4">
                 <Link to="/" className="text-lg font-semibold hover:text-primary transition-colors">
                   Home
-                </Link>
-                <Link to="/learn" className="text-lg font-semibold hover:text-primary transition-colors">
-                  Learn
                 </Link>
                 <Link to="/games" className="text-lg font-semibold hover:text-primary transition-colors">
                   Games
