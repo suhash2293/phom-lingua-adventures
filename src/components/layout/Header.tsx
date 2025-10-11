@@ -42,19 +42,24 @@ export default function Header() {
             <Link to="/about" className="text-sm font-medium hover:text-primary transition-colors">
               About
             </Link>
-            {user && user.isAdmin && (
+            {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" className="flex items-center gap-2">
                     <User className="h-4 w-4" />
-                    <span>Admin</span>
+                    <span className="max-w-[150px] truncate">{user.email}</span>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link to="/admin" className="cursor-pointer w-full">Admin Dashboard</Link>
+                    <Link to="/profile" className="cursor-pointer w-full">Profile</Link>
                   </DropdownMenuItem>
+                  {user.isAdmin && (
+                    <DropdownMenuItem asChild>
+                      <Link to="/admin" className="cursor-pointer w-full">Admin Dashboard</Link>
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
                     Sign Out
@@ -89,12 +94,12 @@ export default function Header() {
                   About
                 </Link>
                 {user && user.isAdmin && (
-                  <>
-                    <Link to="/admin" className="text-lg font-semibold hover:text-primary transition-colors">
-                      Admin Dashboard
-                    </Link>
-                    <Button variant="outline" onClick={handleSignOut}>Sign Out (Admin)</Button>
-                  </>
+                  <Link to="/admin" className="text-lg font-semibold hover:text-primary transition-colors">
+                    Admin Dashboard
+                  </Link>
+                )}
+                {user && (
+                  <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
                 )}
               </div>
             </SheetContent>
