@@ -22,6 +22,7 @@ type AuthContextType = {
   verifyPin: (email: string, pin: string) => Promise<{ error?: string }>;
   signInWithGoogle: () => Promise<void>;
   loading: boolean;
+  adminCheckComplete: boolean;
   error: string | null;
   clearError: () => void;
 };
@@ -32,6 +33,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User>(null);
   const [loading, setLoading] = useState(true);
+  const [adminCheckComplete, setAdminCheckComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const clearError = () => setError(null);
@@ -117,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: session.user.user_metadata.name,
             isAdmin: false // Default value until we fetch the profile
           });
-          
+          setAdminCheckComplete(false);
           
           // Fetch profile in a separate call to avoid auth deadlock
           setTimeout(async () => {
@@ -160,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: session.user.email || '',
                 isAdmin
               });
+              setAdminCheckComplete(true);
             } catch (error) {
               console.error('Error fetching user roles:', error);
               setUser({
@@ -167,10 +170,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 email: session.user.email || '',
                 isAdmin: false
               });
+              setAdminCheckComplete(true);
             }
           }, 0);
         } else {
           setUser(null);
+          setAdminCheckComplete(true);
         }
         
         setLoading(false);
@@ -442,6 +447,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     verifyPin,
     signInWithGoogle,
     loading,
+    adminCheckComplete,
     error,
     clearError
   };

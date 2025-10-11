@@ -147,6 +147,16 @@ const Index = () => {
             Support Our Mission
           </Button>
         </div>
+        
+        {/* Subtle admin link */}
+        <div className="mt-12">
+          <button 
+            onClick={() => navigate('/admin-signin')}
+            className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          >
+            •
+          </button>
+        </div>
       </section>
     </div>;
 };

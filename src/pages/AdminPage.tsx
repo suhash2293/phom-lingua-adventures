@@ -29,7 +29,7 @@ import { ContentService } from '@/services/ContentService';
 import { Category, ContentItem } from '@/types/content';
 
 const AdminPage = () => {
-  const { user } = useAuth();
+  const { user, loading: authLoading, adminCheckComplete } = useAuth();
   const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
@@ -62,11 +62,23 @@ const AdminPage = () => {
     fetchCategories();
   }, [toast]);
   
-  // If not logged in or not admin, redirect
+  // Show loading while checking authentication and admin status
+  if (authLoading || !adminCheckComplete) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-lg">Loading admin dashboard...</div>
+        </div>
+      </div>
+    );
+  }
+  
+  // If not logged in, redirect to admin sign-in
   if (!user) {
     return <Navigate to="/admin-signin" replace />;
   }
   
+  // If logged in but not admin, redirect to home
   if (!user.isAdmin) {
     return <Navigate to="/" replace />;
   }
