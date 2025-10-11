@@ -11,7 +11,6 @@ import RegionRestriction from "@/components/RegionRestriction";
 
 // Pages
 import Index from "./pages/Index";
-import LearnPage from "./pages/LearnPage";
 import GamesPage from "./pages/GamesPage";
 import AboutPage from "./pages/AboutPage";
 import DonatePage from "./pages/DonatePage";
@@ -23,7 +22,6 @@ import AlphabetsPage from "./pages/AlphabetsPage";
 import NumbersPage from "./pages/NumbersPage";
 import DaysPage from "./pages/DaysPage";
 import MonthsPage from "./pages/MonthsPage";
-import ModuleDetailPage from "./pages/ModuleDetailPage";
 import ContactPage from "./pages/ContactPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
@@ -41,20 +39,15 @@ import "./App.css";
 
 const queryClient = new QueryClient();
 
-// Component to conditionally render header based on route
+// Component to render consistent layout for all pages
 const ConditionalLayout = ({ children }: { children: React.ReactNode }) => {
-  const location = useLocation();
-  
-  // Check if current route is a learn-related route
-  const isLearnRoute = location.pathname.startsWith('/learn');
-  
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 to-indigo-100">
-      {!isLearnRoute && <Header />}
-      <main className={isLearnRoute ? "flex-1" : "flex-1"}>
+      <Header />
+      <main className="flex-1">
         {children}
       </main>
-      {!isLearnRoute && <Footer />}
+      <Footer />
     </div>
   );
 };
@@ -71,12 +64,10 @@ function App() {
               <ConditionalLayout>
                 <Routes>
                   <Route path="/" element={<Index />} />
-                  <Route path="/learn" element={<LearnPage />} />
-                  <Route path="/learn/alphabets" element={<AlphabetsPage />} />
-                  <Route path="/learn/numbers" element={<NumbersPage />} />
-                  <Route path="/learn/days" element={<DaysPage />} />
-                  <Route path="/learn/months" element={<MonthsPage />} />
-                  <Route path="/learn/:categoryId" element={<ModuleDetailPage />} />
+                  <Route path="/alphabets" element={<AlphabetsPage />} />
+                  <Route path="/numbers" element={<NumbersPage />} />
+                  <Route path="/days" element={<DaysPage />} />
+                  <Route path="/months" element={<MonthsPage />} />
                   <Route path="/games" element={<GamesPage />} />
                   <Route path="/games/word-match/:categoryId?" element={<WordMatchGame />} />
                   <Route path="/games/audio-challenge/:categoryId?" element={<AudioChallengeGame />} />

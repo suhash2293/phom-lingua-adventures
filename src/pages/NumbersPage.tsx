@@ -1,13 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import LearnLayout from '@/components/layout/LearnLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Headphones, Volume2, VolumeX, ArrowLeft, Menu } from 'lucide-react';
-import { SidebarTrigger } from '@/components/ui/sidebar';
+import { Headphones, Volume2, VolumeX, ArrowLeft } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
 import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -150,18 +147,11 @@ const NumbersPage = () => {
   // Loading state
   if (isLoading) {
     return (
-      <LearnLayout>
-        <div className="container px-4 md:px-6 py-8 md:py-12">
-          {/* Mobile header skeleton */}
-          <div className="flex items-center justify-between mb-6 md:hidden">
-            <Skeleton className="h-9 w-48" />
-            <Skeleton className="h-9 w-9" />
-          </div>
-
-          {/* Desktop back button skeleton */}
-          <div className="hidden md:block mb-6">
-            <Skeleton className="h-9 w-48" />
-          </div>
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        {/* Back button skeleton */}
+        <div className="mb-6">
+          <Skeleton className="h-9 w-32" />
+        </div>
 
           <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
@@ -228,34 +218,29 @@ const NumbersPage = () => {
                 </div>
                 <ScrollBar orientation="horizontal" className="mt-2" />
               </ScrollArea>
-            </div>
           </div>
         </div>
-      </LearnLayout>
+      </div>
     );
   }
 
   // Error state
   if (error) {
     return (
-      <LearnLayout>
-        <div className="container px-4 md:px-6 py-8 md:py-12">
-          <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
-          <p className="text-red-500">Error loading numbers. Please try again later.</p>
-        </div>
-      </LearnLayout>
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
+        <p className="text-red-500">Error loading numbers. Please try again later.</p>
+      </div>
     );
   }
 
   // No data state
   if (!numbers || numbers.length === 0) {
     return (
-      <LearnLayout>
-        <div className="container px-4 md:px-6 py-8 md:py-12">
-          <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
-          <p>No number content found. Please check back later.</p>
-        </div>
-      </LearnLayout>
+      <div className="container px-4 md:px-6 py-8 md:py-12">
+        <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
+        <p>No number content found. Please check back later.</p>
+      </div>
     );
   }
 
@@ -309,40 +294,22 @@ const NumbersPage = () => {
 
   // Render the numbers in different layouts based on device type
   return (
-    <LearnLayout>
-      <div 
-        className="container px-4 md:px-6 py-8 md:py-12 animate-in fade-in duration-500" 
-        onClick={handlePageInteraction}
-      >
-        {/* Mobile header with back button and menu */}
-        <div className="flex items-center justify-between mb-6 md:hidden">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/learn')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Learning Modules
-          </Button>
-          <SidebarTrigger className="flex items-center gap-2 p-2">
-            <Menu className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
-          </SidebarTrigger>
-        </div>
-
-        {/* Desktop back button */}
-        <div className="hidden md:block mb-6">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/learn')}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Learning Modules
-          </Button>
-        </div>
+    <div 
+      className="container px-4 md:px-6 py-8 md:py-12 animate-in fade-in duration-500" 
+      onClick={handlePageInteraction}
+    >
+      {/* Back button */}
+      <div className="mb-6">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
 
         <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
         <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
@@ -422,11 +389,10 @@ const NumbersPage = () => {
                 {secondRow.map((item, index) => renderNumberCard(item, index, false))}
               </div>
               <ScrollBar orientation="horizontal" className="mt-2" />
-            </ScrollArea>
-          </div>
+          </ScrollArea>
         </div>
       </div>
-    </LearnLayout>
+    </div>
   );
 };
 

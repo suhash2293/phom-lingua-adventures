@@ -42,9 +42,9 @@ const Index = () => {
               </AspectRatio>
             </CardContent>
             <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-muted/5">
-              <Button variant="ghost" className="w-full group-hover:bg-primary/10 transition-colors" onClick={() => navigate('/learn/alphabets')}>
-                Start Learning
-              </Button>
+            <Button variant="ghost" className="w-full group-hover:bg-primary/10 transition-colors" onClick={() => navigate('/alphabets')}>
+              Start Learning
+            </Button>
             </CardFooter>
           </Card>
 
@@ -63,7 +63,7 @@ const Index = () => {
               </AspectRatio>
             </CardContent>
             <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-blue-50/5 dark:to-blue-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-blue-100/20 dark:group-hover:bg-blue-900/20 transition-colors" onClick={() => navigate('/learn/numbers')}>
+              <Button variant="ghost" className="w-full group-hover:bg-blue-100/20 dark:group-hover:bg-blue-900/20 transition-colors" onClick={() => navigate('/numbers')}>
                 Start Learning
               </Button>
             </CardFooter>
@@ -84,7 +84,7 @@ const Index = () => {
               </AspectRatio>
             </CardContent>
             <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-green-50/5 dark:to-green-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-green-100/20 dark:group-hover:bg-green-900/20 transition-colors" onClick={() => navigate('/learn/days')}>
+              <Button variant="ghost" className="w-full group-hover:bg-green-100/20 dark:group-hover:bg-green-900/20 transition-colors" onClick={() => navigate('/days')}>
                 Start Learning
               </Button>
             </CardFooter>
@@ -105,7 +105,7 @@ const Index = () => {
               </AspectRatio>
             </CardContent>
             <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-amber-50/5 dark:to-amber-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20 transition-colors" onClick={() => navigate('/learn/months')}>
+              <Button variant="ghost" className="w-full group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20 transition-colors" onClick={() => navigate('/months')}>
                 Start Learning
               </Button>
             </CardFooter>

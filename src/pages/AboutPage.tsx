@@ -99,7 +99,7 @@ const AboutPage = () => {
             <p className="mb-6">Whether you're a native Phom speaker looking to improve your native dialect, or you are interested in learning it, our community welcomes you. Start learning immediately - no account required!</p>
             <div className="flex flex-wrap gap-4">
               <Button asChild>
-                <Link to="/learn">Explore Lessons</Link>
+                <Link to="/">Back to Home</Link>
               </Button>
             </div>
           </div>
