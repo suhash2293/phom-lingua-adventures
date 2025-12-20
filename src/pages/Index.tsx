@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent, Gamepad } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 const Index = () => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Index = () => {
       {/* Features Section */}
       <section className="py-12">
         <h2 className="text-3xl font-bold text-center mb-12">Learning Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {/* Alphabets Module */}
           <Card className="hover:shadow-lg transition-all overflow-hidden group">
             <CardHeader className="bg-gradient-to-r from-primary/30 to-primary/10 pb-2 relative">
@@ -106,6 +106,27 @@ const Index = () => {
             </CardContent>
             <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-amber-50/5 dark:to-amber-900/5">
               <Button variant="ghost" className="w-full group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20 transition-colors" onClick={() => navigate('/months')}>
+                Start Learning
+              </Button>
+            </CardFooter>
+          </Card>
+
+          {/* Seasons Module */}
+          <Card className="hover:shadow-lg transition-all overflow-hidden group">
+            <CardHeader className="bg-gradient-to-r from-teal-100/30 to-teal-50/10 dark:from-teal-900/30 dark:to-teal-800/10 pb-2 relative">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-teal-100/30 dark:bg-teal-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
+              <CardTitle className="text-xl relative z-10">Seasons</CardTitle>
+              <CardDescription className="relative z-10">Learn the four seasons in Phom Dialect</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-teal-100/50 to-teal-50/30 dark:from-teal-900/50 dark:to-teal-800/30 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-teal-200/40 dark:bg-teal-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
+                  <Leaf className="h-8 w-8 text-teal-600 dark:text-teal-400" />
+                </div>
+              </AspectRatio>
+            </CardContent>
+            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-teal-50/5 dark:to-teal-900/5">
+              <Button variant="ghost" className="w-full group-hover:bg-teal-100/20 dark:group-hover:bg-teal-900/20 transition-colors" onClick={() => navigate('/seasons')}>
                 Start Learning
               </Button>
             </CardFooter>
