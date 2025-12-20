@@ -349,7 +349,7 @@ export type Database = {
           action: string
           created_at: string | null
           id: string
-          ip_address: unknown | null
+          ip_address: unknown
           method: string | null
           success: boolean | null
           user_agent: string | null
@@ -359,7 +359,7 @@ export type Database = {
           action: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           method?: string | null
           success?: boolean | null
           user_agent?: string | null
@@ -369,7 +369,7 @@ export type Database = {
           action?: string
           created_at?: string | null
           id?: string
-          ip_address?: unknown | null
+          ip_address?: unknown
           method?: string | null
           success?: boolean | null
           user_agent?: string | null
@@ -616,10 +616,7 @@ export type Database = {
           table_exists: boolean
         }[]
       }
-      cleanup_expired_pins: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      cleanup_expired_pins: { Args: never; Returns: undefined }
       delete_user_account: {
         Args: { target_user_id: string }
         Returns: boolean
@@ -628,10 +625,7 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: string[]
       }
-      get_current_user_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
+      get_current_user_id: { Args: never; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -639,14 +633,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_admin: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
-      is_current_user: {
-        Args: { user_id: string }
-        Returns: boolean
-      }
+      is_admin: { Args: { user_id: string }; Returns: boolean }
+      is_current_user: { Args: { user_id: string }; Returns: boolean }
       verify_recovery_code: {
         Args: { recovery_code: string; target_user_id: string }
         Returns: boolean
