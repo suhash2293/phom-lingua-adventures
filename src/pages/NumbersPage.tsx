@@ -11,26 +11,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-
 const NumbersPage = () => {
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
   const isMobile = useIsMobile();
-  
+
   // Learning is fully public - no authentication required
-  
+
   // Use our enhanced audio preloader hook with improved options
-  const { 
-    playAudio, 
-    preloadAudioBatch, 
+  const {
+    playAudio,
+    preloadAudioBatch,
     initializeAudioContext,
-    isLoading: isAudioLoading, 
+    isLoading: isAudioLoading,
     progress: audioLoadingProgress,
     isCached
   } = useAudioPreloader({
-    maxConcurrent: 3, // Limit concurrent audio loads
-    maxRetries: 3, // Increased retries
+    maxConcurrent: 3,
+    // Limit concurrent audio loads
+    maxRetries: 3,
+    // Increased retries
     onLoadError: () => {
       toast({
         title: "Audio Loading Notice",
@@ -41,9 +42,13 @@ const NumbersPage = () => {
   });
 
   // Fetch numbers data
-  const { data: numbers, isLoading, error } = useQuery({
+  const {
+    data: numbers,
+    isLoading,
+    error
+  } = useQuery({
     queryKey: ['numbers'],
-    queryFn: () => ContentService.getContentItemsByCategoryName('Numbers'),
+    queryFn: () => ContentService.getContentItemsByCategoryName('Numbers')
   });
 
   // Initialize audio system on first user interaction with the page
@@ -65,10 +70,12 @@ const NumbersPage = () => {
         document.removeEventListener('touchstart', initAudio);
       }
     };
-
-    document.addEventListener('click', initAudio, { once: true });
-    document.addEventListener('touchstart', initAudio, { once: true });
-
+    document.addEventListener('click', initAudio, {
+      once: true
+    });
+    document.addEventListener('touchstart', initAudio, {
+      once: true
+    });
     return () => {
       document.removeEventListener('click', initAudio);
       document.removeEventListener('touchstart', initAudio);
@@ -78,7 +85,6 @@ const NumbersPage = () => {
   // Sort numbers by their numeric value
   const sortedNumbers = React.useMemo(() => {
     if (!numbers) return [];
-    
     return [...numbers].sort((a, b) => {
       const numA = parseInt(a.english_translation, 10);
       const numB = parseInt(b.english_translation, 10);
@@ -90,7 +96,6 @@ const NumbersPage = () => {
   const firstRow = React.useMemo(() => {
     return sortedNumbers.filter((_, index) => index < 50);
   }, [sortedNumbers]);
-
   const secondRow = React.useMemo(() => {
     return sortedNumbers.filter((_, index) => index >= 50);
   }, [sortedNumbers]);
@@ -99,14 +104,11 @@ const NumbersPage = () => {
   useEffect(() => {
     if (sortedNumbers.length > 0 && audioInitialized) {
       // Extract valid audio URLs
-      const audioUrls = sortedNumbers
-        .filter(item => item.audio_url)
-        .map(item => item.audio_url as string);
-      
+      const audioUrls = sortedNumbers.filter(item => item.audio_url).map(item => item.audio_url as string);
       if (audioUrls.length > 0) {
         // Preload audio files in batches
         preloadAudioBatch(audioUrls.slice(0, 20), true); // First 20 with high priority
-        
+
         // Load the rest with lower priority
         setTimeout(() => {
           preloadAudioBatch(audioUrls.slice(20), false);
@@ -118,17 +120,15 @@ const NumbersPage = () => {
   // Enhanced play audio function
   const handlePlayAudio = async (url: string | null, itemId: string) => {
     if (!url) return;
-    
     try {
       // Initialize audio context if not already done
       if (!audioInitialized) {
         initializeAudioContext();
         setAudioInitialized(true);
       }
-      
       setPlayingAudio(itemId);
       await playAudio(url);
-      
+
       // Reset playing state after a short delay
       setTimeout(() => {
         setPlayingAudio(null);
@@ -146,8 +146,7 @@ const NumbersPage = () => {
 
   // Loading state
   if (isLoading) {
-    return (
-      <div className="container px-4 md:px-6 py-8 md:py-12">
+    return <div className="container px-4 md:px-6 py-8 md:py-12">
         {/* Back button skeleton */}
         <div className="mb-6">
           <Skeleton className="h-9 w-32" />
@@ -167,9 +166,9 @@ const NumbersPage = () => {
             <div>
               <Skeleton className="h-5 w-32 mb-3" />
               <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <Skeleton key={`mobile-first-${i}`} className="h-32 w-full" />
-                ))}
+                {Array.from({
+              length: 50
+            }).map((_, i) => <Skeleton key={`mobile-first-${i}`} className="h-32 w-full" />)}
               </div>
             </div>
             
@@ -177,9 +176,9 @@ const NumbersPage = () => {
             <div className="mt-8">
               <Skeleton className="h-5 w-32 mb-3" />
               <div className="grid grid-cols-2 gap-4">
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <Skeleton key={`mobile-second-${i}`} className="h-32 w-full" />
-                ))}
+                {Array.from({
+              length: 50
+            }).map((_, i) => <Skeleton key={`mobile-second-${i}`} className="h-32 w-full" />)}
               </div>
             </div>
           </div>
@@ -191,13 +190,12 @@ const NumbersPage = () => {
               <Skeleton className="h-5 w-48 mb-2" />
               <ScrollArea className="w-full pb-4">
                 <div className="flex gap-2 pb-1 min-w-max">
-                  {Array.from({ length: 50 }).map((_, i) => (
-                    <Skeleton 
-                      key={`desktop-first-${i}`} 
-                      className="flex-shrink-0" 
-                      style={{ width: '70px', height: '90px' }}
-                    />
-                  ))}
+                  {Array.from({
+                length: 50
+              }).map((_, i) => <Skeleton key={`desktop-first-${i}`} className="flex-shrink-0" style={{
+                width: '70px',
+                height: '90px'
+              }} />)}
                 </div>
                 <ScrollBar orientation="horizontal" className="mt-2" />
               </ScrollArea>
@@ -208,132 +206,86 @@ const NumbersPage = () => {
               <Skeleton className="h-5 w-48 mb-2" />
               <ScrollArea className="w-full pb-4">
                 <div className="flex gap-2 pb-1 min-w-max">
-                  {Array.from({ length: 50 }).map((_, i) => (
-                    <Skeleton 
-                      key={`desktop-second-${i}`} 
-                      className="flex-shrink-0" 
-                      style={{ width: '70px', height: '90px' }}
-                    />
-                  ))}
+                  {Array.from({
+                length: 50
+              }).map((_, i) => <Skeleton key={`desktop-second-${i}`} className="flex-shrink-0" style={{
+                width: '70px',
+                height: '90px'
+              }} />)}
                 </div>
                 <ScrollBar orientation="horizontal" className="mt-2" />
               </ScrollArea>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
 
   // Error state
   if (error) {
-    return (
-      <div className="container px-4 md:px-6 py-8 md:py-12">
+    return <div className="container px-4 md:px-6 py-8 md:py-12">
         <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
         <p className="text-red-500">Error loading numbers. Please try again later.</p>
-      </div>
-    );
+      </div>;
   }
 
   // No data state
   if (!numbers || numbers.length === 0) {
-    return (
-      <div className="container px-4 md:px-6 py-8 md:py-12">
+    return <div className="container px-4 md:px-6 py-8 md:py-12">
         <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
         <p>No number content found. Please check back later.</p>
-      </div>
-    );
+      </div>;
   }
-
-  const renderNumberCard = (item: ContentItem, index: number, isMobileView: boolean) => (
-    <Card 
-      key={item.id} 
-      className={`border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0 animate-in fade-in slide-in-from-bottom-4 ${
-        isMobileView ? "w-full h-32" : ""
-      }`}
-      style={{
-        ...(isMobileView ? {} : { width: '70px', height: '90px' }),
-        animationDelay: `${index * 10}ms`,
-        animationFillMode: 'both'
-      }}
-    >
+  const renderNumberCard = (item: ContentItem, index: number, isMobileView: boolean) => <Card key={item.id} className={`border-primary/20 hover:border-primary hover:shadow-md transition-all flex-shrink-0 animate-in fade-in slide-in-from-bottom-4 ${isMobileView ? "w-full h-32" : ""}`} style={{
+    ...(isMobileView ? {} : {
+      width: '70px',
+      height: '90px'
+    }),
+    animationDelay: `${index * 10}ms`,
+    animationFillMode: 'both'
+  }}>
       <CardContent className="flex flex-col p-3 h-full justify-center items-center">
         <div className="flex flex-col items-center justify-center mb-1">
           <span className={`font-bold ${isMobileView ? "text-2xl" : "text-lg"}`}>
             {item.english_translation}
           </span>
-          <span 
-            className={`text-black mt-1 text-center ${isMobileView ? "text-base" : "text-xs truncate w-full"}`}
-            title={item.phom_word}
-          >
+          <span className={`text-black mt-1 text-center ${isMobileView ? "text-base" : "text-xs truncate w-full"}`} title={item.phom_word}>
             {item.phom_word}
           </span>
         </div>
-        {item.audio_url && (
-          <Button 
-            size="sm" 
-            variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"}
-            className={`flex items-center justify-center mt-2 p-0 ${
-              isMobileView ? "h-8 w-8 min-h-[32px]" : "h-6 w-6 min-h-[24px]"
-            }`}
-            onClick={() => handlePlayAudio(item.audio_url, item.id)}
-            disabled={playingAudio !== null && playingAudio !== item.id}
-            title="Play audio"
-          >
-            {playingAudio === item.id ? (
-              <Volume2 className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />
-            ) : !isCached(item.audio_url) || !audioInitialized ? (
-              <VolumeX className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />
-            ) : (
-              <Headphones className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />
-            )}
-          </Button>
-        )}
+        {item.audio_url && <Button size="sm" variant={isCached(item.audio_url) && audioInitialized ? "ghost" : "secondary"} className={`flex items-center justify-center mt-2 p-0 ${isMobileView ? "h-8 w-8 min-h-[32px]" : "h-6 w-6 min-h-[24px]"}`} onClick={() => handlePlayAudio(item.audio_url, item.id)} disabled={playingAudio !== null && playingAudio !== item.id} title="Play audio">
+            {playingAudio === item.id ? <Volume2 className={isMobileView ? "h-4 w-4" : "h-3 w-3"} /> : !isCached(item.audio_url) || !audioInitialized ? <VolumeX className={isMobileView ? "h-4 w-4" : "h-3 w-3"} /> : <Headphones className={isMobileView ? "h-4 w-4" : "h-3 w-3"} />}
+          </Button>}
       </CardContent>
-    </Card>
-  );
+    </Card>;
 
   // Render the numbers in different layouts based on device type
-  return (
-    <div 
-      className="container px-4 md:px-6 py-8 md:py-12 animate-in fade-in duration-500" 
-      onClick={handlePageInteraction}
-    >
+  return <div className="container px-4 md:px-6 py-8 md:py-12 animate-in fade-in duration-500" onClick={handlePageInteraction}>
       {/* Back button */}
       <div className="mb-6">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2"
-        >
+        <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="flex items-center gap-2">
           <ArrowLeft className="h-4 w-4" />
           Back to Home
         </Button>
       </div>
 
         <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
-        <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
+        <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom dialect.</p>
         
-        {!audioInitialized && (
-          <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg transition-all duration-300">
+        {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg transition-all duration-300">
             <p className="text-center text-sm">👆 Click anywhere to enable audio playback</p>
-          </div>
-        )}
+          </div>}
         
-        {isAudioLoading && audioInitialized && audioLoadingProgress < 100 && (
-          <div className="mb-6">
+        {isAudioLoading && audioInitialized && audioLoadingProgress < 100 && <div className="mb-6">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">Loading audio files...</span>
               <span className="text-sm font-medium">{audioLoadingProgress}%</span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-              <div 
-                className="bg-primary h-2.5 rounded-full transition-all duration-300" 
-                style={{ width: `${audioLoadingProgress}%` }}
-              ></div>
+              <div className="bg-primary h-2.5 rounded-full transition-all duration-300" style={{
+          width: `${audioLoadingProgress}%`
+        }}></div>
             </div>
-          </div>
-        )}
+          </div>}
         
         {/* Mobile layout - vertical grid with 2 columns */}
         <div className="space-y-8 md:hidden">
@@ -392,8 +344,6 @@ const NumbersPage = () => {
           </ScrollArea>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default NumbersPage;
