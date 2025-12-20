@@ -4,37 +4,34 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { AuthProvider } from "@/contexts/AuthContext";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
-import RegionRestriction from "@/components/RegionRestriction";
-
-// Pages
+import { AuthProvider } from "./contexts/AuthContext";
+import RegionRestriction from "./components/RegionRestriction";
 import Index from "./pages/Index";
 import GamesPage from "./pages/GamesPage";
 import AboutPage from "./pages/AboutPage";
-import DonatePage from "./pages/DonatePage";
+import ContactPage from "./pages/ContactPage";
 import AuthPage from "./pages/AuthPage";
 import AdminPage from "./pages/AdminPage";
-import SetupAdminPage from "./pages/SetupAdminPage";
 import AdminSignInPage from "./pages/AdminSignInPage";
+import SetupAdminPage from "./pages/SetupAdminPage";
 import NotFound from "./pages/NotFound";
 import AlphabetsPage from "./pages/AlphabetsPage";
 import NumbersPage from "./pages/NumbersPage";
 import DaysPage from "./pages/DaysPage";
 import MonthsPage from "./pages/MonthsPage";
-import ContactPage from "./pages/ContactPage";
-import PrivacyPage from "./pages/PrivacyPage";
-import TermsPage from "./pages/TermsPage";
+import SeasonsPage from "./pages/SeasonsPage";
+import DonatePage from "./pages/DonatePage";
 import DonationSuccessPage from "./pages/DonationSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
-
-// Game pages
+import PrivacyPage from "./pages/PrivacyPage";
+import TermsPage from "./pages/TermsPage";
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
 import WordMatchGame from "./pages/games/WordMatchGame";
 import AudioChallengeGame from "./pages/games/AudioChallengeGame";
-import SentenceBuilderGame from "./pages/games/SentenceBuilderGame";
 import MemoryChallengeGame from "./pages/games/MemoryChallengeGame";
 import WordScrambleGame from "./pages/games/WordScrambleGame";
+import SentenceBuilderGame from "./pages/games/SentenceBuilderGame";
 
 import "./App.css";
 
@@ -69,6 +66,7 @@ function App() {
                   <Route path="/numbers" element={<NumbersPage />} />
                   <Route path="/days" element={<DaysPage />} />
                   <Route path="/months" element={<MonthsPage />} />
+                  <Route path="/seasons" element={<SeasonsPage />} />
                   <Route path="/games" element={<GamesPage />} />
                   <Route path="/games/word-match/:categoryId?" element={<WordMatchGame />} />
                   <Route path="/games/audio-challenge/:categoryId?" element={<AudioChallengeGame />} />
