@@ -92,16 +92,14 @@ const Index = () => {
           <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between relative z-10">
             <CardTitle className="text-xl">{categoryName}</CardTitle>
-            {category?.title_audio_url && <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => {
+            {category?.title_audio_url && <Button variant="ghost" size="sm" onClick={e => {
             e.stopPropagation();
             handlePlayTitleAudio(category);
-          }} disabled={playingAudio === category.id}>
+          }} disabled={playingAudio === category.id} className="h-8 w-8 p-0 font-sans text-center text-lg text-foreground">
                 {playingAudio === category.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
               </Button>}
           </div>
-          <span className="text-sm text-muted-foreground min-h-[20px] block">
-            {category?.phom_name || '\u00A0'}
-          </span>
+          {category?.phom_name}
           <CardDescription className="relative z-10">{config.description}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
