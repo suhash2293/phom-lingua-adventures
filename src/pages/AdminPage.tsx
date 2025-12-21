@@ -25,6 +25,7 @@ import ContentList from '@/components/admin/ContentList';
 import ContentEditForm from '@/components/admin/ContentEditForm';
 import ContentSearch from '@/components/admin/ContentSearch';
 import BulkNumberGenerator from '@/components/admin/BulkNumberGenerator';
+import CategoryManager from '@/components/admin/CategoryManager';
 import { ContentService } from '@/services/ContentService';
 import { Category, ContentItem } from '@/types/content';
 
@@ -110,6 +111,7 @@ const AdminPage = () => {
       <Tabs defaultValue="content" className="mb-8">
         <TabsList>
           <TabsTrigger value="content">Content Management</TabsTrigger>
+          <TabsTrigger value="categories">Category Management</TabsTrigger>
           <TabsTrigger value="users">User Management</TabsTrigger>
         </TabsList>
         
@@ -254,6 +256,27 @@ const AdminPage = () => {
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+        
+        {/* Category Management Tab */}
+        <TabsContent value="categories" className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module Title Management</CardTitle>
+              <CardDescription>
+                Manage Phom translations and audio for learning module titles
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CategoryManager 
+                categories={categories}
+                onCategoriesUpdated={async () => {
+                  const data = await ContentService.getCategories();
+                  setCategories(data);
+                }}
+              />
+            </CardContent>
+          </Card>
         </TabsContent>
         
         {/* User Management Tab */}

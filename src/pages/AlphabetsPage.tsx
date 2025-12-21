@@ -11,7 +11,7 @@ import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
-const AlphabetsPage = () => {
+import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
   const {
     user
   } = useAuth();
@@ -213,8 +213,12 @@ const AlphabetsPage = () => {
         </Button>
       </div>
 
-        <h1 className="text-3xl font-bold mb-6">Phom Alphabets</h1>
-        <p className="text-lg mb-8">Learn the Phom alphabet with pronunciation.</p>
+      <ModuleTitleWithAudio
+        englishTitle="Phom Alphabets"
+        category={categoryData}
+        subtitle="Learn the Phom alphabet with pronunciation."
+        onAudioPlay={handlePageInteraction}
+      />
         
         {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-center">👆 Click anywhere or interact with the page to enable audio playback</p>

@@ -11,7 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
-const NumbersPage = () => {
+import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
@@ -51,8 +51,16 @@ const NumbersPage = () => {
     queryFn: () => ContentService.getContentItemsByCategoryName('Numbers')
   });
 
+  // Get category for title display
+  const { data: categoryData } = useQuery({
+    queryKey: ['numbers-category'],
+    queryFn: async () => {
+      const categories = await ContentService.getCategories();
+      return categories.find(cat => cat.name === 'Numbers');
+    }
+  });
+
   // Initialize audio system on first user interaction with the page
-  const handlePageInteraction = () => {
     if (!audioInitialized) {
       initializeAudioContext();
       setAudioInitialized(true);
@@ -268,8 +276,12 @@ const NumbersPage = () => {
         </Button>
       </div>
 
-        <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
-        <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom dialect.</p>
+      <ModuleTitleWithAudio
+        englishTitle="Numbers in Phom (1-100)"
+        category={categoryData}
+        subtitle="Learn to count from 1 to 100 in Phom dialect."
+        onAudioPlay={handlePageInteraction}
+      />
         
         {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg transition-all duration-300">
             <p className="text-center text-sm">👆 Click anywhere to enable audio playback</p>

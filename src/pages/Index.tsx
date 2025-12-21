@@ -1,17 +1,164 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, Volume2, Loader2 } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
+import { ContentService } from '@/services/ContentService';
+import { Category } from '@/types/content';
+
+const moduleConfig: Record<string, {
+  icon: React.ReactNode;
+  route: string;
+  gradient: string;
+  iconBg: string;
+  iconColor: string;
+  hoverBg: string;
+  description: string;
+}> = {
+  'Alphabets': {
+    icon: <ScrollText className="h-8 w-8" />,
+    route: '/alphabets',
+    gradient: 'from-primary/30 to-primary/10',
+    iconBg: 'bg-primary/20',
+    iconColor: 'text-primary',
+    hoverBg: 'group-hover:bg-primary/10',
+    description: 'Learn Phom alphabets and characters'
+  },
+  'Numbers': {
+    icon: <Percent className="h-8 w-8" />,
+    route: '/numbers',
+    gradient: 'from-blue-100/30 to-blue-50/10 dark:from-blue-900/30 dark:to-blue-800/10',
+    iconBg: 'bg-blue-200/40 dark:bg-blue-800/40',
+    iconColor: 'text-blue-600 dark:text-blue-400',
+    hoverBg: 'group-hover:bg-blue-100/20 dark:group-hover:bg-blue-900/20',
+    description: 'Learn to count in Phom Dialect'
+  },
+  'Days': {
+    icon: <CalendarDays className="h-8 w-8" />,
+    route: '/days',
+    gradient: 'from-green-100/30 to-green-50/10 dark:from-green-900/30 dark:to-green-800/10',
+    iconBg: 'bg-green-200/40 dark:bg-green-800/40',
+    iconColor: 'text-green-600 dark:text-green-400',
+    hoverBg: 'group-hover:bg-green-100/20 dark:group-hover:bg-green-900/20',
+    description: 'Learn the names of days in Phom Dialect'
+  },
+  'Months': {
+    icon: <Calendar className="h-8 w-8" />,
+    route: '/months',
+    gradient: 'from-amber-100/30 to-amber-50/10 dark:from-amber-900/30 dark:to-amber-800/10',
+    iconBg: 'bg-amber-200/40 dark:bg-amber-800/40',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    hoverBg: 'group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20',
+    description: 'Learn the names of the months in Phom Dialect'
+  },
+  'Seasons': {
+    icon: <Leaf className="h-8 w-8" />,
+    route: '/seasons',
+    gradient: 'from-teal-100/30 to-teal-50/10 dark:from-teal-900/30 dark:to-teal-800/10',
+    iconBg: 'bg-teal-200/40 dark:bg-teal-800/40',
+    iconColor: 'text-teal-600 dark:text-teal-400',
+    hoverBg: 'group-hover:bg-teal-100/20 dark:group-hover:bg-teal-900/20',
+    description: 'Learn the four seasons in Phom Dialect'
+  }
+};
+
 const Index = () => {
   const navigate = useNavigate();
-  return <div className="container px-4 md:px-6 py-8 md:py-12">
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+
+  const { data: categories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => ContentService.getCategories()
+  });
+
+  const handlePlayTitleAudio = async (category: Category) => {
+    if (!category.title_audio_url) return;
+
+    try {
+      setPlayingAudio(category.id);
+      const audio = new Audio(category.title_audio_url);
+      audio.onended = () => setPlayingAudio(null);
+      audio.onerror = () => setPlayingAudio(null);
+      await audio.play();
+    } catch (error) {
+      console.error('Error playing title audio:', error);
+      setPlayingAudio(null);
+    }
+  };
+
+  const renderModuleCard = (categoryName: string, category?: Category) => {
+    const config = moduleConfig[categoryName];
+    if (!config) return null;
+
+    return (
+      <Card key={categoryName} className="hover:shadow-lg transition-all overflow-hidden group">
+        <CardHeader className={`bg-gradient-to-r ${config.gradient} pb-2 relative`}>
+          <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
+          <div className="flex items-center justify-between relative z-10">
+            <CardTitle className="text-xl">{categoryName}</CardTitle>
+            {category?.title_audio_url && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlayTitleAudio(category);
+                }}
+                disabled={playingAudio === category.id}
+              >
+                {playingAudio === category.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Volume2 className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+          </div>
+          {category?.phom_name && (
+            <p className="text-sm font-medium text-primary relative z-10">{category.phom_name}</p>
+          )}
+          <CardDescription className="relative z-10">{config.description}</CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
+            <div className={`w-16 h-16 rounded-full ${config.iconBg} flex items-center justify-center transform transition-transform group-hover:scale-110`}>
+              <span className={config.iconColor}>{config.icon}</span>
+            </div>
+          </AspectRatio>
+        </CardContent>
+        <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-muted/5">
+          <Button 
+            variant="ghost" 
+            className={`w-full ${config.hoverBg} transition-colors`} 
+            onClick={() => navigate(config.route)}
+          >
+            Start Learning
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  };
+
+  // Create a map of categories by name for easy lookup
+  const categoriesByName = React.useMemo(() => {
+    const map: Record<string, Category> = {};
+    categories?.forEach(cat => {
+      map[cat.name] = cat;
+    });
+    return map;
+  }, [categories]);
+
+  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons'];
+
+  return (
+    <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-          <span className="text-phom-yellow">Welcome to PhomShah
-        </span>
+          <span className="text-phom-yellow">Welcome to PhomShah</span>
         </h1>
         <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A beginner's guide to learning Phom dialect</h2>
         <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.</p>
@@ -27,110 +174,7 @@ const Index = () => {
       <section className="py-12">
         <h2 className="text-3xl font-bold text-center mb-12">Learning Modules</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {/* Alphabets Module */}
-          <Card className="hover:shadow-lg transition-all overflow-hidden group">
-            <CardHeader className="bg-gradient-to-r from-primary/30 to-primary/10 pb-2 relative">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-              <CardTitle className="text-xl relative z-10">Alphabets</CardTitle>
-              <CardDescription className="relative z-10">Learn Phom alphabets and characters</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <ScrollText className="h-8 w-8 text-primary" />
-                </div>
-              </AspectRatio>
-            </CardContent>
-            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-muted/5">
-            <Button variant="ghost" className="w-full group-hover:bg-primary/10 transition-colors" onClick={() => navigate('/alphabets')}>
-              Start Learning
-            </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Numbers Module */}
-          <Card className="hover:shadow-lg transition-all overflow-hidden group">
-            <CardHeader className="bg-gradient-to-r from-blue-100/30 to-blue-50/10 dark:from-blue-900/30 dark:to-blue-800/10 pb-2 relative">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-blue-100/30 dark:bg-blue-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-              <CardTitle className="text-xl relative z-10">Numbers</CardTitle>
-              <CardDescription className="relative z-10">Learn to count in Phom Dialect</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-blue-100/50 to-blue-50/30 dark:from-blue-900/50 dark:to-blue-800/30 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-blue-200/40 dark:bg-blue-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <Percent className="h-8 w-8 text-blue-600 dark:text-blue-400" />
-                </div>
-              </AspectRatio>
-            </CardContent>
-            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-blue-50/5 dark:to-blue-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-blue-100/20 dark:group-hover:bg-blue-900/20 transition-colors" onClick={() => navigate('/numbers')}>
-                Start Learning
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Days Module */}
-          <Card className="hover:shadow-lg transition-all overflow-hidden group">
-            <CardHeader className="bg-gradient-to-r from-green-100/30 to-green-50/10 dark:from-green-900/30 dark:to-green-800/10 pb-2 relative">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-green-100/30 dark:bg-green-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-              <CardTitle className="text-xl relative z-10">Days</CardTitle>
-              <CardDescription className="relative z-10">Learn the names of days in Phom Dialect</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-green-100/50 to-green-50/30 dark:from-green-900/50 dark:to-green-800/30 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-green-200/40 dark:bg-green-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <CalendarDays className="h-8 w-8 text-green-600 dark:text-green-400" />
-                </div>
-              </AspectRatio>
-            </CardContent>
-            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-green-50/5 dark:to-green-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-green-100/20 dark:group-hover:bg-green-900/20 transition-colors" onClick={() => navigate('/days')}>
-                Start Learning
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Months Module */}
-          <Card className="hover:shadow-lg transition-all overflow-hidden group">
-            <CardHeader className="bg-gradient-to-r from-amber-100/30 to-amber-50/10 dark:from-amber-900/30 dark:to-amber-800/10 pb-2 relative">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-amber-100/30 dark:bg-amber-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-              <CardTitle className="text-xl relative z-10">Months</CardTitle>
-              <CardDescription className="relative z-10">Learn the names of the months in Phom Dialect</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-amber-100/50 to-amber-50/30 dark:from-amber-900/50 dark:to-amber-800/30 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-amber-200/40 dark:bg-amber-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <Calendar className="h-8 w-8 text-amber-600 dark:text-amber-400" />
-                </div>
-              </AspectRatio>
-            </CardContent>
-            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-amber-50/5 dark:to-amber-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20 transition-colors" onClick={() => navigate('/months')}>
-                Start Learning
-              </Button>
-            </CardFooter>
-          </Card>
-
-          {/* Seasons Module */}
-          <Card className="hover:shadow-lg transition-all overflow-hidden group">
-            <CardHeader className="bg-gradient-to-r from-teal-100/30 to-teal-50/10 dark:from-teal-900/30 dark:to-teal-800/10 pb-2 relative">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-teal-100/30 dark:bg-teal-900/30 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-              <CardTitle className="text-xl relative z-10">Seasons</CardTitle>
-              <CardDescription className="relative z-10">Learn the four seasons in Phom Dialect</CardDescription>
-            </CardHeader>
-            <CardContent className="p-0">
-              <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-teal-100/50 to-teal-50/30 dark:from-teal-900/50 dark:to-teal-800/30 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full bg-teal-200/40 dark:bg-teal-800/40 flex items-center justify-center transform transition-transform group-hover:scale-110">
-                  <Leaf className="h-8 w-8 text-teal-600 dark:text-teal-400" />
-                </div>
-              </AspectRatio>
-            </CardContent>
-            <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-teal-50/5 dark:to-teal-900/5">
-              <Button variant="ghost" className="w-full group-hover:bg-teal-100/20 dark:group-hover:bg-teal-900/20 transition-colors" onClick={() => navigate('/seasons')}>
-                Start Learning
-              </Button>
-            </CardFooter>
-          </Card>
+          {moduleOrder.map(moduleName => renderModuleCard(moduleName, categoriesByName[moduleName]))}
         </div>
       </section>
 
@@ -179,6 +223,8 @@ const Index = () => {
           </button>
         </div>
       </section>
-    </div>;
+    </div>
+  );
 };
+
 export default Index;
