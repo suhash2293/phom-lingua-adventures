@@ -90,8 +90,8 @@ const Index = () => {
     return <Card key={categoryName} className="hover:shadow-lg transition-all overflow-hidden group">
         <CardHeader className={`bg-gradient-to-r ${config.gradient} pb-2 relative`}>
           <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-          <div className="flex items-center justify-between relative z-10">
-            <CardTitle className="text-xl">{categoryName}</CardTitle>
+          <div className="flex items-center justify-center gap-2 relative z-10">
+            <CardTitle className="text-xl text-center">{categoryName}</CardTitle>
             {category?.title_audio_url && <Button variant="ghost" size="sm" onClick={e => {
             e.stopPropagation();
             handlePlayTitleAudio(category);
@@ -99,8 +99,10 @@ const Index = () => {
                 {playingAudio === category.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
               </Button>}
           </div>
-          {category?.phom_name}
-          <CardDescription className="relative z-10">{config.description}</CardDescription>
+          <span className="text-sm text-muted-foreground text-center block min-h-[20px]">
+            {category?.phom_name || '\u00A0'}
+          </span>
+          <CardDescription className="relative z-10 text-center">{config.description}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <AspectRatio ratio={16 / 9} className="bg-gradient-to-br from-muted/50 to-muted/30 flex items-center justify-center">
