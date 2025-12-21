@@ -99,7 +99,9 @@ const Index = () => {
                 {playingAudio === category.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
               </Button>}
           </div>
-          {category?.phom_name}
+          <span className="text-sm text-muted-foreground min-h-[20px] block">
+            {category?.phom_name || '\u00A0'}
+          </span>
           <CardDescription className="relative z-10">{config.description}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
