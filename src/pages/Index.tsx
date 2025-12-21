@@ -7,7 +7,6 @@ import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, Volume2, Lo
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { ContentService } from '@/services/ContentService';
 import { Category } from '@/types/content';
-
 const moduleConfig: Record<string, {
   icon: React.ReactNode;
   route: string;
@@ -63,19 +62,17 @@ const moduleConfig: Record<string, {
     description: 'Learn the four seasons in Phom Dialect'
   }
 };
-
 const Index = () => {
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-
-  const { data: categories } = useQuery({
+  const {
+    data: categories
+  } = useQuery({
     queryKey: ['categories'],
     queryFn: () => ContentService.getCategories()
   });
-
   const handlePlayTitleAudio = async (category: Category) => {
     if (!category.title_audio_url) return;
-
     try {
       setPlayingAudio(category.id);
       const audio = new Audio(category.title_audio_url);
@@ -87,39 +84,22 @@ const Index = () => {
       setPlayingAudio(null);
     }
   };
-
   const renderModuleCard = (categoryName: string, category?: Category) => {
     const config = moduleConfig[categoryName];
     if (!config) return null;
-
-    return (
-      <Card key={categoryName} className="hover:shadow-lg transition-all overflow-hidden group">
+    return <Card key={categoryName} className="hover:shadow-lg transition-all overflow-hidden group">
         <CardHeader className={`bg-gradient-to-r ${config.gradient} pb-2 relative`}>
           <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between relative z-10">
             <CardTitle className="text-xl">{categoryName}</CardTitle>
-            {category?.title_audio_url && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handlePlayTitleAudio(category);
-                }}
-                disabled={playingAudio === category.id}
-              >
-                {playingAudio === category.id ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <Volume2 className="h-4 w-4" />
-                )}
-              </Button>
-            )}
+            {category?.title_audio_url && <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={e => {
+            e.stopPropagation();
+            handlePlayTitleAudio(category);
+          }} disabled={playingAudio === category.id}>
+                {playingAudio === category.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+              </Button>}
           </div>
-          {category?.phom_name && (
-            <p className="text-sm font-medium text-primary relative z-10">{category.phom_name}</p>
-          )}
+          {category?.phom_name}
           <CardDescription className="relative z-10">{config.description}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -130,16 +110,11 @@ const Index = () => {
           </AspectRatio>
         </CardContent>
         <CardFooter className="border-t border-muted/20 bg-gradient-to-b from-background to-muted/5">
-          <Button 
-            variant="ghost" 
-            className={`w-full ${config.hoverBg} transition-colors`} 
-            onClick={() => navigate(config.route)}
-          >
+          <Button variant="ghost" className={`w-full ${config.hoverBg} transition-colors`} onClick={() => navigate(config.route)}>
             Start Learning
           </Button>
         </CardFooter>
-      </Card>
-    );
+      </Card>;
   };
 
   // Create a map of categories by name for easy lookup
@@ -150,11 +125,8 @@ const Index = () => {
     });
     return map;
   }, [categories]);
-
   const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons'];
-
-  return (
-    <div className="container px-4 md:px-6 py-8 md:py-12">
+  return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
@@ -215,16 +187,11 @@ const Index = () => {
         
         {/* Subtle admin link */}
         <div className="mt-12">
-          <button 
-            onClick={() => navigate('/admin-signin')}
-            className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-          >
+          <button onClick={() => navigate('/admin-signin')} className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors">
             •
           </button>
         </div>
       </section>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
