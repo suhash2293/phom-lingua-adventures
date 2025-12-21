@@ -12,6 +12,8 @@ import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
+
+const NumbersPage = () => {
   const navigate = useNavigate();
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioInitialized, setAudioInitialized] = useState(false);
@@ -61,6 +63,7 @@ import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
   });
 
   // Initialize audio system on first user interaction with the page
+  const handlePageInteraction = () => {
     if (!audioInitialized) {
       initializeAudioContext();
       setAudioInitialized(true);

@@ -75,6 +75,8 @@ const SeasonsPage = () => {
       return categories.find(cat => cat.name === 'Seasons');
     }
   });
+
+  const handlePageInteraction = () => {
     if (!audioInitialized) {
       initializeAudioContext();
       setAudioInitialized(true);

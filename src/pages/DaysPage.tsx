@@ -12,6 +12,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
 import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
+
+const DaysPage = () => {
   const {
     user
   } = useAuth();
