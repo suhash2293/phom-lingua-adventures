@@ -9,6 +9,7 @@ import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
+import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
 
 const seasonConfig: Record<string, { icon: React.ElementType; gradient: string; iconColor: string }> = {
   spring: {
@@ -66,7 +67,14 @@ const SeasonsPage = () => {
     queryFn: () => ContentService.getContentItemsByCategoryName('Seasons')
   });
 
-  const handlePageInteraction = () => {
+  // Get category for title display
+  const { data: categoryData } = useQuery({
+    queryKey: ['seasons-category'],
+    queryFn: async () => {
+      const categories = await ContentService.getCategories();
+      return categories.find(cat => cat.name === 'Seasons');
+    }
+  });
     if (!audioInitialized) {
       initializeAudioContext();
       setAudioInitialized(true);
@@ -242,8 +250,12 @@ const SeasonsPage = () => {
         </Button>
       </div>
 
-      <h1 className="text-3xl font-bold mb-6">Seasons in Phom</h1>
-      <p className="text-lg mb-8">Learn the names of the four seasons in Phom dialect</p>
+      <ModuleTitleWithAudio
+        englishTitle="Seasons in Phom"
+        category={categoryData}
+        subtitle="Learn the names of the four seasons in Phom dialect"
+        onAudioPlay={handlePageInteraction}
+      />
 
       {!audioInitialized && (
         <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">

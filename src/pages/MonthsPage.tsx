@@ -9,6 +9,7 @@ import { ContentItem } from '@/types/content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import { toast } from '@/hooks/use-toast';
+import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
 
 const MonthsPage = () => {
   const navigate = useNavigate();
@@ -49,7 +50,14 @@ const MonthsPage = () => {
     queryFn: () => ContentService.getContentItemsByCategoryName('Months')
   });
 
-  // Initialize audio system on first user interaction with the page
+  // Get category for title display
+  const { data: categoryData } = useQuery({
+    queryKey: ['months-category'],
+    queryFn: async () => {
+      const categories = await ContentService.getCategories();
+      return categories.find(cat => cat.name === 'Months');
+    }
+  });
   const handlePageInteraction = () => {
     if (!audioInitialized) {
       initializeAudioContext();
@@ -204,8 +212,12 @@ const MonthsPage = () => {
         </Button>
       </div>
 
-        <h1 className="text-3xl font-bold mb-6">Months in Phom</h1>
-        <p className="text-lg mb-8">Learn the names of the months in Phom dialect</p>
+      <ModuleTitleWithAudio
+        englishTitle="Months in Phom"
+        category={categoryData}
+        subtitle="Learn the names of the months in Phom dialect"
+        onAudioPlay={handlePageInteraction}
+      />
         
         {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
             <p className="text-center">👆 Click anywhere or interact with the page to enable audio playback</p>

@@ -2,6 +2,8 @@
 export type Category = {
   id: string;
   name: string;
+  phom_name: string | null;
+  title_audio_url: string | null;
   description: string | null;
   created_at: string;
   updated_at: string;

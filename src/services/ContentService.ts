@@ -168,6 +168,48 @@ export const ContentService = {
     return data;
   },
 
+  async updateCategory(id: string, updates: Partial<Category>): Promise<Category | null> {
+    const { data, error } = await supabase
+      .from('categories')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating category:', error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  async uploadCategoryAudio(file: File, categoryId: string): Promise<string | null> {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `category-${categoryId}-${Date.now()}.${fileExt}`;
+      const filePath = `category-audio/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('audio-files')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error uploading category audio file:', uploadError);
+        return null;
+      }
+
+      const { data } = supabase.storage
+        .from('audio-files')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading category audio file:', error);
+      return null;
+    }
+  },
+
   async uploadAudioFile(file: File, contentItemId: string): Promise<string | null> {
     try {
       const fileExt = file.name.split('.').pop();
