@@ -1,0 +1,1 @@
+UPDATE categories SET phom_name = 'Nyäng' WHERE name = 'Numbers';
