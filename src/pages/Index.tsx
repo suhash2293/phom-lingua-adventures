@@ -1,12 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, Volume2, Loader2 } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
-import { ContentService } from '@/services/ContentService';
-import { Category } from '@/types/content';
+
 const moduleConfig: Record<string, {
   icon: React.ReactNode;
   route: string;
@@ -62,46 +60,17 @@ const moduleConfig: Record<string, {
     description: 'Learn the four seasons in Phom Dialect'
   }
 };
+
 const Index = () => {
   const navigate = useNavigate();
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
-  const {
-    data: categories
-  } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => ContentService.getCategories()
-  });
-  const handlePlayTitleAudio = async (category: Category) => {
-    if (!category.title_audio_url) return;
-    try {
-      setPlayingAudio(category.id);
-      const audio = new Audio(category.title_audio_url);
-      audio.onended = () => setPlayingAudio(null);
-      audio.onerror = () => setPlayingAudio(null);
-      await audio.play();
-    } catch (error) {
-      console.error('Error playing title audio:', error);
-      setPlayingAudio(null);
-    }
-  };
-  const renderModuleCard = (categoryName: string, category?: Category) => {
+
+  const renderModuleCard = (categoryName: string) => {
     const config = moduleConfig[categoryName];
     if (!config) return null;
     return <Card key={categoryName} className="hover:shadow-lg transition-all overflow-hidden group">
         <CardHeader className={`bg-gradient-to-r ${config.gradient} pb-2 relative`}>
           <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10 transform transition-transform group-hover:scale-110"></div>
-          <div className="flex items-center justify-center gap-2 relative z-10">
-            <CardTitle className="text-xl text-center">{categoryName}</CardTitle>
-            {category?.title_audio_url && <Button variant="ghost" size="sm" onClick={e => {
-            e.stopPropagation();
-            handlePlayTitleAudio(category);
-          }} disabled={playingAudio === category.id} className="h-8 w-8 p-0 font-sans text-center text-lg text-foreground">
-                {playingAudio === category.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
-              </Button>}
-          </div>
-          <span className="text-sm text-muted-foreground text-center block min-h-[20px]">
-            {category?.phom_name || '\u00A0'}
-          </span>
+          <CardTitle className="text-xl text-center relative z-10">{categoryName}</CardTitle>
           <CardDescription className="relative z-10 text-center">{config.description}</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
@@ -119,14 +88,6 @@ const Index = () => {
       </Card>;
   };
 
-  // Create a map of categories by name for easy lookup
-  const categoriesByName = React.useMemo(() => {
-    const map: Record<string, Category> = {};
-    categories?.forEach(cat => {
-      map[cat.name] = cat;
-    });
-    return map;
-  }, [categories]);
   const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons'];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
@@ -148,7 +109,7 @@ const Index = () => {
       <section className="py-12">
         <h2 className="text-3xl font-bold text-center mb-12">Learning Modules</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-          {moduleOrder.map(moduleName => renderModuleCard(moduleName, categoriesByName[moduleName]))}
+          {moduleOrder.map(moduleName => renderModuleCard(moduleName))}
         </div>
       </section>
 
