@@ -36,34 +36,36 @@ const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
   };
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center gap-3 flex-wrap">
-        <h1 className="text-3xl font-bold">{englishTitle}</h1>
-        {category?.title_audio_url && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handlePlayAudio}
-            disabled={isPlaying}
-            className="flex items-center gap-2"
-          >
-            {isPlaying ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Volume2 className="h-4 w-4" />
-            )}
-            Listen
-          </Button>
+    <div className="mb-8 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl p-6 shadow-sm">
+      <div className="flex flex-col items-center text-center">
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-3xl font-bold">{englishTitle}</h1>
+          {category?.title_audio_url && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handlePlayAudio}
+              disabled={isPlaying}
+              className="flex items-center gap-2 shadow-md"
+            >
+              {isPlaying ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Volume2 className="h-4 w-4" />
+              )}
+              Listen
+            </Button>
+          )}
+        </div>
+        {category?.phom_name && (
+          <p className="text-2xl text-primary font-semibold mb-2">
+            {category.phom_name}
+          </p>
+        )}
+        {subtitle && (
+          <p className="text-muted-foreground">{subtitle}</p>
         )}
       </div>
-      {category?.phom_name && (
-        <p className="text-xl text-primary mt-1 font-medium">
-          {category.phom_name}
-        </p>
-      )}
-      {subtitle && (
-        <p className="text-lg text-muted-foreground mt-2">{subtitle}</p>
-      )}
     </div>
   );
 };
