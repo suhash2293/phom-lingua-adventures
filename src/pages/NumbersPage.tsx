@@ -163,7 +163,7 @@ const NumbersPage = () => {
           <Skeleton className="h-9 w-32" />
         </div>
 
-          <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
+          <h1 className="text-3xl font-bold mb-6">Numbers</h1>
           <p className="text-lg mb-8">Learn to count from 1 to 100 in Phom language.</p>
           
           {/* Loading indicator */}
@@ -234,7 +234,7 @@ const NumbersPage = () => {
   // Error state
   if (error) {
     return <div className="container px-4 md:px-6 py-8 md:py-12">
-        <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
+        <h1 className="text-3xl font-bold mb-6">Numbers</h1>
         <p className="text-red-500">Error loading numbers. Please try again later.</p>
       </div>;
   }
@@ -242,7 +242,7 @@ const NumbersPage = () => {
   // No data state
   if (!numbers || numbers.length === 0) {
     return <div className="container px-4 md:px-6 py-8 md:py-12">
-        <h1 className="text-3xl font-bold mb-6">Numbers in Phom (1-100)</h1>
+        <h1 className="text-3xl font-bold mb-6">Numbers</h1>
         <p>No number content found. Please check back later.</p>
       </div>;
   }
@@ -280,7 +280,7 @@ const NumbersPage = () => {
       </div>
 
       <ModuleTitleWithAudio
-        englishTitle="Numbers in Phom (1-100)"
+        englishTitle="Numbers"
         category={categoryData}
         subtitle="Learn to count from 1 to 100 in Phom dialect."
         onAudioPlay={handlePageInteraction}
