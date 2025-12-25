@@ -36,6 +36,67 @@ const AudioChallengeGame = () => {
   const { categoryId } = useParams();
   const { fire } = useConfettiStore();
   
+  // Helper function to create alternating sequence that prevents consecutive same-module questions
+  const createAlternatingSequence = useCallback((
+    itemsByCategory: Map<string, ContentItem[]>
+  ): ContentItem[] => {
+    const result: ContentItem[] = [];
+    const categoryIds = Array.from(itemsByCategory.keys());
+    let lastCategoryId: string | null = null;
+    
+    // Create a pool of available items per category (shuffled)
+    const pools = new Map<string, ContentItem[]>();
+    itemsByCategory.forEach((items, catId) => {
+      pools.set(catId, shuffle([...items]));
+    });
+    
+    // Keep selecting items until all pools are empty
+    while (pools.size > 0) {
+      // Get categories that are NOT the last used one (to prevent consecutive)
+      const availableCategories = categoryIds.filter(
+        id => pools.has(id) && id !== lastCategoryId
+      );
+      
+      // If only one category remains, we have to use it
+      const categoriesToChooseFrom = availableCategories.length > 0 
+        ? availableCategories 
+        : Array.from(pools.keys());
+      
+      // Randomly select from available categories
+      const selectedCategory = categoriesToChooseFrom[
+        Math.floor(Math.random() * categoriesToChooseFrom.length)
+      ];
+      
+      const pool = pools.get(selectedCategory)!;
+      const item = pool.pop()!;
+      result.push(item);
+      lastCategoryId = selectedCategory;
+      
+      // Remove empty pools
+      if (pool.length === 0) {
+        pools.delete(selectedCategory);
+      }
+    }
+    
+    return result;
+  }, []);
+
+  // Helper to fetch items grouped by category and create alternating sequence
+  const fetchAlternatingItems = useCallback(async (): Promise<ContentItem[]> => {
+    const categories = await ContentService.getCategories();
+    
+    const itemsByCategory = new Map<string, ContentItem[]>();
+    for (const category of categories) {
+      const categoryItems = await ContentService.getContentItemsByCategoryId(category.id);
+      const itemsWithAudio = categoryItems.filter(item => item.audio_url);
+      if (itemsWithAudio.length > 0) {
+        itemsByCategory.set(category.id, itemsWithAudio);
+      }
+    }
+    
+    return createAlternatingSequence(itemsByCategory);
+  }, [createAlternatingSequence]);
+
   // Fetch content items for the selected category or a random mix
   const { data: contentItems, isLoading } = useQuery({
     queryKey: ['audioChallengeContent', categoryId],
@@ -43,16 +104,8 @@ const AudioChallengeGame = () => {
       if (categoryId) {
         return ContentService.getContentItemsByCategoryId(categoryId);
       } else {
-        // Get all content items from all categories for random mix
-        const categories = await ContentService.getCategories();
-        
-        let allItems: ContentItem[] = [];
-        for (const category of categories) {
-          const categoryItems = await ContentService.getContentItemsByCategoryId(category.id);
-          allItems = [...allItems, ...categoryItems];
-        }
-        
-        return allItems;
+        // Get alternating sequence from all categories for random mix
+        return fetchAlternatingItems();
       }
     }
   });
@@ -303,7 +356,7 @@ const AudioChallengeGame = () => {
     }, 1500);
   };
   
-  const handlePlayAgain = () => {
+  const handlePlayAgain = async () => {
     setCurrentItemIndex(0);
     setScore(0);
     setFeedback(null);
@@ -317,9 +370,14 @@ const AudioChallengeGame = () => {
     setUseHtmlAudio(false);
     
     // Re-shuffle items for a new game
-    if (contentItems) {
+    if (categoryId && contentItems) {
+      // Single category - just shuffle
       const shuffledItems = shuffle(contentItems.filter(item => item.audio_url)) as ContentItem[];
       setItems(shuffledItems);
+    } else {
+      // Random mix - use alternating sequence logic
+      const alternatingItems = await fetchAlternatingItems();
+      setItems(alternatingItems);
     }
   };
   
