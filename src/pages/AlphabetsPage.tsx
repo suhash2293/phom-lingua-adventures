@@ -216,7 +216,7 @@ const AlphabetsPage = () => {
       </div>
 
       <ModuleTitleWithAudio
-        englishTitle="Phom Alphabets"
+        englishTitle="Alphabets"
         category={categoryData}
         subtitle="Learn the Phom alphabet with pronunciation."
         onAudioPlay={handlePageInteraction}
