@@ -37,39 +37,41 @@ const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
   };
 
   return (
-    <Card className="mb-8 border-primary/20 hover:border-primary hover:shadow-md transition-all">
-      <CardHeader className="bg-primary/5 pb-2 text-center">
-        <CardTitle className="text-3xl font-bold">{englishTitle}</CardTitle>
-        {category?.phom_name && (
-          <p className="text-2xl text-primary font-semibold mt-2">
-            {category.phom_name}
-          </p>
+    <div className="flex justify-center mb-8">
+      <Card className="w-full max-w-xs border-primary/20 hover:border-primary hover:shadow-md transition-all">
+        <CardHeader className="bg-primary/5 pb-2 text-center">
+          <CardTitle className="text-2xl font-bold">{englishTitle}</CardTitle>
+          {category?.phom_name && (
+            <p className="text-xl text-primary font-semibold mt-2">
+              {category.phom_name}
+            </p>
+          )}
+          {category?.title_audio_url && (
+            <div className="flex justify-center mt-3">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={handlePlayAudio}
+                disabled={isPlaying}
+                className="flex items-center gap-2 shadow-md"
+              >
+                {isPlaying ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Headphones className="h-4 w-4" />
+                )}
+                Listen
+              </Button>
+            </div>
+          )}
+        </CardHeader>
+        {subtitle && (
+          <CardContent className="pt-4 text-center">
+            <p className="text-muted-foreground text-sm">{subtitle}</p>
+          </CardContent>
         )}
-        {category?.title_audio_url && (
-          <div className="flex justify-center mt-3">
-            <Button
-              variant="default"
-              size="sm"
-              onClick={handlePlayAudio}
-              disabled={isPlaying}
-              className="flex items-center gap-2 shadow-md"
-            >
-              {isPlaying ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Headphones className="h-4 w-4" />
-              )}
-              Listen
-            </Button>
-          </div>
-        )}
-      </CardHeader>
-      {subtitle && (
-        <CardContent className="pt-4 text-center">
-          <p className="text-muted-foreground">{subtitle}</p>
-        </CardContent>
-      )}
-    </Card>
+      </Card>
+    </div>
   );
 };
 
