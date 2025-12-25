@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Volume2, Loader2 } from 'lucide-react';
 import { Category } from '@/types/content';
 
@@ -36,11 +37,16 @@ const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
   };
 
   return (
-    <div className="mb-8 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent border border-primary/20 rounded-xl p-6 shadow-sm">
-      <div className="flex flex-col items-center text-center">
-        <div className="flex items-center gap-3 mb-2">
-          <h1 className="text-3xl font-bold">{englishTitle}</h1>
-          {category?.title_audio_url && (
+    <Card className="mb-8 border-primary/20 hover:border-primary hover:shadow-md transition-all">
+      <CardHeader className="bg-primary/5 pb-4 text-center">
+        <CardTitle className="text-3xl font-bold">{englishTitle}</CardTitle>
+        {category?.phom_name && (
+          <p className="text-2xl text-primary font-semibold mt-2">
+            {category.phom_name}
+          </p>
+        )}
+        {category?.title_audio_url && (
+          <div className="flex justify-center mt-3">
             <Button
               variant="default"
               size="sm"
@@ -55,18 +61,15 @@ const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
               )}
               Listen
             </Button>
-          )}
-        </div>
-        {category?.phom_name && (
-          <p className="text-2xl text-primary font-semibold mb-2">
-            {category.phom_name}
-          </p>
+          </div>
         )}
-        {subtitle && (
+      </CardHeader>
+      {subtitle && (
+        <CardContent className="pt-4 text-center">
           <p className="text-muted-foreground">{subtitle}</p>
-        )}
-      </div>
-    </div>
+        </CardContent>
+      )}
+    </Card>
   );
 };
 
