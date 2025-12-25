@@ -213,7 +213,7 @@ const MonthsPage = () => {
       </div>
 
       <ModuleTitleWithAudio
-        englishTitle="Months in Phom"
+        englishTitle="Months"
         category={categoryData}
         subtitle="Learn the names of the months in Phom dialect"
         onAudioPlay={handlePageInteraction}
