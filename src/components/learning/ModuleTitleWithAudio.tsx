@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Volume2, Loader2 } from 'lucide-react';
+import { Headphones, Loader2 } from 'lucide-react';
 import { Category } from '@/types/content';
 
 interface ModuleTitleWithAudioProps {
@@ -38,7 +38,7 @@ const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
 
   return (
     <Card className="mb-8 border-primary/20 hover:border-primary hover:shadow-md transition-all">
-      <CardHeader className="bg-primary/5 pb-4 text-center">
+      <CardHeader className="bg-primary/5 pb-2 text-center">
         <CardTitle className="text-3xl font-bold">{englishTitle}</CardTitle>
         {category?.phom_name && (
           <p className="text-2xl text-primary font-semibold mt-2">
@@ -57,7 +57,7 @@ const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
               {isPlaying ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <Volume2 className="h-4 w-4" />
+                <Headphones className="h-4 w-4" />
               )}
               Listen
             </Button>
