@@ -253,7 +253,7 @@ const SeasonsPage = () => {
       </div>
 
       <ModuleTitleWithAudio
-        englishTitle="Seasons in Phom"
+        englishTitle="Seasons"
         category={categoryData}
         subtitle="Learn the names of the four seasons in Phom dialect"
         onAudioPlay={handlePageInteraction}
