@@ -43,13 +43,11 @@ const AudioChallengeGame = () => {
       if (categoryId) {
         return ContentService.getContentItemsByCategoryId(categoryId);
       } else {
-        // Get all content items except alphabets for random mix
-        const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
+        // Get all content items from all categories for random mix
         const categories = await ContentService.getCategories();
-        const filteredCategories = categories.filter(cat => cat.id !== ALPHABETS_CATEGORY_ID);
         
         let allItems: ContentItem[] = [];
-        for (const category of filteredCategories) {
+        for (const category of categories) {
           const categoryItems = await ContentService.getContentItemsByCategoryId(category.id);
           allItems = [...allItems, ...categoryItems];
         }
@@ -493,7 +491,7 @@ const AudioChallengeGame = () => {
                     className="w-full"
                     disabled={!!selectedOption}
                   >
-                    {option.phom_word}
+                    {option.english_translation}
                   </Button>
                 ))}
               </div>
