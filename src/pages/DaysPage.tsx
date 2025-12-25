@@ -209,7 +209,7 @@ const DaysPage = () => {
       </div>
 
       <ModuleTitleWithAudio
-        englishTitle="Days of the Week in Phom"
+        englishTitle="Days"
         category={categoryData}
         subtitle="Learn the names of the days of the week in Phom dialect."
         onAudioPlay={handlePageInteraction}
