@@ -128,6 +128,9 @@ export type Database = {
           id: string
           name: string
           phom_name: string | null
+          singular_audio_url: string | null
+          singular_name: string | null
+          singular_phom_name: string | null
           title_audio_url: string | null
           updated_at: string
         }
@@ -137,6 +140,9 @@ export type Database = {
           id?: string
           name: string
           phom_name?: string | null
+          singular_audio_url?: string | null
+          singular_name?: string | null
+          singular_phom_name?: string | null
           title_audio_url?: string | null
           updated_at?: string
         }
@@ -146,6 +152,9 @@ export type Database = {
           id?: string
           name?: string
           phom_name?: string | null
+          singular_audio_url?: string | null
+          singular_name?: string | null
+          singular_phom_name?: string | null
           title_audio_url?: string | null
           updated_at?: string
         }
