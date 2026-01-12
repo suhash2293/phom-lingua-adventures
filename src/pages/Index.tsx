@@ -14,7 +14,7 @@ const moduleConfig: Record<string, {
   hoverBg: string;
   description: string;
 }> = {
-  'Alphabets': {
+  'Alphabet': {
     icon: <ScrollText className="h-8 w-8" />,
     route: '/alphabets',
     gradient: 'from-primary/30 to-primary/10',
@@ -88,7 +88,7 @@ const Index = () => {
       </Card>;
   };
 
-  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons'];
+  const moduleOrder = ['Alphabet', 'Numbers', 'Days', 'Months', 'Seasons'];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
