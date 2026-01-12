@@ -5,6 +5,9 @@ export type Category = {
   phom_name: string | null;
   title_audio_url: string | null;
   description: string | null;
+  singular_name: string | null;
+  singular_phom_name: string | null;
+  singular_audio_url: string | null;
   created_at: string;
   updated_at: string;
 };
