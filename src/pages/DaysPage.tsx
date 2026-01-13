@@ -98,12 +98,21 @@ const DaysPage = () => {
     if (days && days.length > 0 && audioInitialized) {
       // Extract valid audio URLs
       const audioUrls = days.filter(item => item.audio_url).map(item => item.audio_url as string);
+      
+      // Also preload category title audio
+      if (categoryData?.title_audio_url) {
+        audioUrls.push(categoryData.title_audio_url);
+      }
+      if (categoryData?.singular_audio_url) {
+        audioUrls.push(categoryData.singular_audio_url);
+      }
+      
       if (audioUrls.length > 0) {
         // Preload all audio files
         preloadAudioBatch(audioUrls);
       }
     }
-  }, [days, preloadAudioBatch, audioInitialized]);
+  }, [days, categoryData, preloadAudioBatch, audioInitialized]);
 
   // Track when user views content
   useEffect(() => {
@@ -213,6 +222,7 @@ const DaysPage = () => {
         category={categoryData}
         subtitle="Learn the names of the days of the week in Phom dialect."
         onAudioPlay={handlePageInteraction}
+        playAudioFromHook={playAudio}
       />
         
         {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg">
