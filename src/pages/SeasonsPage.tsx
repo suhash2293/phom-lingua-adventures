@@ -103,11 +103,20 @@ const SeasonsPage = () => {
   useEffect(() => {
     if (seasons && seasons.length > 0 && audioInitialized) {
       const audioUrls = seasons.filter(item => item.audio_url).map(item => item.audio_url as string);
+      
+      // Also preload category title audio
+      if (categoryData?.title_audio_url) {
+        audioUrls.push(categoryData.title_audio_url);
+      }
+      if (categoryData?.singular_audio_url) {
+        audioUrls.push(categoryData.singular_audio_url);
+      }
+      
       if (audioUrls.length > 0) {
         preloadAudioBatch(audioUrls);
       }
     }
-  }, [seasons, preloadAudioBatch, audioInitialized]);
+  }, [seasons, categoryData, preloadAudioBatch, audioInitialized]);
 
   const handlePlayAudio = async (url: string | null, itemId: string) => {
     if (!url) return;
@@ -257,6 +266,7 @@ const SeasonsPage = () => {
         category={categoryData}
         subtitle="Learn the names of the four seasons in Phom dialect"
         onAudioPlay={handlePageInteraction}
+        playAudioFromHook={playAudio}
       />
 
       {!audioInitialized && (

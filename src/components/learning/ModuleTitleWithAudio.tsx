@@ -3,43 +3,65 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Headphones, Loader2 } from 'lucide-react';
 import { Category } from '@/types/content';
+
 interface ModuleTitleWithAudioProps {
   englishTitle: string;
   category?: Category | null;
   subtitle?: string;
   onAudioPlay?: () => void;
+  playAudioFromHook?: (url: string) => Promise<void>;
 }
+
 const ModuleTitleWithAudio: React.FC<ModuleTitleWithAudioProps> = ({
   englishTitle,
   category,
   subtitle,
-  onAudioPlay
+  onAudioPlay,
+  playAudioFromHook
 }) => {
   const [isPlayingPlural, setIsPlayingPlural] = useState(false);
   const [isPlayingSingular, setIsPlayingSingular] = useState(false);
+
   const handlePlayPluralAudio = async () => {
     if (!category?.title_audio_url) return;
     try {
       setIsPlayingPlural(true);
       onAudioPlay?.();
-      const audio = new Audio(category.title_audio_url);
-      audio.onended = () => setIsPlayingPlural(false);
-      audio.onerror = () => setIsPlayingPlural(false);
-      await audio.play();
+      
+      // Use hook's playAudio if available for better browser compatibility
+      if (playAudioFromHook) {
+        await playAudioFromHook(category.title_audio_url);
+        setIsPlayingPlural(false);
+      } else {
+        // Fallback to direct Audio API
+        const audio = new Audio(category.title_audio_url);
+        audio.onended = () => setIsPlayingPlural(false);
+        audio.onerror = () => setIsPlayingPlural(false);
+        await audio.play();
+      }
     } catch (error) {
       console.error('Error playing plural audio:', error);
       setIsPlayingPlural(false);
     }
   };
+
   const handlePlaySingularAudio = async () => {
     if (!category?.singular_audio_url) return;
     try {
       setIsPlayingSingular(true);
       onAudioPlay?.();
-      const audio = new Audio(category.singular_audio_url);
-      audio.onended = () => setIsPlayingSingular(false);
-      audio.onerror = () => setIsPlayingSingular(false);
-      await audio.play();
+      
+      // Use hook's playAudio if available for better browser compatibility
+      if (playAudioFromHook) {
+        await playAudioFromHook(category.singular_audio_url);
+        setIsPlayingSingular(false);
+      } else {
+        // Fallback to direct Audio API
+        const audio = new Audio(category.singular_audio_url);
+        audio.onended = () => setIsPlayingSingular(false);
+        audio.onerror = () => setIsPlayingSingular(false);
+        await audio.play();
+      }
     } catch (error) {
       console.error('Error playing singular audio:', error);
       setIsPlayingSingular(false);

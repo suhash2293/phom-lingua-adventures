@@ -116,6 +116,20 @@ const NumbersPage = () => {
     if (sortedNumbers.length > 0 && audioInitialized) {
       // Extract valid audio URLs
       const audioUrls = sortedNumbers.filter(item => item.audio_url).map(item => item.audio_url as string);
+      
+      // Also preload category title audio with high priority
+      const categoryAudioUrls: string[] = [];
+      if (categoryData?.title_audio_url) {
+        categoryAudioUrls.push(categoryData.title_audio_url);
+      }
+      if (categoryData?.singular_audio_url) {
+        categoryAudioUrls.push(categoryData.singular_audio_url);
+      }
+      
+      if (categoryAudioUrls.length > 0) {
+        preloadAudioBatch(categoryAudioUrls, true);
+      }
+      
       if (audioUrls.length > 0) {
         // Preload audio files in batches
         preloadAudioBatch(audioUrls.slice(0, 20), true); // First 20 with high priority
@@ -126,7 +140,7 @@ const NumbersPage = () => {
         }, 1000);
       }
     }
-  }, [sortedNumbers, preloadAudioBatch, audioInitialized]);
+  }, [sortedNumbers, categoryData, preloadAudioBatch, audioInitialized]);
 
   // Enhanced play audio function
   const handlePlayAudio = async (url: string | null, itemId: string) => {
@@ -284,6 +298,7 @@ const NumbersPage = () => {
         category={categoryData}
         subtitle="Learn to count from 1 to 100 in Phom dialect."
         onAudioPlay={handlePageInteraction}
+        playAudioFromHook={playAudio}
       />
         
         {!audioInitialized && <div className="mb-6 p-4 bg-primary/5 border border-primary/20 rounded-lg transition-all duration-300">
