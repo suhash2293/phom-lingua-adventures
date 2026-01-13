@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Howl } from 'howler';
 import { shuffle } from 'lodash';
-import { ArrowLeft, Volume2, VolumeX, Loader2 } from 'lucide-react';
+import { ArrowLeft, Volume2, VolumeX, Loader2, Hand } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -31,6 +31,7 @@ const AudioChallengeGame = () => {
   const [audioSupported, setAudioSupported] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [useHtmlAudio, setUseHtmlAudio] = useState(false);
+  const [audioContextReady, setAudioContextReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const { categoryId } = useParams();
@@ -139,6 +140,41 @@ const AudioChallengeGame = () => {
     checkAudioSupport();
   }, []);
 
+  // Initialize audio context on first user interaction (for mobile browsers)
+  useEffect(() => {
+    const initAudioContext = () => {
+      try {
+        const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContext) {
+          const ctx = new AudioContext();
+          ctx.resume().then(() => {
+            setAudioContextReady(true);
+            console.log('Audio context initialized successfully');
+            // Don't close the context, keep it for future use
+          }).catch(err => {
+            console.error('Failed to resume audio context:', err);
+            setAudioContextReady(true); // Still allow attempts
+          });
+        } else {
+          setAudioContextReady(true); // No AudioContext, but still allow HTML5 audio
+        }
+      } catch (error) {
+        console.error('Audio context initialization error:', error);
+        setAudioContextReady(true); // Allow attempts anyway
+      }
+      document.removeEventListener('click', initAudioContext);
+      document.removeEventListener('touchstart', initAudioContext);
+    };
+
+    document.addEventListener('click', initAudioContext);
+    document.addEventListener('touchstart', initAudioContext);
+    
+    return () => {
+      document.removeEventListener('click', initAudioContext);
+      document.removeEventListener('touchstart', initAudioContext);
+    };
+  }, []);
+
   useEffect(() => {
     if (contentItems) {
       const filteredItems = contentItems.filter(item => item.audio_url);
@@ -203,48 +239,70 @@ const AudioChallengeGame = () => {
   };
   
 
-  // HTML5 Audio fallback
+  // HTML5 Audio fallback with improved error handling
   const playWithHtmlAudio = (src: string) => {
     try {
+      // Clean up previous audio
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current.load();
         audioRef.current = null;
       }
 
       const audio = new Audio();
       audio.crossOrigin = 'anonymous';
-      audio.preload = 'metadata';
+      audio.preload = 'auto';
       
-      audio.onloadstart = () => {
-        setAudioLoading(true);
-        setAudioError(null);
-      };
-      
-      audio.oncanplaythrough = () => {
+      // Add cache-busting to avoid stale cached files
+      const cacheBustedSrc = src.includes('?') 
+        ? `${src}&_t=${Date.now()}` 
+        : `${src}?_t=${Date.now()}`;
+
+      setAudioLoading(true);
+      setAudioError(null);
+
+      const handleCanPlay = () => {
         setAudioLoading(false);
-        audio.play().then(() => {
-          setIsPlaying(true);
-          setAudioPlayed(true);
-        }).catch(error => {
-          setAudioError('Failed to play audio. Please try again.');
-          console.error('HTML5 audio play error:', error);
-        });
+        const playPromise = audio.play();
+        
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            setIsPlaying(true);
+            setAudioPlayed(true);
+          }).catch(error => {
+            console.error('HTML5 audio play error:', error);
+            if (error.name === 'NotAllowedError') {
+              setAudioError('Tap the "Play Audio" button to enable audio');
+              setAudioContextReady(false);
+            } else {
+              setAudioError('Failed to play audio. Please try again.');
+            }
+          });
+        }
       };
-      
-      audio.onended = () => {
+
+      const handleEnded = () => {
         setIsPlaying(false);
         setAudioLoading(false);
       };
-      
-      audio.onerror = () => {
+
+      const handleError = (e: Event) => {
         setAudioLoading(false);
-        setAudioError('Failed to load audio file.');
-        console.error('HTML5 audio error:', src);
+        const error = (e.target as HTMLAudioElement).error;
+        console.error('HTML5 audio error:', error?.message || 'Unknown error', src);
+        setAudioError('Could not load audio. Please try again.');
       };
+
+      // Use one-time event listeners
+      audio.addEventListener('canplaythrough', handleCanPlay, { once: true });
+      audio.addEventListener('ended', handleEnded);
+      audio.addEventListener('error', handleError, { once: true });
       
       audioRef.current = audio;
-      audio.src = src;
+      audio.src = cacheBustedSrc;
       audio.load();
+      
     } catch (error) {
       setAudioLoading(false);
       setAudioError('Audio playback not supported.');
@@ -464,6 +522,14 @@ const AudioChallengeGame = () => {
       ) : !isFinished ? (
         <>
           <div className="mb-4">
+            {!audioContextReady && (
+              <div className="text-center text-blue-600 mb-4 p-3 bg-blue-50 dark:bg-blue-950 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-center justify-center gap-2">
+                  <Hand className="h-4 w-4" />
+                  Tap anywhere to enable audio playback
+                </div>
+              </div>
+            )}
             <p className="text-center mb-4">
               {!audioPlayed ? "Click 'Play Audio' to hear the word, then select the correct answer below:" : "Select the correct word:"}
             </p>
