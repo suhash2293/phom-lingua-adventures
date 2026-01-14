@@ -84,14 +84,22 @@ const AudioChallengeGame = () => {
 
   // Helper to fetch items grouped by category and create alternating sequence
   const fetchAlternatingItems = useCallback(async (): Promise<ContentItem[]> => {
+    const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
     const categories = await ContentService.getCategories();
+    const filteredCategories = categories.filter(cat => cat.id !== ALPHABETS_CATEGORY_ID);
+    
+    // Guaranteed minimum items per category to ensure all categories are represented
+    const MIN_ITEMS_PER_CATEGORY = 4;
     
     const itemsByCategory = new Map<string, ContentItem[]>();
-    for (const category of categories) {
+    for (const category of filteredCategories) {
       const categoryItems = await ContentService.getContentItemsByCategoryId(category.id);
       const itemsWithAudio = categoryItems.filter(item => item.audio_url);
       if (itemsWithAudio.length > 0) {
-        itemsByCategory.set(category.id, itemsWithAudio);
+        // Take at least MIN_ITEMS_PER_CATEGORY from each category
+        const shuffledItems = shuffle(itemsWithAudio);
+        const itemsToTake = shuffledItems.slice(0, Math.min(MIN_ITEMS_PER_CATEGORY, itemsWithAudio.length));
+        itemsByCategory.set(category.id, itemsToTake);
       }
     }
     
