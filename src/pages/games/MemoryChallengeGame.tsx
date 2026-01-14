@@ -48,17 +48,31 @@ const MemoryChallengeGame = () => {
       if (categoryId) {
         return ContentService.getContentItemsByCategory(categoryId);
       } else {
-        // Get all categories and select random items from each
+        // Get all categories and select random items from each (excluding alphabets)
+        const ALPHABETS_CATEGORY_ID = "17772f98-6ee4-4f94-aa91-d3309dd0f99a";
         const categories = await ContentService.getCategories();
+        const filteredCategories = categories.filter(cat => cat.id !== ALPHABETS_CATEGORY_ID);
         let allItems: ContentItem[] = [];
         
-        // Get some items from each category
-        for (const category of categories) {
+        // Guaranteed minimum items per category to ensure all categories are represented
+        const MIN_ITEMS_PER_CATEGORY = 4;
+        const MAX_ITEMS_TOTAL = 30;
+        
+        // Get items from each category with guaranteed minimum representation
+        for (const category of filteredCategories) {
           const categoryItems = await ContentService.getContentItemsByCategory(category.id);
-          allItems = [...allItems, ...categoryItems];
+          // Shuffle and take at least MIN_ITEMS_PER_CATEGORY from each, or all if less available
+          const shuffledCategoryItems = shuffle(categoryItems);
+          const itemsToTake = shuffledCategoryItems.slice(0, Math.min(MIN_ITEMS_PER_CATEGORY, categoryItems.length));
+          allItems = [...allItems, ...itemsToTake];
         }
         
-        return shuffle(allItems).slice(0, 30); // Limit to 30 random items
+        // Shuffle combined items and trim to max if needed
+        const finalItems = allItems.length > MAX_ITEMS_TOTAL 
+          ? shuffle(allItems).slice(0, MAX_ITEMS_TOTAL)
+          : shuffle(allItems);
+        
+        return finalItems;
       }
     }
   });

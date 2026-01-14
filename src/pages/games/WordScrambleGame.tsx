@@ -72,14 +72,26 @@ const WordScrambleGame = () => {
         const filteredCategories = categories.filter(cat => cat.id !== ALPHABETS_CATEGORY_ID);
         let allItems: ContentItem[] = [];
         
-        // Get some items from each category (excluding alphabets)
+        // Guaranteed minimum items per category to ensure all categories are represented
+        const MIN_ITEMS_PER_CATEGORY = 4;
+        const MAX_ITEMS_TOTAL = 30;
+        
+        // Get items from each category with guaranteed minimum representation
         for (const category of filteredCategories) {
           const categoryItems = await ContentService.getContentItemsByCategory(category.id);
-          allItems = [...allItems, ...categoryItems];
+          // Shuffle and take at least MIN_ITEMS_PER_CATEGORY from each, or all if less available
+          const shuffledCategoryItems = shuffle(categoryItems);
+          const itemsToTake = shuffledCategoryItems.slice(0, Math.min(MIN_ITEMS_PER_CATEGORY, categoryItems.length));
+          allItems = [...allItems, ...itemsToTake];
         }
         
+        // Shuffle combined items and trim to max if needed
+        const finalItems = allItems.length > MAX_ITEMS_TOTAL 
+          ? shuffle(allItems).slice(0, MAX_ITEMS_TOTAL)
+          : shuffle(allItems);
+        
         setCategoryName("Random Mix");
-        return shuffle(allItems).slice(0, 30); // Limit to 30 random items
+        return finalItems;
       }
     }
   });
