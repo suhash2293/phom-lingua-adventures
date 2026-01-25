@@ -67,8 +67,16 @@ const PronounsPage = () => {
         playAudioFromHook={playAudio}
       />
 
-      {/* Pronouns Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-8">
+      {/* Personal Pronouns Section */}
+      <div className="mt-8">
+        <Card className="mb-6 bg-gradient-to-r from-purple-100/50 to-purple-50/20 dark:from-purple-900/40 dark:to-purple-800/20 border-purple-200/50 dark:border-purple-700/30">
+          <CardContent className="flex items-center justify-center py-4">
+            <h2 className="text-xl font-semibold text-foreground">Personal Pronouns</h2>
+          </CardContent>
+        </Card>
+
+        {/* Pronouns Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {isLoading ? (
           // Loading skeletons
           Array.from({ length: 8 }).map((_, index) => (
@@ -131,6 +139,7 @@ const PronounsPage = () => {
             </p>
           </div>
         )}
+        </div>
       </div>
     </div>
   );
