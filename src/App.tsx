@@ -21,6 +21,7 @@ import DaysPage from "./pages/DaysPage";
 import MonthsPage from "./pages/MonthsPage";
 import SeasonsPage from "./pages/SeasonsPage";
 import GreetingsPage from "./pages/GreetingsPage";
+import PronounsPage from "./pages/PronounsPage";
 import DonatePage from "./pages/DonatePage";
 import DonationSuccessPage from "./pages/DonationSuccessPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -69,6 +70,7 @@ function App() {
                   <Route path="/months" element={<MonthsPage />} />
                   <Route path="/seasons" element={<SeasonsPage />} />
                   <Route path="/greetings" element={<GreetingsPage />} />
+                  <Route path="/pronouns" element={<PronounsPage />} />
                   <Route path="/games" element={<GamesPage />} />
                   <Route path="/games/word-match/:categoryId?" element={<WordMatchGame />} />
                   <Route path="/games/audio-challenge/:categoryId?" element={<AudioChallengeGame />} />
