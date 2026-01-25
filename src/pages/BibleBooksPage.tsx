@@ -97,26 +97,26 @@ const BibleBooksPage = () => {
               <BookOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
               <h2 className="text-2xl font-bold text-amber-800 dark:text-amber-200">Old Testament</h2>
             </div>
-            <p className="text-lg text-amber-700 dark:text-amber-300 font-medium">
-              {/* Phom translation placeholder */}
+            <p className="text-xl text-amber-700 dark:text-amber-300 font-semibold">
+              Lai Chang
+            </p>
+            <p className="text-sm text-amber-600/70 dark:text-amber-400/70">
               39 Books
             </p>
-            {oldTestamentAudioUrl && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handlePlaySectionAudio('old')}
-                disabled={playingSection === 'old'}
-                className="border-amber-300 hover:bg-amber-100 dark:border-amber-600 dark:hover:bg-amber-800/30"
-              >
-                {playingSection === 'old' ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Headphones className="h-4 w-4 mr-2" />
-                )}
-                Listen
-              </Button>
-            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handlePlaySectionAudio('old')}
+              disabled={!oldTestamentAudioUrl || playingSection === 'old'}
+              className="border-amber-300 hover:bg-amber-100 dark:border-amber-600 dark:hover:bg-amber-800/30"
+            >
+              {playingSection === 'old' ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Headphones className="h-4 w-4 mr-2" />
+              )}
+              {oldTestamentAudioUrl ? 'Listen' : 'No Audio'}
+            </Button>
           </CardContent>
         </Card>
 
@@ -160,26 +160,26 @@ const BibleBooksPage = () => {
               <BookOpen className="h-6 w-6 text-sky-600 dark:text-sky-400" />
               <h2 className="text-2xl font-bold text-sky-800 dark:text-sky-200">New Testament</h2>
             </div>
-            <p className="text-lg text-sky-700 dark:text-sky-300 font-medium">
-              {/* Phom translation placeholder */}
+            <p className="text-xl text-sky-700 dark:text-sky-300 font-semibold">
+              Lai Jaa
+            </p>
+            <p className="text-sm text-sky-600/70 dark:text-sky-400/70">
               27 Books
             </p>
-            {newTestamentAudioUrl && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handlePlaySectionAudio('new')}
-                disabled={playingSection === 'new'}
-                className="border-sky-300 hover:bg-sky-100 dark:border-sky-600 dark:hover:bg-sky-800/30"
-              >
-                {playingSection === 'new' ? (
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                ) : (
-                  <Headphones className="h-4 w-4 mr-2" />
-                )}
-                Listen
-              </Button>
-            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => handlePlaySectionAudio('new')}
+              disabled={!newTestamentAudioUrl || playingSection === 'new'}
+              className="border-sky-300 hover:bg-sky-100 dark:border-sky-600 dark:hover:bg-sky-800/30"
+            >
+              {playingSection === 'new' ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Headphones className="h-4 w-4 mr-2" />
+              )}
+              {newTestamentAudioUrl ? 'Listen' : 'No Audio'}
+            </Button>
           </CardContent>
         </Card>
 
