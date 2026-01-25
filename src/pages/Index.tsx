@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, MessageCircle } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, MessageCircle, Users } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const moduleConfig: Record<string, {
@@ -67,6 +67,15 @@ const moduleConfig: Record<string, {
     iconColor: 'text-rose-600 dark:text-rose-400',
     hoverBg: 'group-hover:bg-rose-100/20 dark:group-hover:bg-rose-900/20',
     description: 'Learn greetings in Phom dialect'
+  },
+  'Pronouns': {
+    icon: <Users className="h-8 w-8" />,
+    route: '/pronouns',
+    gradient: 'from-purple-100/30 to-purple-50/10 dark:from-purple-900/30 dark:to-purple-800/10',
+    iconBg: 'bg-purple-200/40 dark:bg-purple-800/40',
+    iconColor: 'text-purple-600 dark:text-purple-400',
+    hoverBg: 'group-hover:bg-purple-100/20 dark:group-hover:bg-purple-900/20',
+    description: 'Learn the Pronouns in Phom dialect'
   }
 };
 
@@ -97,7 +106,7 @@ const Index = () => {
       </Card>;
   };
 
-  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons', 'Greetings'];
+  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons', 'Greetings', 'Pronouns'];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
