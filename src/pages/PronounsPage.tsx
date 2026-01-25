@@ -55,6 +55,17 @@ const PronounsPage = () => {
     setPlayingId(null);
   };
 
+  // Helper function to render example sentences with bold quoted text
+  const renderExampleSentence = (text: string) => {
+    const parts = text.split(/(".*?")/g);
+    return parts.map((part, index) => {
+      if (part.startsWith('"') && part.endsWith('"')) {
+        return <strong key={index} className="font-bold not-italic">{part}</strong>;
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
   return (
     <div className="container px-4 md:px-6 py-8">
       {/* Back Button */}
@@ -480,7 +491,10 @@ const PronounsPage = () => {
                 </p>
                 {pronoun.example_sentence && (
                   <p className="text-xs text-muted-foreground/70 text-center mb-3 italic">
-                    "{pronoun.example_sentence}"
+                    {pronoun.english_translation === 'Nobody' 
+                      ? renderExampleSentence(pronoun.example_sentence)
+                      : `"${pronoun.example_sentence}"`
+                    }
                   </p>
                 )}
                 <Button
