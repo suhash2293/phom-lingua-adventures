@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, MessageCircle, Users } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, MessageCircle, Users, BookOpen } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const moduleConfig: Record<string, {
@@ -76,6 +76,15 @@ const moduleConfig: Record<string, {
     iconColor: 'text-purple-600 dark:text-purple-400',
     hoverBg: 'group-hover:bg-purple-100/20 dark:group-hover:bg-purple-900/20',
     description: 'Learn the Pronouns in Phom dialect'
+  },
+  'Bible Books': {
+    icon: <BookOpen className="h-8 w-8" />,
+    route: '/bible-books',
+    gradient: 'from-amber-100/30 to-amber-50/10 dark:from-amber-900/30 dark:to-amber-800/10',
+    iconBg: 'bg-amber-200/40 dark:bg-amber-800/40',
+    iconColor: 'text-amber-600 dark:text-amber-400',
+    hoverBg: 'group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20',
+    description: 'Learn Bible book names in Phom dialect'
   }
 };
 
@@ -106,7 +115,7 @@ const Index = () => {
       </Card>;
   };
 
-  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons', 'Greetings', 'Pronouns'];
+  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons', 'Greetings', 'Pronouns', 'Bible Books'];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">

@@ -34,6 +34,7 @@ import AudioChallengeGame from "./pages/games/AudioChallengeGame";
 import MemoryChallengeGame from "./pages/games/MemoryChallengeGame";
 import WordScrambleGame from "./pages/games/WordScrambleGame";
 import SentenceBuilderGame from "./pages/games/SentenceBuilderGame";
+import BibleBooksPage from "./pages/BibleBooksPage";
 
 import "./App.css";
 
@@ -71,6 +72,7 @@ function App() {
                   <Route path="/seasons" element={<SeasonsPage />} />
                   <Route path="/greetings" element={<GreetingsPage />} />
                   <Route path="/pronouns" element={<PronounsPage />} />
+                  <Route path="/bible-books" element={<BibleBooksPage />} />
                   <Route path="/games" element={<GamesPage />} />
                   <Route path="/games/word-match/:categoryId?" element={<WordMatchGame />} />
                   <Route path="/games/audio-challenge/:categoryId?" element={<AudioChallengeGame />} />
