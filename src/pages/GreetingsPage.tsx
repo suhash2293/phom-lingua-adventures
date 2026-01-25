@@ -90,12 +90,12 @@ const GreetingsPage = () => {
             >
               <CardHeader className="pb-2 bg-gradient-to-r from-rose-100/30 to-rose-50/10 dark:from-rose-900/30 dark:to-rose-800/10">
                 <CardTitle className="text-lg text-center">
-                  {greeting.phom_word}
+                  {greeting.english_translation}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-4">
-                <p className="text-sm text-muted-foreground text-center mb-3">
-                  {greeting.english_translation}
+                <p className="text-xl font-medium text-center mb-3 text-primary">
+                  {greeting.phom_word}
                 </p>
                 {greeting.example_sentence && (
                   <p className="text-xs text-muted-foreground/70 text-center mb-3 italic">
