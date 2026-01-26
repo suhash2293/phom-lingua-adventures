@@ -1,0 +1,1 @@
+UPDATE categories SET singular_name = NULL WHERE name = 'Pronouns';
