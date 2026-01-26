@@ -86,7 +86,7 @@ const BibleBooksPage = () => {
           playAudioFromHook={playAudio}
         />
         <p className="text-muted-foreground text-center max-w-2xl">
-          {category?.description || 'Learn the names of Bible books in Phom dialect'}
+          {category?.description || 'Learn the name of the Books in the Bible in Phom dialect'}
         </p>
       </div>
 
