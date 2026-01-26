@@ -84,7 +84,7 @@ const moduleConfig: Record<string, {
     iconBg: 'bg-amber-200/40 dark:bg-amber-800/40',
     iconColor: 'text-amber-600 dark:text-amber-400',
     hoverBg: 'group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20',
-    description: 'Learn Bible book names in Phom dialect'
+    description: 'Learn the name of the Books in the Bible in Phom dialect'
   }
 };
 
