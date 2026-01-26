@@ -92,6 +92,11 @@ const GreetingsPage = () => {
                 <CardTitle className="text-lg text-center">
                   {greeting.english_translation}
                 </CardTitle>
+                {greeting.english_translation === 'Good afternoon/Good evening' && (
+                  <p className="text-xs text-muted-foreground text-center mt-1">
+                    This greeting is applicable for both afternoon and evening
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="pt-4">
                 <p className="text-xl font-medium text-center mb-3 text-primary">
