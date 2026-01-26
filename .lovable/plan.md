@@ -1,51 +1,47 @@
 
 
-## Plan: Add New Greeting Flashcard
+## Plan: Show Only "Bible Books" in Module Header
 
-This plan adds a new greeting flashcard for "Good afternoon/Good evening" with the Phom translation "Ommei" to the Greetings module.
+This plan removes the singular form ("Bible Book") from the Bible Books module header, so only "Bible Books" is displayed.
 
 ---
 
 ### Database Change
 
-**Insert new content item into `public.content_items`:**
+**Update the `categories` table to remove the singular_name:**
 
-| Field | Value |
-|-------|-------|
-| `category_id` | `4f90edf0-e38d-4edb-8e4a-1eb99131a5bc` (Greetings) |
-| `english_translation` | Good afternoon/Good evening |
-| `phom_word` | Ommei |
-| `sort_order` | 4 |
-| `example_sentence` | NULL |
-| `audio_url` | NULL |
-
-**SQL Migration:**
 ```sql
-INSERT INTO public.content_items (category_id, english_translation, phom_word, sort_order)
-VALUES (
-  '4f90edf0-e38d-4edb-8e4a-1eb99131a5bc',
-  'Good afternoon/Good evening',
-  'Ommei',
-  4
-);
+UPDATE public.categories 
+SET singular_name = NULL 
+WHERE name = 'Bible Books';
 ```
 
 ---
 
-### Result
+### What Changes
 
-After this change, the Greetings module will display 4 flashcards:
+**Before:**
+The module header card shows:
+- "Bible Book" (singular form with divider)
+- "Bible Books" (plural form)
 
-| English | Phom | Order |
-|---------|------|-------|
-| Good morning | Nepmei | 1 |
-| Good day | Nyihmei | 2 |
-| Good night | Nyakmei | 3 |
-| Good afternoon/Good evening | **Ommei** | 4 |
+**After:**
+The module header card shows:
+- "Bible Books" only
 
 ---
 
 ### No Code Changes Required
 
-The existing `GreetingsPage.tsx` component dynamically fetches and displays all content items from the Greetings category. Adding this database entry will automatically show the new flashcard with the "Listen" button (audio can be uploaded later via Admin Dashboard).
+The `ModuleTitleWithAudio` component already handles this case - it only displays the singular section when `singular_name` or `singular_phom_name` exists. By setting `singular_name` to NULL, the singular section will automatically hide.
+
+---
+
+### Technical Details
+
+| Field | Current Value | New Value |
+|-------|---------------|-----------|
+| `singular_name` | "Bible Book" | NULL |
+
+The component logic at line 70-75 checks `hasSingularForm = category?.singular_name || category?.singular_phom_name` - when both are NULL, the singular section is not rendered.
 
