@@ -57,7 +57,7 @@ const moduleConfig: Record<string, {
     iconBg: 'bg-teal-200/40 dark:bg-teal-800/40',
     iconColor: 'text-teal-600 dark:text-teal-400',
     hoverBg: 'group-hover:bg-teal-100/20 dark:group-hover:bg-teal-900/20',
-    description: 'Learn the four seasons in Phom Dialect'
+    description: 'Learn the names of the four seasons in Phom dialect'
   },
   'Greetings': {
     icon: <MessageCircle className="h-8 w-8" />,
