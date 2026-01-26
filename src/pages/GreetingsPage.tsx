@@ -63,7 +63,7 @@ const GreetingsPage = () => {
       <ModuleTitleWithAudio
         englishTitle="Greetings"
         category={greetingsCategory}
-        subtitle="Learn greetings in Phom dialect"
+        subtitle="Learn to greet in Phom dialect"
         playAudioFromHook={playAudio}
       />
 
