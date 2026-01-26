@@ -1,36 +1,44 @@
 
 
-## Plan: Update Bible Books Module Subheading
+## Plan: Add Subheading to "Good afternoon/Good evening" Greeting Card
 
-This plan updates the subheading text in the Bible Books learning module.
+This plan adds an explanatory subheading to the specific greeting card for "Good afternoon/Good evening" to clarify that this greeting applies to both time periods.
 
 ---
 
-### Text Change
+### What Will Change
 
-| Current Text | New Text |
-|--------------|----------|
-| "Learn the names of Bible books in Phom dialect" | "Learn the name of the Books in the Bible in Phom dialect" |
+| Location | Change |
+|----------|--------|
+| "Good afternoon/Good evening" card | New subheading: "This greeting is applicable for both afternoon and evening" |
 
 ---
 
 ### File to Modify
 
-**`src/pages/BibleBooksPage.tsx`** - Line 88
+**`src/pages/GreetingsPage.tsx`**
 
-Update the fallback description text from:
-```jsx
-{category?.description || 'Learn the names of Bible books in Phom dialect'}
-```
+Add conditional logic after the CardTitle (around line 94) to display the subheading only for the "Good afternoon/Good evening" greeting:
 
-To:
 ```jsx
-{category?.description || 'Learn the name of the Books in the Bible in Phom dialect'}
+<CardHeader className="pb-2 bg-gradient-to-r from-rose-100/30 to-rose-50/10 dark:from-rose-900/30 dark:to-rose-800/10">
+  <CardTitle className="text-lg text-center">
+    {greeting.english_translation}
+  </CardTitle>
+  {greeting.english_translation === 'Good afternoon/Good evening' && (
+    <p className="text-xs text-muted-foreground text-center mt-1">
+      This greeting is applicable for both afternoon and evening
+    </p>
+  )}
+</CardHeader>
 ```
 
 ---
 
-### Technical Note
+### Technical Details
 
-This text serves as a fallback when the category description from the database is empty. If you want this text to persist even when a category description exists in the database, you may also want to update the `description` field in the `categories` table for "Bible Books" via the Admin Dashboard.
+- The subheading is conditionally rendered only when `english_translation` matches "Good afternoon/Good evening"
+- Styled with `text-xs` for small text and `text-muted-foreground` to appear as secondary text
+- Placed directly below the CardTitle within the CardHeader for proper visual hierarchy
+- Added `mt-1` for slight spacing between title and subheading
 
