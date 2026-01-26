@@ -1,47 +1,36 @@
 
 
-## Plan: Show Only "Bible Books" in Module Header
+## Plan: Update Bible Books Module Subheading
 
-This plan removes the singular form ("Bible Book") from the Bible Books module header, so only "Bible Books" is displayed.
+This plan updates the subheading text in the Bible Books learning module.
 
 ---
 
-### Database Change
+### Text Change
 
-**Update the `categories` table to remove the singular_name:**
+| Current Text | New Text |
+|--------------|----------|
+| "Learn the names of Bible books in Phom dialect" | "Learn the name of the Books in the Bible in Phom dialect" |
 
-```sql
-UPDATE public.categories 
-SET singular_name = NULL 
-WHERE name = 'Bible Books';
+---
+
+### File to Modify
+
+**`src/pages/BibleBooksPage.tsx`** - Line 88
+
+Update the fallback description text from:
+```jsx
+{category?.description || 'Learn the names of Bible books in Phom dialect'}
+```
+
+To:
+```jsx
+{category?.description || 'Learn the name of the Books in the Bible in Phom dialect'}
 ```
 
 ---
 
-### What Changes
+### Technical Note
 
-**Before:**
-The module header card shows:
-- "Bible Book" (singular form with divider)
-- "Bible Books" (plural form)
-
-**After:**
-The module header card shows:
-- "Bible Books" only
-
----
-
-### No Code Changes Required
-
-The `ModuleTitleWithAudio` component already handles this case - it only displays the singular section when `singular_name` or `singular_phom_name` exists. By setting `singular_name` to NULL, the singular section will automatically hide.
-
----
-
-### Technical Details
-
-| Field | Current Value | New Value |
-|-------|---------------|-----------|
-| `singular_name` | "Bible Book" | NULL |
-
-The component logic at line 70-75 checks `hasSingularForm = category?.singular_name || category?.singular_phom_name` - when both are NULL, the singular section is not rendered.
+This text serves as a fallback when the category description from the database is empty. If you want this text to persist even when a category description exists in the database, you may also want to update the `description` field in the `categories` table for "Bible Books" via the Admin Dashboard.
 
