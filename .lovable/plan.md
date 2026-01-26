@@ -1,8 +1,8 @@
 
 
-## Plan: Fix Subheading Styling for "Good afternoon/Good evening" Card
+## Plan: Update Greetings Module Subtitle
 
-This plan corrects the styling of the subheading to match the example sentence format used on other cards - making it italic and wrapped in quotes.
+This plan updates the subtitle text in the Greetings module header to use more natural phrasing.
 
 ---
 
@@ -10,37 +10,28 @@ This plan corrects the styling of the subheading to match the example sentence f
 
 | Current | After Fix |
 |---------|-----------|
-| Plain text: "This greeting is applicable for both afternoon and evening" | Italic with quotes: *"This greeting is applicable for both afternoon and evening"* |
+| "Learn greetings in Phom dialect" | "Learn to greet in Phom dialect" |
 
 ---
 
 ### File to Modify
 
-**`src/pages/GreetingsPage.tsx`** (lines 95-99)
+**`src/pages/GreetingsPage.tsx`** (line 57)
 
-Change from:
+Change the `subtitle` prop from:
 ```jsx
-{greeting.english_translation === 'Good afternoon/Good evening' && (
-  <p className="text-xs text-muted-foreground text-center mt-1">
-    This greeting is applicable for both afternoon and evening
-  </p>
-)}
+subtitle="Learn greetings in Phom dialect"
 ```
 
-Change to:
+To:
 ```jsx
-{greeting.english_translation === 'Good afternoon/Good evening' && (
-  <p className="text-xs text-muted-foreground/70 text-center mt-1 italic">
-    "This greeting is applicable for both afternoon and evening"
-  </p>
-)}
+subtitle="Learn to greet in Phom dialect"
 ```
 
 ---
 
 ### Technical Details
 
-- Add `italic` class to match the example sentence styling
-- Add quotes around the text content
-- Change `text-muted-foreground` to `text-muted-foreground/70` for consistent opacity with example sentences
+- Single line change in the `ModuleTitleWithAudio` component props
+- No functional changes, just updated text content
 
