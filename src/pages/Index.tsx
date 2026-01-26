@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, MessageCircle, Users, BookOpen } from 'lucide-react';
+import { ScrollText, CalendarDays, Calendar, Percent, Gamepad, Leaf, MessageCircle, Users, BookOpen, Info } from 'lucide-react';
 import { AspectRatio } from '@/components/ui/aspect-ratio';
 
 const moduleConfig: Record<string, {
@@ -131,6 +131,18 @@ const Index = () => {
           </Button>
         </div>
       </section>
+
+      {/* Disclaimer Note */}
+      <Card className="mb-8 bg-blue-50/50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+        <CardContent className="pt-6">
+          <div className="flex gap-3 items-start">
+            <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              <span className="font-semibold text-foreground">Note:</span> The Phom dialect lessons in this app reflect the current state of the dialect, focusing on commonly used words and phrases. Given the limited vocabulary and the evolving nature of the dialect, some concepts or words may not be covered. We aim to provide a foundational understanding, and we're committed to improving the app over time.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Features Section */}
       <section className="py-12">
