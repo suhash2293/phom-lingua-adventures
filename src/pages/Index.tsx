@@ -66,7 +66,7 @@ const moduleConfig: Record<string, {
     iconBg: 'bg-rose-200/40 dark:bg-rose-800/40',
     iconColor: 'text-rose-600 dark:text-rose-400',
     hoverBg: 'group-hover:bg-rose-100/20 dark:group-hover:bg-rose-900/20',
-    description: 'Learn greetings in Phom dialect'
+    description: 'Learn to greet in Phom dialect'
   },
   'Pronouns': {
     icon: <Users className="h-8 w-8" />,
