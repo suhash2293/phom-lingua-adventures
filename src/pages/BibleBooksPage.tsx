@@ -63,7 +63,8 @@ const BibleBooksPage = () => {
     setPlayingSection(null);
   };
 
-  // Separate books into Old Testament (sort_order 1-39) and New Testament (sort_order 40-66)
+  // Separate books into sections based on sort_order
+  const vocabularyItems = books.filter(book => book.sort_order < 0);
   const oldTestamentBooks = books.filter(book => book.sort_order >= 1 && book.sort_order <= 39);
   const newTestamentBooks = books.filter(book => book.sort_order >= 40 && book.sort_order <= 66);
 
@@ -88,6 +89,54 @@ const BibleBooksPage = () => {
           {category?.description || 'Learn the names of Bible books in Phom dialect'}
         </p>
       </div>
+
+      {/* Common Bible Vocabularies Section */}
+      {vocabularyItems.length > 0 && (
+        <section className="mb-12">
+          <Card className="mb-6 bg-gradient-to-r from-emerald-100/50 to-emerald-50/20 dark:from-emerald-900/30 dark:to-emerald-800/10 border-emerald-200/50 dark:border-emerald-700/30">
+            <CardContent className="flex flex-col items-center justify-center py-6 gap-3">
+              <div className="flex items-center gap-2">
+                <BookOpen className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                <h2 className="text-2xl font-bold text-emerald-800 dark:text-emerald-200">Common Bible vocabularies</h2>
+              </div>
+              <p className="text-sm text-emerald-600/70 dark:text-emerald-400/70 text-center">
+                Learn common Bible vocabularies in Phom dialect
+              </p>
+            </CardContent>
+          </Card>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            {vocabularyItems.map((item) => (
+              <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-all group">
+                <CardHeader className="pb-2 bg-gradient-to-r from-emerald-100/30 to-emerald-50/10 dark:from-emerald-900/20 dark:to-emerald-800/10">
+                  <CardTitle className="text-sm md:text-base text-center font-medium">
+                    {item.english_translation}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-3 pb-4">
+                  <p className="text-base md:text-lg font-semibold text-center mb-3 text-primary">
+                    {item.phom_word}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-full group-hover:bg-emerald-100/20 dark:group-hover:bg-emerald-900/20 transition-colors"
+                    onClick={() => handlePlayAudio(item)}
+                    disabled={!item.audio_url || playingId === item.id}
+                  >
+                    {playingId === item.id ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Headphones className="mr-2 h-4 w-4" />
+                    )}
+                    {item.audio_url ? 'Listen' : 'No Audio'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Old Testament Section */}
       <section className="mb-12">
