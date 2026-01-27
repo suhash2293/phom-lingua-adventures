@@ -77,7 +77,7 @@ const BibleVocabPage = () => {
       />
 
       {/* Vocabularies Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-8">
         {isLoading ? (
           // Loading skeletons
           Array.from({ length: 12 }).map((_, index) => (
@@ -98,12 +98,12 @@ const BibleVocabPage = () => {
               className="overflow-hidden hover:shadow-lg transition-all group"
             >
               <CardHeader className="pb-2 bg-gradient-to-r from-emerald-100/30 to-emerald-50/10 dark:from-emerald-900/20 dark:to-emerald-800/10">
-                <CardTitle className="text-sm md:text-base text-center font-medium">
+                <CardTitle className="text-base md:text-lg text-center font-medium">
                   {vocab.english_translation}
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-3 pb-4">
-                <p className="text-base md:text-lg font-semibold text-center mb-3 text-primary break-words min-h-[2.5rem] flex items-center justify-center">
+                <p className="text-lg md:text-xl font-semibold text-center mb-3 text-primary break-words min-h-[3rem] flex items-center justify-center px-2">
                   {vocab.phom_word}
                 </p>
                 <Button
