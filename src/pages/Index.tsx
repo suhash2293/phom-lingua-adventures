@@ -85,6 +85,15 @@ const moduleConfig: Record<string, {
     iconColor: 'text-amber-600 dark:text-amber-400',
     hoverBg: 'group-hover:bg-amber-100/20 dark:group-hover:bg-amber-900/20',
     description: 'Learn the name of the Books in the Bible in Phom dialect'
+  },
+  'Bible Vocabularies': {
+    icon: <BookOpen className="h-8 w-8" />,
+    route: '/bible-vocab',
+    gradient: 'from-emerald-100/30 to-emerald-50/10 dark:from-emerald-900/30 dark:to-emerald-800/10',
+    iconBg: 'bg-emerald-200/40 dark:bg-emerald-800/40',
+    iconColor: 'text-emerald-600 dark:text-emerald-400',
+    hoverBg: 'group-hover:bg-emerald-100/20 dark:group-hover:bg-emerald-900/20',
+    description: 'Learn common Bible vocabularies in Phom dialect'
   }
 };
 
@@ -115,7 +124,7 @@ const Index = () => {
       </Card>;
   };
 
-  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons', 'Greetings', 'Pronouns', 'Bible Books'];
+  const moduleOrder = ['Alphabets', 'Numbers', 'Days', 'Months', 'Seasons', 'Greetings', 'Pronouns', 'Bible Books', 'Bible Vocabularies'];
   return <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Hero Section */}
       <section className="flex flex-col items-center text-center gap-6 py-12">
