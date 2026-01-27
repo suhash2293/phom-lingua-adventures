@@ -103,7 +103,7 @@ const BibleVocabPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-3 pb-4">
-                <p className="text-base md:text-lg font-semibold text-center mb-3 text-primary">
+                <p className="text-base md:text-lg font-semibold text-center mb-3 text-primary break-words min-h-[2.5rem] flex items-center justify-center">
                   {vocab.phom_word}
                 </p>
                 <Button
