@@ -1,69 +1,75 @@
 
 
-## Plan: Enable MP3 Audio for "Old Testament" Section Header
+## Plan: Add Bible Vocabulary Words to Common Bible Vocabularies Section
 
-This plan adds audio support for the "Old Testament" (Lai Chang) section header in the Bible Books module by storing it as a content item in the database and updating the page to read its audio URL.
+This plan adds 17 new vocabulary words to the "Common Bible vocabularies" section in the Bible Books module.
 
 ---
 
-### Approach
+### Current State
 
-The section headers ("Old Testament" and "New Testament") are currently hardcoded in the page with no connection to the database. To enable audio management via the Admin Dashboard, we'll:
+The existing vocabulary items use these sort_order values:
+- Verse (Lüng): -1
+- Chapter (Laiphong): -2
+- Bible (Laihing): -3
+- Holy Bible (Daülangpü Laihing): -4
+- Gospel (Shahjangmei): -5
 
-1. **Add section headers as content items** with reserved sort_order values
-2. **Update the page logic** to extract audio URLs from these items
+---
+
+### New Vocabulary Items
+
+The following 17 items will be added with sort_order values from -6 to -22:
+
+| Sort Order | English | Phom Translation |
+|------------|---------|------------------|
+| -6 | God | Kahvang |
+| -7 | Jesus | Jisu |
+| -8 | Christ | Krista |
+| -9 | Jesus Christ | Jisu Krista |
+| -10 | Lord | Shembüpa |
+| -11 | Holy Spirit | Daülangpü Laangha |
+| -12 | Angels | Phongshandhü |
+| -13 | Prayer | Phoppü |
+| -14 | Fasting | Lakmeilayung ei phoppü |
+| -15 | Faith | Hinglempü |
+| -16 | Love | Bampü |
+| -17 | Sin | Mang |
+| -18 | Salvation | Yemleipü |
+| -19 | Heaven | Vangsho |
+| -20 | Hell | Molo aw |
+| -21 | Cross | Shophang |
+| -22 | Church | Phopshem/Khümshem |
 
 ---
 
 ### Database Changes
 
-Add two new content items to the `content_items` table for the section headers:
-
-| English Translation | Phom Word | Sort Order | Purpose |
-|---------------------|-----------|------------|---------|
-| Old Testament | Lai Chang | -100 | Section header with audio |
-| New Testament | Lai Jaa | -101 | Section header with audio |
-
-The negative sort_order values below -10 will distinguish section headers from vocabulary items (which use -1 to -10).
-
----
-
-### Code Changes
-
-**File: `src/pages/BibleBooksPage.tsx`**
-
-1. **Update the filtering logic** to identify section header items:
-   ```text
-   - Section headers: sort_order <= -100
-   - Vocabulary items: sort_order between -99 and -1
-   - Old Testament books: sort_order 1-39
-   - New Testament books: sort_order 40-66
-   ```
-
-2. **Extract audio URLs from section header items** in the useEffect:
-   - Find the "Old Testament" item and set `oldTestamentAudioUrl` from its `audio_url`
-   - Find the "New Testament" item and set `newTestamentAudioUrl` from its `audio_url`
-
-3. **Preload section header audio** alongside other audio URLs
+A database migration will insert all 17 vocabulary items into the `content_items` table linked to the "Bible Books" category. Each item will have:
+- `audio_url`: Set to `NULL` initially
+- `sort_order`: Sequential from -6 to -22
 
 ---
 
 ### After Implementation
 
-Once the database migration runs and the code is updated:
-- Go to **Admin Dashboard → Content Items**
-- Find the "Old Testament" entry
-- Upload the MP3 audio file for "Lai Chang"
-- The audio button on the Bible Books page will become active
+To enable MP3 audio for each vocabulary word:
+1. Go to **Admin Dashboard → Content Items**
+2. Filter by "Bible Books" category
+3. Upload audio files for each new vocabulary item
+
+The audio buttons will show "Listen" once files are uploaded.
 
 ---
 
 ### Technical Details
 
-The code change in `BibleBooksPage.tsx` will:
+**Database Migration:**
+```sql
+INSERT INTO public.content_items (category_id, english_translation, phom_word, sort_order, audio_url)
+SELECT id, 'God', 'Kahvang', -6, NULL FROM categories WHERE name = 'Bible Books';
+-- (Repeated for all 17 items)
+```
 
-1. Filter section headers from the fetched items
-2. Match items by `english_translation` ("Old Testament" / "New Testament")
-3. Set the corresponding audio URL state variables
-4. Update vocabulary items filter to exclude section headers (sort_order > -100)
+No frontend code changes are needed - the existing `BibleBooksPage.tsx` already displays vocabulary items with sort_order between -1 and -99.
 
