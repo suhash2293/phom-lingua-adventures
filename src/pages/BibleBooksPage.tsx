@@ -32,6 +32,17 @@ const BibleBooksPage = () => {
           const items = await ContentService.getContentItemsByCategoryId(bibleCategory.id);
           setBooks(items);
           
+          // Extract audio URLs from section header items (sort_order <= -100)
+          const oldTestamentItem = items.find(item => item.sort_order === -100 && item.english_translation === 'Old Testament');
+          const newTestamentItem = items.find(item => item.sort_order === -101 && item.english_translation === 'New Testament');
+          
+          if (oldTestamentItem?.audio_url) {
+            setOldTestamentAudioUrl(oldTestamentItem.audio_url);
+          }
+          if (newTestamentItem?.audio_url) {
+            setNewTestamentAudioUrl(newTestamentItem.audio_url);
+          }
+          
           // Preload audio URLs
           const audioUrls = items.map(item => item.audio_url).filter(Boolean) as string[];
           if (bibleCategory.title_audio_url) audioUrls.push(bibleCategory.title_audio_url);
@@ -64,7 +75,11 @@ const BibleBooksPage = () => {
   };
 
   // Separate books into sections based on sort_order
-  const vocabularyItems = books.filter(book => book.sort_order < 0);
+  // Section headers: sort_order <= -100
+  // Vocabulary items: sort_order between -99 and -1
+  // Old Testament books: sort_order 1-39
+  // New Testament books: sort_order 40-66
+  const vocabularyItems = books.filter(book => book.sort_order < 0 && book.sort_order > -100);
   const oldTestamentBooks = books.filter(book => book.sort_order >= 1 && book.sort_order <= 39);
   const newTestamentBooks = books.filter(book => book.sort_order >= 40 && book.sort_order <= 66);
 
