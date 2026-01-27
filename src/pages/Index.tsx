@@ -93,7 +93,7 @@ const moduleConfig: Record<string, {
     iconBg: 'bg-emerald-200/40 dark:bg-emerald-800/40',
     iconColor: 'text-emerald-600 dark:text-emerald-400',
     hoverBg: 'group-hover:bg-emerald-100/20 dark:group-hover:bg-emerald-900/20',
-    description: 'Learn common Bible vocabularies in Phom dialect'
+    description: 'Learn foundational Bible vocabularies in Phom dialect'
   }
 };
 

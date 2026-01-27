@@ -72,7 +72,7 @@ const BibleVocabPage = () => {
       <ModuleTitleWithAudio
         englishTitle="Bible Vocabularies"
         category={bibleVocabCategory}
-        subtitle="Learn common Bible vocabularies in Phom dialect"
+        subtitle="Learn foundational Bible vocabularies in Phom dialect"
         playAudioFromHook={playAudio}
       />
 
