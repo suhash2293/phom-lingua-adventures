@@ -1,60 +1,69 @@
 
 
-## Plan: Add Disclaimer Note Card Above Learning Modules
+## Plan: Enable MP3 Audio for "Old Testament" Section Header
 
-This plan adds an informational note card to the home page, positioned just above the "Learning Modules" heading to set expectations for users about the Phom dialect content.
-
----
-
-### What Will Be Added
-
-A styled card will appear above the "Learning Modules" section containing:
-
-> **Note:** The Phom dialect lessons in this app reflect the current state of the dialect, focusing on commonly used words and phrases. Given the limited vocabulary and the evolving nature of the dialect, some concepts or words may not be covered. We aim to provide a foundational understanding, and we're committed to improving the app over time.
+This plan adds audio support for the "Old Testament" (Lai Chang) section header in the Bible Books module by storing it as a content item in the database and updating the page to read its audio URL.
 
 ---
 
-### Visual Design
+### Approach
 
-The note card will:
-- Use an info-style appearance with a subtle background
-- Include an "Info" icon for visual emphasis
-- Have a "Note:" label in bold
-- Be centered and appropriately sized to match the page layout
-- Sit between the Hero section and the Learning Modules heading
+The section headers ("Old Testament" and "New Testament") are currently hardcoded in the page with no connection to the database. To enable audio management via the Admin Dashboard, we'll:
+
+1. **Add section headers as content items** with reserved sort_order values
+2. **Update the page logic** to extract audio URLs from these items
 
 ---
 
-### File to Modify
+### Database Changes
 
-**`src/pages/Index.tsx`**
+Add two new content items to the `content_items` table for the section headers:
 
-1. Import the `Info` icon from lucide-react (line 5)
-2. Add a new note card section between the Hero section (ends line 133) and the Features/Learning Modules section (starts line 136)
+| English Translation | Phom Word | Sort Order | Purpose |
+|---------------------|-----------|------------|---------|
+| Old Testament | Lai Chang | -100 | Section header with audio |
+| New Testament | Lai Jaa | -101 | Section header with audio |
 
-The new note card will use the existing `Card` and `CardContent` components already imported in the file for consistency with the rest of the design.
+The negative sort_order values below -10 will distinguish section headers from vocabulary items (which use -1 to -10).
+
+---
+
+### Code Changes
+
+**File: `src/pages/BibleBooksPage.tsx`**
+
+1. **Update the filtering logic** to identify section header items:
+   ```text
+   - Section headers: sort_order <= -100
+   - Vocabulary items: sort_order between -99 and -1
+   - Old Testament books: sort_order 1-39
+   - New Testament books: sort_order 40-66
+   ```
+
+2. **Extract audio URLs from section header items** in the useEffect:
+   - Find the "Old Testament" item and set `oldTestamentAudioUrl` from its `audio_url`
+   - Find the "New Testament" item and set `newTestamentAudioUrl` from its `audio_url`
+
+3. **Preload section header audio** alongside other audio URLs
+
+---
+
+### After Implementation
+
+Once the database migration runs and the code is updated:
+- Go to **Admin Dashboard → Content Items**
+- Find the "Old Testament" entry
+- Upload the MP3 audio file for "Lai Chang"
+- The audio button on the Bible Books page will become active
 
 ---
 
 ### Technical Details
 
-```text
-+--------------------------------------------------+
-|  Hero Section                                    |
-+--------------------------------------------------+
-|                                                  |
-|  +--------------------------------------------+  |  <-- NEW: Note Card
-|  | (i) Note: The Phom dialect lessons...      |  |
-|  +--------------------------------------------+  |
-|                                                  |
-|          Learning Modules (heading)              |
-|                                                  |
-|  [Module Cards Grid]                             |
-+--------------------------------------------------+
-```
+The code change in `BibleBooksPage.tsx` will:
 
-- Uses existing Card components for visual consistency
-- Adds Info icon from lucide-react for visual emphasis
-- Styled with muted background and proper padding
-- Responsive design that works on all screen sizes
+1. Filter section headers from the fetched items
+2. Match items by `english_translation` ("Old Testament" / "New Testament")
+3. Set the corresponding audio URL state variables
+4. Update vocabulary items filter to exclude section headers (sort_order > -100)
 
