@@ -1,39 +1,53 @@
 
-## Plan: Remove Incorrect "Bible Vocabulary" Header from Bible Vocabularies Module
+## Plan: Update Bible Vocabularies Subheading Text
 
-The Bible Vocabularies module header is incorrectly showing "Bible Vocabulary" with the Phom translation "Daülangpü Laihing Shang" (which actually means "Holy Bible," not "Bible Vocabulary"). This appears as a separate flashcard-like section at the top of the page.
-
----
-
-### What Will Be Removed
-
-The header currently displays:
-
-| Field | Current Value | Issue |
-|-------|---------------|-------|
-| English (Singular) | Bible Vocabulary | Displayed incorrectly at top |
-| Phom (Singular) | Daülangpü Laihing Shang | This means "Holy Bible", not "Bible Vocabulary" |
-
-After the fix, only the plural header "Bible Vocabularies" with "Daülangpü Laihing Shang" will remain, which is the correct module title.
+Change the subtitle/description text for the Bible Vocabularies module from "Learn common Bible vocabularies in Phom dialect" to "Learn foundational Bible vocabularies in Phom dialect".
 
 ---
 
-### Database Change
+### Files to Update
 
-A database migration will clear the singular form fields from the "Bible Vocabularies" category:
+#### 1. `src/pages/BibleVocabPage.tsx`
+Update the `subtitle` prop passed to the `ModuleTitleWithAudio` component:
 
-```sql
-UPDATE categories
-SET singular_name = NULL,
-    singular_phom_name = NULL,
-    singular_audio_url = NULL
-WHERE name = 'Bible Vocabularies';
+**Current:**
+```tsx
+subtitle="Learn common Bible vocabularies in Phom dialect"
 ```
 
-This removes the incorrect "Bible Vocabulary" / "Daülangpü Laihing Shang" section from the module header, so only the main title "Bible Vocabularies" remains visible.
+**Updated:**
+```tsx
+subtitle="Learn foundational Bible vocabularies in Phom dialect"
+```
 
 ---
 
-### No Frontend Changes Required
+#### 2. `src/pages/Index.tsx`
+Update the `description` field in the `moduleConfig` object for 'Bible Vocabularies':
 
-The `ModuleTitleWithAudio` component already handles null singular fields correctly - it only shows the singular section when `singular_name` or `singular_phom_name` exists. By clearing these database values, the UI will automatically stop showing that section.
+**Current:**
+```tsx
+'Bible Vocabularies': {
+  ...
+  description: 'Learn common Bible vocabularies in Phom dialect'
+}
+```
+
+**Updated:**
+```tsx
+'Bible Vocabularies': {
+  ...
+  description: 'Learn foundational Bible vocabularies in Phom dialect'
+}
+```
+
+---
+
+### Summary
+
+| Location | Change |
+|----------|--------|
+| Bible Vocabularies page header | "common" → "foundational" |
+| Home page module card | "common" → "foundational" |
+
+This ensures consistency between the home page card description and the module's internal header.
