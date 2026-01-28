@@ -92,16 +92,12 @@ const BibleBooksPage = () => {
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Module Header */}
-      <div className="flex flex-col items-center mb-8">
-        <ModuleTitleWithAudio
-          englishTitle={category?.name || 'Bible Books'}
-          category={category}
-          playAudioFromHook={playAudio}
-        />
-        <p className="text-muted-foreground text-center max-w-2xl">
-          {category?.description || 'Learn the name of the Books in the Bible in Phom dialect'}
-        </p>
-      </div>
+      <ModuleTitleWithAudio
+        englishTitle={category?.name || 'Bible Books'}
+        category={category}
+        subtitle={category?.description || 'Learn the name of the Books in the Bible in Phom dialect'}
+        playAudioFromHook={playAudio}
+      />
 
       {/* Old Testament Section */}
       <section className="mb-12">
