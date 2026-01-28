@@ -106,6 +106,11 @@ const BibleVocabPage = () => {
                 <p className="text-lg md:text-xl font-semibold text-center mb-3 text-primary break-words min-h-[3rem] flex items-center justify-center px-2">
                   {vocab.phom_word}
                 </p>
+                {vocab.example_sentence && (
+                  <p className="text-xs text-muted-foreground text-center mb-3 italic px-2">
+                    {vocab.example_sentence}
+                  </p>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
