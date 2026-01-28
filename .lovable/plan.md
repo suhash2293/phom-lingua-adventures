@@ -1,56 +1,49 @@
 
 
-## Plan: Add "Shepherd" Flashcard to Bible Vocabularies
+## Plan: Add Description to "Church" Flashcard
 
-Add a new flashcard for "Shepherd" with Phom translation "Miyombü" to the Bible Vocabularies module.
-
----
-
-### New Flashcard Details
-
-| Field | Value |
-|-------|-------|
-| English | Shepherd |
-| Phom Translation | Miyombü |
-| Sort Order | 24 |
-| Audio | Ready for upload |
+Add an explanatory note to the "Church" flashcard explaining that both Phom translations are interchangeable.
 
 ---
 
-### Database Insert
+### Current State
+
+| Field | Current Value |
+|-------|---------------|
+| English | Church |
+| Phom Translation | Phopshem/Khümshem |
+| Description | (empty) |
+
+---
+
+### Proposed Changes
+
+| Field | New Value |
+|-------|-----------|
+| Phom Translation | Phomshem/Khümshem |
+| Description | Both vocabularies are used interchangeably as it carries the same meaning |
+
+**Note:** I noticed the current spelling is "Phopshem" but you mentioned "Phomshem" - I'll update this to the correct spelling as well.
+
+---
+
+### Database Update
 
 ```sql
-INSERT INTO content_items (
-  category_id,
-  english_translation,
-  phom_word,
-  sort_order,
-  audio_url
-) VALUES (
-  'd8880536-7d1b-425b-87fc-eaf21c242ae5',
-  'Shepherd',
-  'Miyombü',
-  24,
-  NULL
-);
+UPDATE content_items 
+SET 
+  phom_word = 'Phomshem/Khümshem',
+  example_sentence = 'Both vocabularies are used interchangeably as it carries the same meaning',
+  updated_at = now()
+WHERE id = '5e518a7f-f99f-41e1-a1b0-91efc25be695';
 ```
-
----
-
-### Audio Upload Process
-
-After the flashcard is created:
-1. Navigate to Admin Dashboard > Content Management
-2. Find the "Shepherd" flashcard
-3. Upload the MP3 audio file using the edit form
-4. The audio URL will be automatically updated in the database
 
 ---
 
 ### Technical Details
 
 - **Table**: `content_items`
-- **Category**: Bible Vocabularies (`d8880536-7d1b-425b-87fc-eaf21c242ae5`)
-- **Position**: After "Church" (sort_order 24)
-- **Audio**: Initially NULL, can be uploaded via Admin Dashboard
+- **Record ID**: `5e518a7f-f99f-41e1-a1b0-91efc25be695`
+- **Field Used**: `example_sentence` (repurposed for description/notes)
+- The description will appear on the Church flashcard in the Bible Vocabularies module
 
