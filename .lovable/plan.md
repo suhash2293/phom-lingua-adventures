@@ -1,73 +1,68 @@
 
-## Plan: Enlarge Bible Vocabularies Flashcards
+## Plan: Add "Angel" Flashcard to Bible Vocabularies
 
-The current grid layout shows up to 6 columns on large screens, making each flashcard too narrow to properly display longer Phom translations like "Phomshem/Khümshem".
+Add a new flashcard for "Angel" (singular form) between "Holy Spirit" and "Angels" in the Bible Vocabularies module.
+
+---
+
+### Current Order
+
+| Sort Order | English | Phom |
+|------------|---------|------|
+| 11 | Holy Spirit | Daülangpü Laangha |
+| 12 | Angels | Phongshandhü |
 
 ---
 
 ### Solution
 
-Reduce the maximum number of columns and increase the minimum card width to give each flashcard more space.
+Since the vocabulary data is stored in the Supabase `content_items` table (not hardcoded), we need to:
 
-**File: `src/pages/BibleVocabPage.tsx`**
+1. **Shift existing items**: Update all items with `sort_order >= 12` to increment by 1
+2. **Insert new item**: Add "Angel" with `sort_order = 12`
 
 ---
 
-### Changes
+### Database Migration
 
-#### 1. Update Grid Layout (line 80)
+```sql
+-- Step 1: Get the Bible Vocabularies category ID
+-- Step 2: Shift all items with sort_order >= 12 up by 1
+UPDATE content_items
+SET sort_order = sort_order + 1
+WHERE category_id = (SELECT id FROM categories WHERE name = 'Bible Vocabularies')
+  AND sort_order >= 12;
 
-**Current:**
-```tsx
-<div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mt-8">
-```
-
-**Updated:**
-```tsx
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 mt-8">
-```
-
-This reduces the number of columns:
-- Mobile: 1 column (was 2)
-- Small screens: 2 columns (was 3)
-- Medium screens: 3 columns (was 4)
-- Large screens: 4 columns (was 5-6)
-
-#### 2. Increase Text Size in Phom Translation (line 106)
-
-**Current:**
-```tsx
-<p className="text-base md:text-lg font-semibold text-center mb-3 text-primary break-words min-h-[2.5rem] flex items-center justify-center">
-```
-
-**Updated:**
-```tsx
-<p className="text-lg md:text-xl font-semibold text-center mb-3 text-primary break-words min-h-[3rem] flex items-center justify-center px-2">
-```
-
-#### 3. Increase English Title Size (line 101)
-
-**Current:**
-```tsx
-<CardTitle className="text-sm md:text-base text-center font-medium">
-```
-
-**Updated:**
-```tsx
-<CardTitle className="text-base md:text-lg text-center font-medium">
+-- Step 3: Insert the new "Angel" vocabulary item
+INSERT INTO content_items (category_id, phom_word, english_translation, sort_order)
+VALUES (
+  (SELECT id FROM categories WHERE name = 'Bible Vocabularies'),
+  'Phongshan',
+  'Angel',
+  12
+);
 ```
 
 ---
 
-### Summary
+### Result
 
-| Change | Before | After |
-|--------|--------|-------|
-| Max columns | 6 | 4 |
-| Mobile columns | 2 | 1 |
-| Gap between cards | 4 (1rem) | 5 (1.25rem) |
-| English title size | sm/base | base/lg |
-| Phom text size | base/lg | lg/xl |
-| Phom min-height | 2.5rem | 3rem |
+| Sort Order | English | Phom |
+|------------|---------|------|
+| 11 | Holy Spirit | Daülangpü Laangha |
+| **12** | **Angel** | **Phongshan** |
+| 13 | Angels | Phongshandhü |
 
-This ensures "Phomshem/Khümshem" and other longer translations display fully and clearly on all screen sizes.
+---
+
+### Note on Phom Translation
+
+The singular form "Angel" is translated as **"Phongshan"** (derived from the plural "Phongshandhü" which means "Angels"). If you have a different Phom translation for "Angel", please let me know and I can adjust accordingly.
+
+---
+
+### Technical Details
+
+- **Table**: `content_items`
+- **Category**: Bible Vocabularies
+- **No code changes required** - the `BibleVocabPage.tsx` already fetches and displays all items from the database dynamically
