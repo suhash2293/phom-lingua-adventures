@@ -1,68 +1,41 @@
 
-## Plan: Add "Angel" Flashcard to Bible Vocabularies
 
-Add a new flashcard for "Angel" (singular form) between "Holy Spirit" and "Angels" in the Bible Vocabularies module.
+## Plan: Update "Holy Spirit" Phom Translation
 
----
-
-### Current Order
-
-| Sort Order | English | Phom |
-|------------|---------|------|
-| 11 | Holy Spirit | Daülangpü Laangha |
-| 12 | Angels | Phongshandhü |
+Update the Phom translation for "Holy Spirit" from "Daülangpü Laangha" to "Laangha Daülangpü" in the Bible Vocabularies module.
 
 ---
 
-### Solution
+### Current Record
 
-Since the vocabulary data is stored in the Supabase `content_items` table (not hardcoded), we need to:
+| English | Current Phom | Sort Order |
+|---------|--------------|------------|
+| Holy Spirit | Daülangpü Laangha | 11 |
 
-1. **Shift existing items**: Update all items with `sort_order >= 12` to increment by 1
-2. **Insert new item**: Add "Angel" with `sort_order = 12`
+---
+
+### Updated Record
+
+| English | New Phom | Sort Order |
+|---------|----------|------------|
+| Holy Spirit | **Laangha Daülangpü** | 11 |
 
 ---
 
 ### Database Migration
 
 ```sql
--- Step 1: Get the Bible Vocabularies category ID
--- Step 2: Shift all items with sort_order >= 12 up by 1
-UPDATE content_items
-SET sort_order = sort_order + 1
-WHERE category_id = (SELECT id FROM categories WHERE name = 'Bible Vocabularies')
-  AND sort_order >= 12;
-
--- Step 3: Insert the new "Angel" vocabulary item
-INSERT INTO content_items (category_id, phom_word, english_translation, sort_order)
-VALUES (
-  (SELECT id FROM categories WHERE name = 'Bible Vocabularies'),
-  'Phongshan',
-  'Angel',
-  12
-);
+UPDATE content_items 
+SET phom_word = 'Laangha Daülangpü', updated_at = now()
+WHERE id = '53846c95-9243-458a-848f-cd7028e98ded';
 ```
-
----
-
-### Result
-
-| Sort Order | English | Phom |
-|------------|---------|------|
-| 11 | Holy Spirit | Daülangpü Laangha |
-| **12** | **Angel** | **Phongshan** |
-| 13 | Angels | Phongshandhü |
-
----
-
-### Note on Phom Translation
-
-The singular form "Angel" is translated as **"Phongshan"** (derived from the plural "Phongshandhü" which means "Angels"). If you have a different Phom translation for "Angel", please let me know and I can adjust accordingly.
 
 ---
 
 ### Technical Details
 
 - **Table**: `content_items`
-- **Category**: Bible Vocabularies
-- **No code changes required** - the `BibleVocabPage.tsx` already fetches and displays all items from the database dynamically
+- **Record ID**: `53846c95-9243-458a-848f-cd7028e98ded`
+- **Field**: `phom_word`
+- **No code changes required** - the flashcard data is fetched dynamically from the database
+
