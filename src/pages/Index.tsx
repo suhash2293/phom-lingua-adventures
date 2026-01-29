@@ -133,6 +133,7 @@ const Index = () => {
         </h1>
         <h2 className="text-2xl md:text-3xl font-medium max-w-[800px]">A beginner's guide to learning Phom dialect</h2>
         <p className="text-lg text-muted-foreground max-w-[600px]">Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.</p>
+        <p className="text-lg font-bold max-w-[600px]">Commit to learning from PhomShah daily, and level up your skills!</p>
         
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <Button variant="outline" size="lg" onClick={() => navigate('/about')}>
