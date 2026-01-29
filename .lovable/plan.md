@@ -1,15 +1,17 @@
 
-## Plan: Add "Glory" Flashcard to Bible Vocabularies
+## Plan: Add "Grace" Flashcard to Bible Vocabularies
 
-Add a new flashcard for "Glory" with Phom translation "Müknyenshekhang" to the Bible Vocabularies module.
+Add a new flashcard for "Grace" with Phom translation "Phahji" to the Bible Vocabularies module.
 
 ---
 
 ### Current State
 
-The Bible Vocabularies module currently has 24 flashcards, with the highest `sort_order` being 24 (Shepherd/Miyombü).
+The Bible Vocabularies module currently has these highest sort_order items:
+- Glory (Müknyenshekhang) - sort_order 26
+- Shepherd (Miyombü) - sort_order 24
 
-**Note:** The "Grace" flashcard (sort_order 25) may have been added from a previous request. This "Glory" flashcard will use `sort_order` 26 to ensure proper ordering.
+The "Grace" flashcard will use `sort_order` 27.
 
 ---
 
@@ -17,10 +19,10 @@ The Bible Vocabularies module currently has 24 flashcards, with the highest `sor
 
 | Field | Value |
 |-------|-------|
-| English Translation | Glory |
-| Phom Word | Müknyenshekhang |
+| English Translation | Grace |
+| Phom Word | Phahji |
 | Category ID | d8880536-7d1b-425b-87fc-eaf21c242ae5 |
-| Sort Order | 26 |
+| Sort Order | 27 |
 | Audio URL | NULL (ready for upload) |
 
 ```sql
@@ -32,9 +34,9 @@ INSERT INTO content_items (
   audio_url
 ) VALUES (
   'd8880536-7d1b-425b-87fc-eaf21c242ae5',
-  'Müknyenshekhang',
-  'Glory',
-  26,
+  'Phahji',
+  'Grace',
+  27,
   NULL
 );
 ```
@@ -45,7 +47,7 @@ INSERT INTO content_items (
 
 After the flashcard is created, you can upload the MP3 audio file via:
 
-**Admin Dashboard -> Content Management -> Edit the "Glory" flashcard -> Upload Audio**
+**Admin Dashboard → Content Management → Edit the "Grace" flashcard → Upload Audio**
 
 The audio file will be stored in the `audio-files` storage bucket and automatically linked to this flashcard.
 
@@ -53,4 +55,4 @@ The audio file will be stored in the `audio-files` storage bucket and automatica
 
 ### Result
 
-The "Glory" flashcard will appear in the Bible Vocabularies module alongside other vocabulary items, with audio playback capability once the MP3 is uploaded.
+The "Grace" flashcard will appear in the Bible Vocabularies module alongside other vocabulary items, with audio playback capability once the MP3 is uploaded.
