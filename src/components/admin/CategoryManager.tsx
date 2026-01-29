@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Pencil, Volume2, Upload, Loader2 } from 'lucide-react';
+import { Volume2, Upload, Loader2, Save } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
 import { Category } from '@/types/content';
 import { useToast } from '@/components/ui/use-toast';
@@ -28,29 +28,126 @@ interface CategoryManagerProps {
   onCategoriesUpdated: () => void;
 }
 
+interface PendingChanges {
+  singular_phom_name?: string;
+  phom_name?: string;
+}
+
 const CategoryManager: React.FC<CategoryManagerProps> = ({ 
   categories, 
   onCategoriesUpdated 
 }) => {
   const { toast } = useToast();
-  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [phomName, setPhomName] = useState('');
+  const [pendingChanges, setPendingChanges] = useState<Record<string, PendingChanges>>({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
+  
+  // Audio upload dialog state
+  const [audioDialogCategory, setAudioDialogCategory] = useState<Category | null>(null);
   const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [singularName, setSingularName] = useState('');
-  const [singularPhomName, setSingularPhomName] = useState('');
   const [singularAudioFile, setSingularAudioFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const [playingAudio, setPlayingAudio] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (editingCategory) {
-      setPhomName(editingCategory.phom_name || '');
-      setSingularName(editingCategory.singular_name || '');
-      setSingularPhomName(editingCategory.singular_phom_name || '');
-      setAudioFile(null);
-      setSingularAudioFile(null);
+  // Compute if there are any changes
+  const hasChanges = useMemo(() => {
+    return Object.keys(pendingChanges).length > 0;
+  }, [pendingChanges]);
+
+  const changedCount = useMemo(() => {
+    return Object.keys(pendingChanges).length;
+  }, [pendingChanges]);
+
+  // Get the current value for a field (pending change or original)
+  const getValue = (category: Category, field: 'singular_phom_name' | 'phom_name'): string => {
+    if (pendingChanges[category.id]?.[field] !== undefined) {
+      return pendingChanges[category.id][field] || '';
     }
-  }, [editingCategory]);
+    return category[field] || '';
+  };
+
+  // Handle input change
+  const handleInputChange = (categoryId: string, field: 'singular_phom_name' | 'phom_name', value: string) => {
+    const category = categories.find(c => c.id === categoryId);
+    if (!category) return;
+
+    const originalValue = category[field] || '';
+    const currentChanges = pendingChanges[categoryId] || {};
+    
+    // If value matches original, remove from pending changes
+    if (value === originalValue) {
+      const { [field]: removed, ...rest } = currentChanges;
+      if (Object.keys(rest).length === 0) {
+        const { [categoryId]: removed, ...restChanges } = pendingChanges;
+        setPendingChanges(restChanges);
+      } else {
+        setPendingChanges({ ...pendingChanges, [categoryId]: rest });
+      }
+    } else {
+      // Add to pending changes
+      setPendingChanges({
+        ...pendingChanges,
+        [categoryId]: { ...currentChanges, [field]: value }
+      });
+    }
+  };
+
+  // Save all pending changes
+  const handleSaveAll = async () => {
+    if (!hasChanges) return;
+
+    setIsSaving(true);
+    let successCount = 0;
+    let errorCount = 0;
+
+    try {
+      for (const [categoryId, changes] of Object.entries(pendingChanges)) {
+        const category = categories.find(c => c.id === categoryId);
+        if (!category) continue;
+
+        const updateData: Partial<Category> = {};
+        
+        if (changes.singular_phom_name !== undefined) {
+          updateData.singular_phom_name = changes.singular_phom_name || null;
+        }
+        if (changes.phom_name !== undefined) {
+          updateData.phom_name = changes.phom_name || null;
+        }
+
+        const updated = await ContentService.updateCategory(categoryId, updateData);
+        if (updated) {
+          successCount++;
+        } else {
+          errorCount++;
+        }
+      }
+
+      if (successCount > 0) {
+        toast({
+          title: "Changes Saved",
+          description: `Successfully updated ${successCount} categor${successCount === 1 ? 'y' : 'ies'}.`
+        });
+        setPendingChanges({});
+        onCategoriesUpdated();
+      }
+
+      if (errorCount > 0) {
+        toast({
+          variant: "destructive",
+          title: "Some Updates Failed",
+          description: `${errorCount} categor${errorCount === 1 ? 'y' : 'ies'} failed to update.`
+        });
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred while saving."
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   const handlePlayAudio = async (audioUrl: string | null, categoryId: string) => {
     if (!audioUrl) return;
@@ -74,24 +171,24 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
     }
   };
 
-  const handleSave = async () => {
-    if (!editingCategory) return;
+  const handleAudioSave = async () => {
+    if (!audioDialogCategory) return;
 
     setIsUploading(true);
     try {
-      let audioUrl = editingCategory.title_audio_url;
-      let singularAudioUrl = editingCategory.singular_audio_url;
+      let audioUrl = audioDialogCategory.title_audio_url;
+      let singularAudioUrl = audioDialogCategory.singular_audio_url;
 
       // Upload new plural audio file if provided
       if (audioFile) {
-        const uploadedUrl = await ContentService.uploadCategoryAudio(audioFile, editingCategory.id);
+        const uploadedUrl = await ContentService.uploadCategoryAudio(audioFile, audioDialogCategory.id);
         if (uploadedUrl) {
           audioUrl = uploadedUrl;
         } else {
           toast({
             variant: "destructive",
             title: "Upload Failed",
-            description: "Failed to upload plural audio file. Please try again."
+            description: "Failed to upload plural audio file."
           });
           setIsUploading(false);
           return;
@@ -100,45 +197,44 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
 
       // Upload new singular audio file if provided
       if (singularAudioFile) {
-        const uploadedUrl = await ContentService.uploadCategoryAudio(singularAudioFile, `${editingCategory.id}-singular`);
+        const uploadedUrl = await ContentService.uploadCategoryAudio(singularAudioFile, `${audioDialogCategory.id}-singular`);
         if (uploadedUrl) {
           singularAudioUrl = uploadedUrl;
         } else {
           toast({
             variant: "destructive",
             title: "Upload Failed",
-            description: "Failed to upload singular audio file. Please try again."
+            description: "Failed to upload singular audio file."
           });
           setIsUploading(false);
           return;
         }
       }
 
-      // Update category with all fields
-      const updated = await ContentService.updateCategory(editingCategory.id, {
-        phom_name: phomName || null,
+      // Update category with audio URLs
+      const updated = await ContentService.updateCategory(audioDialogCategory.id, {
         title_audio_url: audioUrl,
-        singular_name: singularName || null,
-        singular_phom_name: singularPhomName || null,
         singular_audio_url: singularAudioUrl
       });
 
       if (updated) {
         toast({
-          title: "Category Updated",
-          description: `Successfully updated ${editingCategory.name}.`
+          title: "Audio Updated",
+          description: `Successfully updated audio for ${audioDialogCategory.name}.`
         });
         onCategoriesUpdated();
-        setEditingCategory(null);
+        setAudioDialogCategory(null);
+        setAudioFile(null);
+        setSingularAudioFile(null);
       } else {
         toast({
           variant: "destructive",
           title: "Update Failed",
-          description: "Failed to update category. Please try again."
+          description: "Failed to update audio."
         });
       }
     } catch (error) {
-      console.error('Error saving category:', error);
+      console.error('Error saving audio:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -150,7 +246,7 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       <Table>
         <TableHeader>
           <TableRow>
@@ -158,7 +254,6 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
             <TableHead>Singular Phom</TableHead>
             <TableHead>Plural Phom</TableHead>
             <TableHead>Audio</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -166,14 +261,20 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
             <TableRow key={category.id}>
               <TableCell className="font-medium">{category.name}</TableCell>
               <TableCell>
-                {category.singular_phom_name || (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
+                <Input
+                  value={getValue(category, 'singular_phom_name')}
+                  onChange={(e) => handleInputChange(category.id, 'singular_phom_name', e.target.value)}
+                  placeholder="Enter singular Phom..."
+                  className="max-w-[200px]"
+                />
               </TableCell>
               <TableCell>
-                {category.phom_name || (
-                  <span className="text-muted-foreground italic">Not set</span>
-                )}
+                <Input
+                  value={getValue(category, 'phom_name')}
+                  onChange={(e) => handleInputChange(category.id, 'phom_name', e.target.value)}
+                  placeholder="Enter plural Phom..."
+                  className="max-w-[200px]"
+                />
               </TableCell>
               <TableCell>
                 <div className="flex gap-1">
@@ -201,148 +302,136 @@ const CategoryManager: React.FC<CategoryManagerProps> = ({
                       <span className="ml-1 text-xs">P</span>
                     </Button>
                   )}
-                  {!category.singular_audio_url && !category.title_audio_url && (
-                    <span className="text-muted-foreground italic text-sm">No audio</span>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setAudioDialogCategory(category)}
+                    title="Upload audio"
+                  >
+                    <Upload className="h-4 w-4" />
+                  </Button>
                 </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEditingCategory(category)}
-                >
-                  <Pencil className="h-4 w-4 mr-2" />
-                  Edit
-                </Button>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
 
-      {/* Edit Dialog */}
-      <Dialog open={!!editingCategory} onOpenChange={() => setEditingCategory(null)}>
+      {/* Yellow Save Button */}
+      {hasChanges && (
+        <div className="flex justify-end pt-4 border-t">
+          <Button
+            onClick={handleSaveAll}
+            disabled={isSaving}
+            className="bg-amber-500 hover:bg-amber-600 text-white font-semibold px-6"
+          >
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4 mr-2" />
+                Save {changedCount} Change{changedCount !== 1 ? 's' : ''}
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {/* Audio Upload Dialog */}
+      <Dialog open={!!audioDialogCategory} onOpenChange={() => {
+        setAudioDialogCategory(null);
+        setAudioFile(null);
+        setSingularAudioFile(null);
+      }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Category: {editingCategory?.name}</DialogTitle>
+            <DialogTitle>Upload Audio: {audioDialogCategory?.name}</DialogTitle>
             <DialogDescription>
-              Update the Phom translation and audio for this learning module.
+              Upload audio files for the category title.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6 py-4">
-            {/* Singular Form Section */}
-            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-              <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Singular Form</h4>
-              
-              <div className="space-y-2">
-                <Label htmlFor="singular-name">Singular English Name</Label>
+            {/* Singular Audio */}
+            <div className="space-y-2">
+              <Label htmlFor="singular-audio-file">Singular Audio (MP3)</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  id="singular-name"
-                  value={singularName}
-                  onChange={(e) => setSingularName(e.target.value)}
-                  placeholder="e.g., Day, Month, Season"
+                  id="singular-audio-file"
+                  type="file"
+                  accept="audio/mp3,audio/mpeg,audio/wav"
+                  onChange={(e) => setSingularAudioFile(e.target.files?.[0] || null)}
+                  className="flex-1"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="singular-phom-name">Singular Phom Translation</Label>
-                <Input
-                  id="singular-phom-name"
-                  value={singularPhomName}
-                  onChange={(e) => setSingularPhomName(e.target.value)}
-                  placeholder="Enter Phom translation for singular form"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="singular-audio-file">Singular Audio (MP3)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="singular-audio-file"
-                    type="file"
-                    accept="audio/mp3,audio/mpeg,audio/wav"
-                    onChange={(e) => setSingularAudioFile(e.target.files?.[0] || null)}
-                    className="flex-1"
-                  />
-                  {editingCategory?.singular_audio_url && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePlayAudio(editingCategory.singular_audio_url, `${editingCategory.id}-singular`)}
-                      disabled={playingAudio === `${editingCategory?.id}-singular`}
-                    >
-                      <Volume2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                {singularAudioFile && (
-                  <p className="text-sm text-muted-foreground">
-                    New file: {singularAudioFile.name}
-                  </p>
+                {audioDialogCategory?.singular_audio_url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePlayAudio(audioDialogCategory.singular_audio_url, `${audioDialogCategory.id}-singular`)}
+                    disabled={playingAudio === `${audioDialogCategory?.id}-singular`}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
+              {singularAudioFile && (
+                <p className="text-sm text-muted-foreground">
+                  New file: {singularAudioFile.name}
+                </p>
+              )}
             </div>
 
-            {/* Plural Form Section */}
-            <div className="space-y-4 p-4 border rounded-lg bg-muted/30">
-              <h4 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground">Plural Form</h4>
-              
-              <div className="space-y-2">
-                <Label htmlFor="phom-name">Plural Phom Translation</Label>
+            {/* Plural Audio */}
+            <div className="space-y-2">
+              <Label htmlFor="audio-file">Plural Audio (MP3)</Label>
+              <div className="flex items-center gap-2">
                 <Input
-                  id="phom-name"
-                  value={phomName}
-                  onChange={(e) => setPhomName(e.target.value)}
-                  placeholder="Enter Phom translation for plural form"
+                  id="audio-file"
+                  type="file"
+                  accept="audio/mp3,audio/mpeg,audio/wav"
+                  onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                  className="flex-1"
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="audio-file">Plural Audio (MP3)</Label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    id="audio-file"
-                    type="file"
-                    accept="audio/mp3,audio/mpeg,audio/wav"
-                    onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
-                    className="flex-1"
-                  />
-                  {editingCategory?.title_audio_url && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handlePlayAudio(editingCategory.title_audio_url, editingCategory.id)}
-                      disabled={playingAudio === editingCategory?.id}
-                    >
-                      <Volume2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-                {audioFile && (
-                  <p className="text-sm text-muted-foreground">
-                    New file: {audioFile.name}
-                  </p>
+                {audioDialogCategory?.title_audio_url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePlayAudio(audioDialogCategory.title_audio_url, audioDialogCategory.id)}
+                    disabled={playingAudio === audioDialogCategory?.id}
+                  >
+                    <Volume2 className="h-4 w-4" />
+                  </Button>
                 )}
               </div>
+              {audioFile && (
+                <p className="text-sm text-muted-foreground">
+                  New file: {audioFile.name}
+                </p>
+              )}
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingCategory(null)}>
+            <Button variant="outline" onClick={() => {
+              setAudioDialogCategory(null);
+              setAudioFile(null);
+              setSingularAudioFile(null);
+            }}>
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isUploading}>
+            <Button onClick={handleAudioSave} disabled={isUploading || (!audioFile && !singularAudioFile)}>
               {isUploading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  Uploading...
                 </>
               ) : (
                 <>
                   <Upload className="h-4 w-4 mr-2" />
-                  Save Changes
+                  Upload Audio
                 </>
               )}
             </Button>
