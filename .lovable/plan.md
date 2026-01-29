@@ -1,49 +1,54 @@
 
 
-## Plan: Add Description to "Church" Flashcard
+## Plan: Add Motivational Text to Home Page Hero Section
 
-Add an explanatory note to the "Church" flashcard explaining that both Phom translations are interchangeable.
+Add a bold motivational message to encourage daily learning on the home page.
 
 ---
 
 ### Current State
 
-| Field | Current Value |
-|-------|---------------|
-| English | Church |
-| Phom Translation | Phopshem/Khümshem |
-| Description | (empty) |
+The hero section currently shows:
+- Title: "Welcome to PhomShah"
+- Subtitle: "A beginner's guide to learning Phom dialect"
+- Description: "Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises."
 
 ---
 
-### Proposed Changes
+### Proposed Change
 
-| Field | New Value |
-|-------|-----------|
-| Phom Translation | Phomshem/Khümshem |
-| Description | Both vocabularies are used interchangeably as it carries the same meaning |
+Add a new bold line immediately after the description:
 
-**Note:** I noticed the current spelling is "Phopshem" but you mentioned "Phomshem" - I'll update this to the correct spelling as well.
+**"Commit to learning from PhomShah daily, and level up your skills!"**
 
 ---
 
-### Database Update
+### Code Change
 
-```sql
-UPDATE content_items 
-SET 
-  phom_word = 'Phomshem/Khümshem',
-  example_sentence = 'Both vocabularies are used interchangeably as it carries the same meaning',
-  updated_at = now()
-WHERE id = '5e518a7f-f99f-41e1-a1b0-91efc25be695';
+**File: `src/pages/Index.tsx`** (lines 111-113)
+
+```tsx
+// Current
+<p className="text-lg text-muted-foreground max-w-[600px]">
+  Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.
+</p>
+
+// Updated
+<p className="text-lg text-muted-foreground max-w-[600px]">
+  Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.
+</p>
+<p className="text-lg font-bold max-w-[600px]">
+  Commit to learning from PhomShah daily, and level up your skills!
+</p>
 ```
 
 ---
 
-### Technical Details
+### Visual Result
 
-- **Table**: `content_items`
-- **Record ID**: `5e518a7f-f99f-41e1-a1b0-91efc25be695`
-- **Field Used**: `example_sentence` (repurposed for description/notes)
-- The description will appear on the Church flashcard in the Bible Vocabularies module
+The hero section will display:
+1. Welcome to PhomShah (title)
+2. A beginner's guide to learning Phom dialect (subtitle)
+3. Learn Phom vocabularies... (regular description)
+4. **Commit to learning from PhomShah daily, and level up your skills!** (bold motivational text)
 
