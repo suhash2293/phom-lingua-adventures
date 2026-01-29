@@ -1,8 +1,8 @@
 
 
-## Plan: Add "Glory" Flashcard to Bible Vocabularies
+## Plan: Add "Grace" Flashcard to Bible Vocabularies
 
-Add a new flashcard for "Glory" with Phom translation "Müknyenshekhang" to the Bible Vocabularies module.
+Add a new flashcard for "Grace" with Phom translation "Phahji" to the Bible Vocabularies module.
 
 ---
 
@@ -10,14 +10,16 @@ Add a new flashcard for "Glory" with Phom translation "Müknyenshekhang" to the 
 
 The Bible Vocabularies module currently has 24 flashcards, with the highest `sort_order` being 24 (Shepherd/Miyombü).
 
+**Note:** The "Glory" flashcard from the previous request hasn't been added yet. This "Grace" flashcard will use `sort_order` 25.
+
 ---
 
 ### Database Insert
 
 | Field | Value |
 |-------|-------|
-| English Translation | Glory |
-| Phom Word | Müknyenshekhang |
+| English Translation | Grace |
+| Phom Word | Phahji |
 | Category ID | d8880536-7d1b-425b-87fc-eaf21c242ae5 |
 | Sort Order | 25 |
 | Audio URL | NULL (ready for upload) |
@@ -31,8 +33,8 @@ INSERT INTO content_items (
   audio_url
 ) VALUES (
   'd8880536-7d1b-425b-87fc-eaf21c242ae5',
-  'Müknyenshekhang',
-  'Glory',
+  'Phahji',
+  'Grace',
   25,
   NULL
 );
@@ -44,7 +46,7 @@ INSERT INTO content_items (
 
 After the flashcard is created, you can upload the MP3 audio file via:
 
-**Admin Dashboard → Content Management → Edit the "Glory" flashcard → Upload Audio**
+**Admin Dashboard -> Content Management -> Edit the "Grace" flashcard -> Upload Audio**
 
 The audio file will be stored in the `audio-files` storage bucket and automatically linked to this flashcard.
 
@@ -52,5 +54,5 @@ The audio file will be stored in the `audio-files` storage bucket and automatica
 
 ### Result
 
-The "Glory" flashcard will appear in the Bible Vocabularies module with audio playback capability once the MP3 is uploaded.
+The "Grace" flashcard will appear in the Bible Vocabularies module with audio playback capability once the MP3 is uploaded.
 
