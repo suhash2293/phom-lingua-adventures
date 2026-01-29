@@ -1,54 +1,56 @@
 
 
-## Plan: Add Motivational Text to Home Page Hero Section
+## Plan: Add "Glory" Flashcard to Bible Vocabularies
 
-Add a bold motivational message to encourage daily learning on the home page.
+Add a new flashcard for "Glory" with Phom translation "Müknyenshekhang" to the Bible Vocabularies module.
 
 ---
 
 ### Current State
 
-The hero section currently shows:
-- Title: "Welcome to PhomShah"
-- Subtitle: "A beginner's guide to learning Phom dialect"
-- Description: "Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises."
+The Bible Vocabularies module currently has 24 flashcards, with the highest `sort_order` being 24 (Shepherd/Miyombü).
 
 ---
 
-### Proposed Change
+### Database Insert
 
-Add a new bold line immediately after the description:
+| Field | Value |
+|-------|-------|
+| English Translation | Glory |
+| Phom Word | Müknyenshekhang |
+| Category ID | d8880536-7d1b-425b-87fc-eaf21c242ae5 |
+| Sort Order | 25 |
+| Audio URL | NULL (ready for upload) |
 
-**"Commit to learning from PhomShah daily, and level up your skills!"**
-
----
-
-### Code Change
-
-**File: `src/pages/Index.tsx`** (lines 111-113)
-
-```tsx
-// Current
-<p className="text-lg text-muted-foreground max-w-[600px]">
-  Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.
-</p>
-
-// Updated
-<p className="text-lg text-muted-foreground max-w-[600px]">
-  Learn Phom vocabularies and dialect basics through interactive lessons and gamified exercises.
-</p>
-<p className="text-lg font-bold max-w-[600px]">
-  Commit to learning from PhomShah daily, and level up your skills!
-</p>
+```sql
+INSERT INTO content_items (
+  category_id,
+  phom_word,
+  english_translation,
+  sort_order,
+  audio_url
+) VALUES (
+  'd8880536-7d1b-425b-87fc-eaf21c242ae5',
+  'Müknyenshekhang',
+  'Glory',
+  25,
+  NULL
+);
 ```
 
 ---
 
-### Visual Result
+### Audio Upload
 
-The hero section will display:
-1. Welcome to PhomShah (title)
-2. A beginner's guide to learning Phom dialect (subtitle)
-3. Learn Phom vocabularies... (regular description)
-4. **Commit to learning from PhomShah daily, and level up your skills!** (bold motivational text)
+After the flashcard is created, you can upload the MP3 audio file via:
+
+**Admin Dashboard → Content Management → Edit the "Glory" flashcard → Upload Audio**
+
+The audio file will be stored in the `audio-files` storage bucket and automatically linked to this flashcard.
+
+---
+
+### Result
+
+The "Glory" flashcard will appear in the Bible Vocabularies module with audio playback capability once the MP3 is uploaded.
 
