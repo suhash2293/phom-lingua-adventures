@@ -1,51 +1,56 @@
 
-## Plan: Add "Back to Home" Button to Bible Books Page
+## Plan: Center the "Back to Home" Buttons
 
-Add a "Back to Home" navigation button to the Bible Books learning module to match the consistent UI pattern used in other learning modules like Alphabets and Greetings.
+Move the "Back to Home" navigation buttons from the left position to the center on both Greetings and Bible Books pages.
 
 ---
 
-### What's Missing
+### Current State
 
-The BibleBooksPage currently lacks the back navigation button that other learning modules have, making it inconsistent with the app's navigation patterns.
+Both pages have the "Back to Home" button aligned to the left by default.
 
 ---
 
 ### Changes Required
 
-**File: `src/pages/BibleBooksPage.tsx`**
+**File 1: `src/pages/GreetingsPage.tsx`**
 
-1. **Add import for `useNavigate`** from react-router-dom
-2. **Add import for `ArrowLeft`** icon from lucide-react
-3. **Add `navigate` hook** at the top of the component
-4. **Add Back Button** before the ModuleTitleWithAudio component
-
-The button will match the existing pattern:
-- Ghost variant button
-- ArrowLeft icon with "Back to Home" text
-- Navigates to the home page (`/`)
-- Positioned with margin-bottom for spacing
-
----
-
-### Code Preview
-
-The back button will look exactly like other learning modules:
+Update the Button wrapper to center it:
 
 ```tsx
-<Button 
-  variant="ghost" 
-  size="sm"
-  onClick={() => navigate('/')}
-  className="mb-6 flex items-center gap-2"
->
-  <ArrowLeft className="h-4 w-4" />
-  Back to Home
-</Button>
+{/* Back Button */}
+<div className="mb-6 flex justify-center">
+  <Button 
+    variant="ghost" 
+    onClick={() => navigate('/')}
+  >
+    <ArrowLeft className="mr-2 h-4 w-4" />
+    Back to Home
+  </Button>
+</div>
+```
+
+**File 2: `src/pages/BibleBooksPage.tsx`**
+
+Update the Button wrapper to center it:
+
+```tsx
+{/* Back button */}
+<div className="mb-6 flex justify-center">
+  <Button 
+    variant="ghost" 
+    size="sm"
+    onClick={() => navigate('/')}
+    className="flex items-center gap-2"
+  >
+    <ArrowLeft className="h-4 w-4" />
+    Back to Home
+  </Button>
+</div>
 ```
 
 ---
 
 ### Result
 
-After this change, the Bible Books page will have consistent navigation with all other learning modules in the app.
+The "Back to Home" buttons on both pages will be horizontally centered, providing a cleaner, more symmetrical layout that aligns well with the centered module headers.
