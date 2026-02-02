@@ -94,15 +94,17 @@ const BibleBooksPage = () => {
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
       {/* Back button */}
-      <Button 
-        variant="ghost" 
-        size="sm"
-        onClick={() => navigate('/')}
-        className="mb-6 flex items-center gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Home
-      </Button>
+      <div className="mb-6 flex justify-center">
+        <Button 
+          variant="ghost" 
+          size="sm"
+          onClick={() => navigate('/')}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
 
       {/* Module Header */}
       <ModuleTitleWithAudio
