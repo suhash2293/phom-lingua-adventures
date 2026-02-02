@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Headphones, BookOpen, Loader2 } from 'lucide-react';
+import { Headphones, BookOpen, Loader2, ArrowLeft } from 'lucide-react';
 import { ContentService } from '@/services/ContentService';
 import { ContentItem, Category } from '@/types/content';
 import { useAudioPreloader } from '@/hooks/use-audio-preloader';
 import ModuleTitleWithAudio from '@/components/learning/ModuleTitleWithAudio';
 
 const BibleBooksPage = () => {
+  const navigate = useNavigate();
   const [books, setBooks] = useState<ContentItem[]>([]);
   const [category, setCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
@@ -91,6 +93,17 @@ const BibleBooksPage = () => {
 
   return (
     <div className="container px-4 md:px-6 py-8 md:py-12">
+      {/* Back button */}
+      <Button 
+        variant="ghost" 
+        size="sm"
+        onClick={() => navigate('/')}
+        className="mb-6 flex items-center gap-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Home
+      </Button>
+
       {/* Module Header */}
       <ModuleTitleWithAudio
         englishTitle={category?.name || 'Bible Books'}
