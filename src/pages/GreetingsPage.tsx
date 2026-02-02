@@ -50,14 +50,15 @@ const GreetingsPage = () => {
   return (
     <div className="container px-4 md:px-6 py-8">
       {/* Back Button */}
-      <Button 
-        variant="ghost" 
-        onClick={() => navigate('/')}
-        className="mb-6"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Home
-      </Button>
+      <div className="mb-6 flex justify-center">
+        <Button 
+          variant="ghost" 
+          onClick={() => navigate('/')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Home
+        </Button>
+      </div>
 
       {/* Module Title Header */}
       <ModuleTitleWithAudio
