@@ -1,58 +1,51 @@
 
-## Plan: Add "Grace" Flashcard to Bible Vocabularies
+## Plan: Add "Back to Home" Button to Bible Books Page
 
-Add a new flashcard for "Grace" with Phom translation "Phahji" to the Bible Vocabularies module.
-
----
-
-### Current State
-
-The Bible Vocabularies module currently has these highest sort_order items:
-- Glory (Müknyenshekhang) - sort_order 26
-- Shepherd (Miyombü) - sort_order 24
-
-The "Grace" flashcard will use `sort_order` 27.
+Add a "Back to Home" navigation button to the Bible Books learning module to match the consistent UI pattern used in other learning modules like Alphabets and Greetings.
 
 ---
 
-### Database Insert
+### What's Missing
 
-| Field | Value |
-|-------|-------|
-| English Translation | Grace |
-| Phom Word | Phahji |
-| Category ID | d8880536-7d1b-425b-87fc-eaf21c242ae5 |
-| Sort Order | 27 |
-| Audio URL | NULL (ready for upload) |
+The BibleBooksPage currently lacks the back navigation button that other learning modules have, making it inconsistent with the app's navigation patterns.
 
-```sql
-INSERT INTO content_items (
-  category_id,
-  phom_word,
-  english_translation,
-  sort_order,
-  audio_url
-) VALUES (
-  'd8880536-7d1b-425b-87fc-eaf21c242ae5',
-  'Phahji',
-  'Grace',
-  27,
-  NULL
-);
+---
+
+### Changes Required
+
+**File: `src/pages/BibleBooksPage.tsx`**
+
+1. **Add import for `useNavigate`** from react-router-dom
+2. **Add import for `ArrowLeft`** icon from lucide-react
+3. **Add `navigate` hook** at the top of the component
+4. **Add Back Button** before the ModuleTitleWithAudio component
+
+The button will match the existing pattern:
+- Ghost variant button
+- ArrowLeft icon with "Back to Home" text
+- Navigates to the home page (`/`)
+- Positioned with margin-bottom for spacing
+
+---
+
+### Code Preview
+
+The back button will look exactly like other learning modules:
+
+```tsx
+<Button 
+  variant="ghost" 
+  size="sm"
+  onClick={() => navigate('/')}
+  className="mb-6 flex items-center gap-2"
+>
+  <ArrowLeft className="h-4 w-4" />
+  Back to Home
+</Button>
 ```
-
----
-
-### Audio Upload
-
-After the flashcard is created, you can upload the MP3 audio file via:
-
-**Admin Dashboard → Content Management → Edit the "Grace" flashcard → Upload Audio**
-
-The audio file will be stored in the `audio-files` storage bucket and automatically linked to this flashcard.
 
 ---
 
 ### Result
 
-The "Grace" flashcard will appear in the Bible Vocabularies module alongside other vocabulary items, with audio playback capability once the MP3 is uploaded.
+After this change, the Bible Books page will have consistent navigation with all other learning modules in the app.
