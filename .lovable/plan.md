@@ -1,40 +1,44 @@
 
 
-## Plan: Move "Back to Home" Button to the Left on Greetings Page
+## Plan: Fix "Back to Home" Button Left-Alignment on Greetings Page
 
-Relocate the "Back to Home" navigation button from the center to the left side of the page.
+### Root Cause
 
----
+The file `src/App.css` contains a global style on `#root` that centers ALL text content:
 
-### Current State
-
-The button is currently centered using `flex justify-center` wrapper.
-
----
-
-### Change Required
-
-**File: `src/pages/GreetingsPage.tsx`**
-
-Remove the centering wrapper and restore the left-aligned layout:
-
-```tsx
-{/* Back Button */}
-<Button 
-  variant="ghost" 
-  onClick={() => navigate('/')}
-  className="mb-6"
->
-  <ArrowLeft className="mr-2 h-4 w-4" />
-  Back to Home
-</Button>
+```css
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;  /* <-- THIS is the culprit */
+}
 ```
 
-This removes the `<div className="mb-6 flex justify-center">` wrapper and moves the `mb-6` class back to the Button itself.
+This `text-align: center` is inherited by every element on the page, which is why the "Back to Home" button appears centered even after removing the `flex justify-center` wrapper. The button is an inline-flex element, so it follows `text-align`.
 
----
+### Fix
 
-### Result
+**File: `src/App.css`**
 
-The "Back to Home" button on the Greetings page will be aligned to the left side of the container.
+Remove the problematic global styles from `#root`. These are leftover from the default Vite starter template and conflict with the app's own layout system (Tailwind + the `ConditionalLayout` component in `App.tsx`).
+
+Clean up the entire file by removing the `#root` styles and other unused Vite template styles:
+
+```css
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;   /* REMOVE this line */
+}
+```
+
+The simplest and safest fix is to just remove `text-align: center;` from the `#root` rule, keeping the other properties. However, the `padding: 2rem` on `#root` may also cause unwanted extra spacing since the app already handles padding via Tailwind container classes. Ideally, the entire `#root` block and unused Vite template styles (`.logo`, `.card`, `.read-the-docs`, `logo-spin` animation) should be cleaned up.
+
+### Impact
+
+- The "Back to Home" button on the Greetings page will properly align to the left
+- Other pages may also see improved alignment where elements were unintentionally centered
+- No visual regressions expected since the app uses Tailwind utilities for all intentional centering (e.g., `text-center` classes on card titles)
 
