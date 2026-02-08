@@ -1,37 +1,37 @@
 
 
-## Plan: Add "Church2" Flashcard to Bible Vocabularies
+## Plan: Add "Pray" Flashcard to Bible Vocabularies
 
 ### What Will Be Done
 
 Insert a new content item into the `content_items` database table for the Bible Vocabularies category with:
 
-- **English Translation:** Church2
-- **Phom Word:** Attoi
-- **Description (italic):** A formal meaning of "Church" as found in the Bible
-- **Sort Order:** 25 (placed after Church1 at 23, and before Glory at 26)
+- **English Translation:** Pray
+- **Phom Word:** Phoppü
+- **Sort Order:** 28 (placed after Grace at 27)
+- **Audio:** Will show "No Audio" initially; you can upload the MP3 file later via the Admin Dashboard
 
 ### Technical Details
 
 **Database Change:** A single SQL INSERT into the `content_items` table:
 
 ```sql
-INSERT INTO content_items (category_id, english_translation, phom_word, example_sentence, sort_order)
+INSERT INTO content_items (category_id, english_translation, phom_word, sort_order)
 VALUES (
   'd8880536-7d1b-425b-87fc-eaf21c242ae5',
-  'Church2',
-  'Attoi',
-  'A formal meaning of "Church" as found in the Bible',
-  25
+  'Pray',
+  'Phoppü',
+  28
 );
 ```
 
-No code changes are needed -- the `BibleVocabPage.tsx` already renders the `example_sentence` field in italics below the Phom word on each flashcard (this is how Church1's description is displayed too).
+No code changes are needed -- the `BibleVocabPage.tsx` already renders all content items from this category automatically. Once the record is inserted, the flashcard will appear at the end of the grid.
 
-### Result
+### After Implementation
 
-A new flashcard will appear in the Bible Vocabularies module showing:
-- **Title:** Church2
-- **Phom translation:** Attoi
-- **Italic description:** A formal meaning of "Church" as found in the Bible
-- Audio will show "No Audio" until an audio file is uploaded via the Admin Dashboard
+To add the audio file:
+1. Go to the **Admin Dashboard**
+2. Find the "Pray" entry under Bible Vocabularies
+3. Upload the MP3 audio file
+4. The flashcard's "Listen" button will then become active
+
